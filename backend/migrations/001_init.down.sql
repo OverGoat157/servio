@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS messenger_configs;
+DROP TABLE IF EXISTS menu_items;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS restaurants;
+DROP TABLE IF EXISTS users;

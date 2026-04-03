@@ -1,0 +1,55 @@
+services:
+  # PostgreSQL — база данных MenuLink
+  postgres:
+    image: postgres:16-alpine
+    container_name: menulink-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: menulink
+      POSTGRES_PASSWORD: menulink
+      POSTGRES_DB: menulink
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # Backend API
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: menulink
+      DB_PASSWORD: menulink
+      DB_NAME: menulink
+      DB_SSLMODE: disable
+      JWT_SECRET: ${JWT_SECRET:-super-secret-change-in-production}
+      SERVER_PORT: 8080
+    depends_on:
+      - postgres
+
+  # Frontend — Публичное меню
+  menu:
+    build:
+      context: ./frontend/menu
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+
+  # Frontend — Admin панель
+  admin:
+    build:
+      context: ./frontend/admin
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+
+volumes:
+  pgdata:

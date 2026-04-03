@@ -1,0 +1,67 @@
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+
+function getToken() {
+  return localStorage.getItem('token')
+}
+
+async function request(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...options.headers }
+  const token = getToken()
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers })
+  if (res.status === 401) {
+    localStorage.removeItem('token')
+    window.location.href = '/login'
+    throw new Error('Unauthorized')
+  }
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || 'Request failed')
+  return data
+}
+
+// Auth
+export const auth = {
+  register: (body) => request('/api/auth/register', { method: 'POST', body: JSON.stringify(body) }),
+  login: (body) => request('/api/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+  me: () => request('/api/me'),
+}
+
+// Restaurants
+export const restaurants = {
+  list: () => request('/api/restaurants'),
+  get: (id) => request(`/api/restaurants/${id}`),
+  create: (body) => request('/api/restaurants', { method: 'POST', body: JSON.stringify(body) }),
+  update: (id, body) => request(`/api/restaurants/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  delete: (id) => request(`/api/restaurants/${id}`, { method: 'DELETE' }),
+}
+
+// Categories
+export const categories = {
+  list: (restaurantId) => request(`/api/restaurants/${restaurantId}/categories`),
+  create: (restaurantId, body) => request(`/api/restaurants/${restaurantId}/categories`, { method: 'POST', body: JSON.stringify(body) }),
+  update: (id, body) => request(`/api/categories/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  delete: (id) => request(`/api/categories/${id}`, { method: 'DELETE' }),
+}
+
+// Menu items
+export const menuItems = {
+  list: (categoryId) => request(`/api/categories/${categoryId}/items`),
+  create: (categoryId, body) => request(`/api/categories/${categoryId}/items`, { method: 'POST', body: JSON.stringify(body) }),
+  update: (id, body) => request(`/api/items/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  delete: (id) => request(`/api/items/${id}`, { method: 'DELETE' }),
+}
+
+// Orders
+export const orders = {
+  list: (restaurantId, limit = 50, offset = 0) => request(`/api/restaurants/${restaurantId}/orders?limit=${limit}&offset=${offset}`),
+  updateStatus: (id, status) => request(`/api/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+}
+
+// Messengers
+export const messengers = {
+  list: (restaurantId) => request(`/api/restaurants/${restaurantId}/messengers`),
+  upsert: (restaurantId, body) => request(`/api/restaurants/${restaurantId}/messengers`, { method: 'POST', body: JSON.stringify(body) }),
+  delete: (restaurantId, type) => request(`/api/restaurants/${restaurantId}/messengers/${type}`, { method: 'DELETE' }),
+}
