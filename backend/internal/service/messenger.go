@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"menulink/internal/model"
+	"servio/internal/model"
 )
 
 // TelegramConfig — настройки для Telegram-бота

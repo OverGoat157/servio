@@ -1,4 +1,4 @@
-# MenuLink
+# Servio
 
 Платформа для создания шаблонных мини-приложений с цифровым меню для малого ресторанного бизнеса. Клиенты сканируют QR-код, просматривают меню и отправляют заказ прямо в мессенджер ресторана (Telegram, WhatsApp).
 
@@ -150,9 +150,9 @@ VITE_API_URL=http://your-server:8080
 |------------|-------------|----------|
 | `DB_HOST` | localhost | Хост PostgreSQL |
 | `DB_PORT` | 5432 | Порт PostgreSQL |
-| `DB_USER` | menulink | Пользователь БД |
-| `DB_PASSWORD` | menulink | Пароль БД |
-| `DB_NAME` | menulink | Имя базы данных |
+| `DB_USER` | servio | Пользователь БД |
+| `DB_PASSWORD` | servio | Пароль БД |
+| `DB_NAME` | servio | Имя базы данных |
 | `DB_SSLMODE` | disable | SSL режим |
 | `JWT_SECRET` | change-me | Секрет для JWT токенов |
 | `SERVER_PORT` | 8080 | Порт API сервера |

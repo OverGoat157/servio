@@ -1,13 +1,13 @@
 services:
-  # PostgreSQL — база данных MenuLink
+  # PostgreSQL — база данных Servio
   postgres:
     image: postgres:16-alpine
-    container_name: menulink-postgres
+    container_name: servio-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: menulink
-      POSTGRES_PASSWORD: menulink
-      POSTGRES_DB: menulink
+      POSTGRES_USER: servio
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: servio
     ports:
       - "5432:5432"
     volumes:
@@ -22,11 +22,11 @@ services:
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: menulink
-      DB_PASSWORD: menulink
-      DB_NAME: menulink
+      DB_USER: servio
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: servio
       DB_SSLMODE: disable
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-in-production}
+      JWT_SECRET: ${JWT_SECRET}
       SERVER_PORT: 8080
     depends_on:
       - postgres

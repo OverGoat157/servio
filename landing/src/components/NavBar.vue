@@ -19,8 +19,8 @@ function close() {
   <header class="nav">
     <div class="container nav-inner">
       <a href="#" class="logo">
-        <span class="logo-icon">M</span>
-        <span>MenuLink</span>
+        <span class="logo-icon">S</span>
+        <span>Servio</span>
       </a>
 
       <nav class="nav-links">

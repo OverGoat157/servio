@@ -27,8 +27,8 @@ async function handleSubmit() {
   <div class="auth-page">
     <div class="auth-card card">
       <div class="auth-header">
-        <div class="auth-logo">M</div>
-        <h1>Вход в MenuLink</h1>
+        <div class="auth-logo">S</div>
+        <h1>Вход в Servio</h1>
         <p>Управляйте ресторанами и меню</p>
       </div>
 

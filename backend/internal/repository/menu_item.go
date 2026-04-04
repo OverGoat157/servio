@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/jmoiron/sqlx"
-	"menulink/internal/model"
+	"servio/internal/model"
 )
 
 type MenuItemRepo struct {
