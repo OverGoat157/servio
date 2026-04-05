@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS restaurants (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_restaurants_user_id ON restaurants(user_id);
-CREATE INDEX idx_restaurants_slug ON restaurants(slug);
+CREATE INDEX IF NOT EXISTS idx_restaurants_user_id ON restaurants(user_id);
+CREATE INDEX IF NOT EXISTS idx_restaurants_slug ON restaurants(slug);
 
 CREATE TABLE IF NOT EXISTS categories (
     id BIGSERIAL PRIMARY KEY,
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS categories (
     sort_order INT DEFAULT 0
 );
 
-CREATE INDEX idx_categories_restaurant_id ON categories(restaurant_id);
+CREATE INDEX IF NOT EXISTS idx_categories_restaurant_id ON categories(restaurant_id);
 
 CREATE TABLE IF NOT EXISTS menu_items (
     id BIGSERIAL PRIMARY KEY,
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS menu_items (
     sort_order INT DEFAULT 0
 );
 
-CREATE INDEX idx_menu_items_category_id ON menu_items(category_id);
+CREATE INDEX IF NOT EXISTS idx_menu_items_category_id ON menu_items(category_id);
 
 CREATE TABLE IF NOT EXISTS messenger_configs (
     id BIGSERIAL PRIMARY KEY,
@@ -66,5 +66,5 @@ CREATE TABLE IF NOT EXISTS orders (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_orders_restaurant_id ON orders(restaurant_id);
-CREATE INDEX idx_orders_created_at ON orders(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_orders_restaurant_id ON orders(restaurant_id);
+CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC);
