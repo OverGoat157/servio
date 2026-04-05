@@ -7,9 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 
-	"ab-production/internal/middleware"
-	"ab-production/internal/model"
-	"ab-production/internal/repository"
+	"ab-team/internal/middleware"
+	"ab-team/internal/model"
+	"ab-team/internal/repository"
 )
 
 type AuthHandler struct {

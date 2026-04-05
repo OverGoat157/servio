@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"ab-production/internal/middleware"
-	"ab-production/internal/repository"
+	"ab-team/internal/middleware"
+	"ab-team/internal/repository"
 )
 
 type OrderHandler struct {

@@ -5,7 +5,7 @@
         <div class="footer-brand">
           <a href="#" class="logo">
             <span class="logo-icon">AB</span>
-            <span>AB Production</span>
+            <span>AB Team</span>
           </a>
           <p>Шаблонные мини-приложения с&nbsp;меню для ресторанов. Заказы прямо в мессенджер.</p>
         </div>
@@ -26,7 +26,7 @@
           </div>
           <div class="col">
             <h4>Связаться</h4>
-            <a href="#">hello@ab-production.ru</a>
+            <a href="#">hello@ab-team.ru</a>
             <a href="#">+7 (800) 123-45-67</a>
             <div class="socials">
               <a href="#" class="social" aria-label="Telegram">
@@ -41,7 +41,7 @@
       </div>
 
       <div class="footer-bottom">
-        <span>&copy; 2025 AB Production. Все права защищены.</span>
+        <span>&copy; 2025 AB Team. Все права защищены.</span>
         <div class="legal">
           <a href="#">Политика конфиденциальности</a>
           <a href="#">Оферта</a>

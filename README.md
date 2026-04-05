@@ -1,4 +1,4 @@
-# AB Production
+# AB Team
 
 Платформа для создания шаблонных мини-приложений с цифровым меню для малого ресторанного бизнеса. Клиенты сканируют QR-код, просматривают меню и отправляют заказ прямо в мессенджер ресторана (Telegram, WhatsApp).
 
@@ -150,9 +150,9 @@ VITE_API_URL=http://your-server:8080
 |------------|-------------|----------|
 | `DB_HOST` | localhost | Хост PostgreSQL |
 | `DB_PORT` | 5432 | Порт PostgreSQL |
-| `DB_USER` | abproduction | Пользователь БД |
-| `DB_PASSWORD` | abproduction | Пароль БД |
-| `DB_NAME` | abproduction | Имя базы данных |
+| `DB_USER` | abteam | Пользователь БД |
+| `DB_PASSWORD` | abteam | Пароль БД |
+| `DB_NAME` | abteam | Имя базы данных |
 | `DB_SSLMODE` | disable | SSL режим |
 | `JWT_SECRET` | change-me | Секрет для JWT токенов |
 | `SERVER_PORT` | 8080 | Порт API сервера |

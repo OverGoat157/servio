@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/jmoiron/sqlx"
-	"ab-production/internal/model"
+	"ab-team/internal/model"
 )
 
 type RestaurantRepo struct {

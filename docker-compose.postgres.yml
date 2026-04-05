@@ -1,13 +1,13 @@
 services:
-  # PostgreSQL — база данных AB Production
+  # PostgreSQL — база данных AB Team
   postgres:
     image: postgres:16-alpine
-    container_name: ab-production-postgres
+    container_name: ab-team-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: abproduction
+      POSTGRES_USER: abteam
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: abproduction
+      POSTGRES_DB: abteam
     ports:
       - "5432:5432"
     volumes:
@@ -22,9 +22,9 @@ services:
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: abproduction
+      DB_USER: abteam
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: abproduction
+      DB_NAME: abteam
       DB_SSLMODE: disable
       JWT_SECRET: ${JWT_SECRET}
       SERVER_PORT: 8080

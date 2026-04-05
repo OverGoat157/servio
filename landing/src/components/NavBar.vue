@@ -20,7 +20,7 @@ function close() {
     <div class="container nav-inner">
       <a href="#" class="logo">
         <span class="logo-icon">AB</span>
-        <span>AB Production</span>
+        <span>AB Team</span>
       </a>
 
       <nav class="nav-links">

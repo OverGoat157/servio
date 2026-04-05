@@ -1,4 +1,4 @@
-module ab-production
+module ab-team
 
 go 1.26.1
 

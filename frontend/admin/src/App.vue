@@ -23,7 +23,7 @@ function handleLogout() {
     <div class="nav-inner">
       <router-link to="/" class="nav-brand">
         <span class="nav-logo">AB</span>
-        <span>AB Production</span>
+        <span>AB Team</span>
       </router-link>
       <div class="nav-right">
         <span class="nav-user" v-if="user">{{ user.name }}</span>

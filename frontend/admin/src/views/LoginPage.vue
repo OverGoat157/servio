@@ -28,7 +28,7 @@ async function handleSubmit() {
     <div class="auth-card card">
       <div class="auth-header">
         <div class="auth-logo">AB</div>
-        <h1>Вход в AB Production</h1>
+        <h1>Вход в AB Team</h1>
         <p>Управляйте ресторанами и меню</p>
       </div>
 

@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"ab-production/internal/model"
+	"ab-team/internal/model"
 )
 
 // TelegramConfig — настройки для Telegram-бота
