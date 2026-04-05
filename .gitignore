@@ -28,5 +28,8 @@ Thumbs.db
 *.log
 npm-debug.log*
 
+# Screenshots
+screens/
+
 # Claude Code
 .claude/
