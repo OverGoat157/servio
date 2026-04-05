@@ -1,0 +1,6 @@
+services:
+  landing:
+    build: ./landing
+    restart: unless-stopped
+    ports:
+      - "5173:80"
