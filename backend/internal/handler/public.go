@@ -7,9 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"servio/internal/model"
-	"servio/internal/repository"
-	"servio/internal/service"
+	"ab-production/internal/model"
+	"ab-production/internal/repository"
+	"ab-production/internal/service"
 )
 
 type PublicHandler struct {

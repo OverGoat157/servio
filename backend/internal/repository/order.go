@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/jmoiron/sqlx"
-	"servio/internal/model"
+	"ab-production/internal/model"
 )
 
 type OrderRepo struct {

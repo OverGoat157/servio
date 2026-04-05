@@ -5,10 +5,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"servio/internal/config"
-	"servio/internal/handler"
-	"servio/internal/middleware"
-	"servio/internal/repository"
+	"ab-production/internal/config"
+	"ab-production/internal/handler"
+	"ab-production/internal/middleware"
+	"ab-production/internal/repository"
 )
 
 func main() {

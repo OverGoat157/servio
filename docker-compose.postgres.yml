@@ -1,13 +1,13 @@
 services:
-  # PostgreSQL — база данных Servio
+  # PostgreSQL — база данных AB Production
   postgres:
     image: postgres:16-alpine
-    container_name: servio-postgres
+    container_name: ab-production-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: servio
+      POSTGRES_USER: abproduction
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: servio
+      POSTGRES_DB: abproduction
     ports:
       - "5432:5432"
     volumes:
@@ -22,9 +22,9 @@ services:
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: servio
+      DB_USER: abproduction
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: servio
+      DB_NAME: abproduction
       DB_SSLMODE: disable
       JWT_SECRET: ${JWT_SECRET}
       SERVER_PORT: 8080

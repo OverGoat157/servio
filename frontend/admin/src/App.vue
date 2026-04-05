@@ -22,8 +22,8 @@ function handleLogout() {
   <nav class="navbar" v-if="isAuthenticated">
     <div class="nav-inner">
       <router-link to="/" class="nav-brand">
-        <span class="nav-logo">S</span>
-        <span>Servio</span>
+        <span class="nav-logo">AB</span>
+        <span>AB Production</span>
       </router-link>
       <div class="nav-right">
         <span class="nav-user" v-if="user">{{ user.name }}</span>

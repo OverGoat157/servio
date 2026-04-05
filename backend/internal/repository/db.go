@@ -6,7 +6,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"servio/internal/config"
+	"ab-production/internal/config"
 )
 
 func NewDB(cfg *config.Config) (*sqlx.DB, error) {

@@ -1,4 +1,4 @@
-module servio
+module ab-production
 
 go 1.26.1
 
