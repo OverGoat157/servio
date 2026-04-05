@@ -1,32 +1,13 @@
 <script setup>
 const plans = [
   {
-    name: 'Старт',
-    price: 'Бесплатно',
-    period: '',
-    desc: 'Для тех, кто хочет попробовать',
-    features: ['1 мини-приложение', 'До 30 позиций в меню', '1 мессенджер', 'Базовый шаблон', 'QR-код для печати'],
-    cta: 'Начать бесплатно',
-    featured: false,
-  },
-  {
     name: 'Бизнес',
-    price: '1 490 ₽',
-    period: '/ мес',
-    desc: 'Всё для полноценной работы',
-    features: ['До 3 мини-приложений', 'Безлимитное меню', 'Все мессенджеры', 'Премиум шаблоны', 'Свой логотип и цвета', 'Аналитика заказов'],
-    cta: 'Подключить',
+    price: '10 000 ₽',
+    period: '',
+    desc: 'Полная настройка мини-приложения под ваш бизнес',
+    features: ['Мини-приложение с меню', 'Безлимитное меню', 'Все мессенджеры', 'Индивидуальный дизайн', 'QR-код для печати', 'Техническая поддержка'],
+    cta: 'Оставить заявку',
     featured: true,
-    badge: 'Популярный',
-  },
-  {
-    name: 'Сеть',
-    price: '3 990 ₽',
-    period: '/ мес',
-    desc: 'Для сетей ресторанов и кафе',
-    features: ['Безлимит приложений', 'Безлимитное меню', 'Все мессенджеры', 'Индивидуальный дизайн', 'API-интеграции', 'Приоритетная поддержка'],
-    cta: 'Связаться',
-    featured: false,
   },
 ]
 </script>
@@ -71,10 +52,9 @@ const plans = [
 }
 
 .plans {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  justify-content: center;
   gap: 24px;
-  align-items: start;
 }
 
 .plan {
@@ -161,20 +141,9 @@ const plans = [
   width: 100%;
 }
 
-@media (max-width: 1024px) {
-  .plans {
-    grid-template-columns: 1fr;
-    max-width: 400px;
-    margin: 0 auto;
-  }
-
-  .plan.featured {
-    transform: none;
-  }
-
-  .plan.featured:hover {
-    transform: translateY(-4px);
-  }
+.plan {
+  max-width: 400px;
+  width: 100%;
 }
 
 @media (max-width: 768px) {
