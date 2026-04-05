@@ -34,7 +34,7 @@ func (h *MessengerHandler) checkOwnership(c *gin.Context, restaurantID int64) bo
 }
 
 func (h *MessengerHandler) List(c *gin.Context) {
-	restaurantID, err := strconv.ParseInt(c.Param("restaurantId"), 10, 64)
+	restaurantID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid restaurant_id"})
 		return
@@ -54,7 +54,7 @@ func (h *MessengerHandler) List(c *gin.Context) {
 }
 
 func (h *MessengerHandler) Upsert(c *gin.Context) {
-	restaurantID, err := strconv.ParseInt(c.Param("restaurantId"), 10, 64)
+	restaurantID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid restaurant_id"})
 		return
@@ -80,7 +80,7 @@ func (h *MessengerHandler) Upsert(c *gin.Context) {
 }
 
 func (h *MessengerHandler) Delete(c *gin.Context) {
-	restaurantID, err := strconv.ParseInt(c.Param("restaurantId"), 10, 64)
+	restaurantID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid restaurant_id"})
 		return

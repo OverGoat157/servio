@@ -40,7 +40,7 @@ func (h *MenuItemHandler) checkCategoryOwnership(c *gin.Context, categoryID int6
 }
 
 func (h *MenuItemHandler) Create(c *gin.Context) {
-	categoryID, err := strconv.ParseInt(c.Param("categoryId"), 10, 64)
+	categoryID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid category_id"})
 		return
@@ -66,7 +66,7 @@ func (h *MenuItemHandler) Create(c *gin.Context) {
 }
 
 func (h *MenuItemHandler) List(c *gin.Context) {
-	categoryID, err := strconv.ParseInt(c.Param("categoryId"), 10, 64)
+	categoryID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid category_id"})
 		return

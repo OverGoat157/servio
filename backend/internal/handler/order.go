@@ -20,7 +20,7 @@ func NewOrderHandler(orders *repository.OrderRepo, restaurants *repository.Resta
 }
 
 func (h *OrderHandler) List(c *gin.Context) {
-	restaurantID, err := strconv.ParseInt(c.Param("restaurantId"), 10, 64)
+	restaurantID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid restaurant_id"})
 		return

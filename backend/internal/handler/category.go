@@ -34,7 +34,7 @@ func (h *CategoryHandler) checkOwnership(c *gin.Context, restaurantID int64) boo
 }
 
 func (h *CategoryHandler) Create(c *gin.Context) {
-	restaurantID, err := strconv.ParseInt(c.Param("restaurantId"), 10, 64)
+	restaurantID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid restaurant_id"})
 		return
@@ -60,7 +60,7 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 }
 
 func (h *CategoryHandler) List(c *gin.Context) {
-	restaurantID, err := strconv.ParseInt(c.Param("restaurantId"), 10, 64)
+	restaurantID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid restaurant_id"})
 		return

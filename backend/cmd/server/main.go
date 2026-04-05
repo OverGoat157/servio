@@ -71,25 +71,25 @@ func main() {
 		api.DELETE("/restaurants/:id", restH.Delete)
 
 		// Categories
-		api.POST("/restaurants/:restaurantId/categories", catH.Create)
-		api.GET("/restaurants/:restaurantId/categories", catH.List)
+		api.POST("/restaurants/:id/categories", catH.Create)
+		api.GET("/restaurants/:id/categories", catH.List)
 		api.PUT("/categories/:id", catH.Update)
 		api.DELETE("/categories/:id", catH.Delete)
 
 		// Menu items
-		api.POST("/categories/:categoryId/items", itemH.Create)
-		api.GET("/categories/:categoryId/items", itemH.List)
+		api.POST("/categories/:id/items", itemH.Create)
+		api.GET("/categories/:id/items", itemH.List)
 		api.PUT("/items/:id", itemH.Update)
 		api.DELETE("/items/:id", itemH.Delete)
 
 		// Orders
-		api.GET("/restaurants/:restaurantId/orders", orderH.List)
+		api.GET("/restaurants/:id/orders", orderH.List)
 		api.PATCH("/orders/:id/status", orderH.UpdateStatus)
 
 		// Messengers
-		api.GET("/restaurants/:restaurantId/messengers", msgH.List)
-		api.POST("/restaurants/:restaurantId/messengers", msgH.Upsert)
-		api.DELETE("/restaurants/:restaurantId/messengers/:type", msgH.Delete)
+		api.GET("/restaurants/:id/messengers", msgH.List)
+		api.POST("/restaurants/:id/messengers", msgH.Upsert)
+		api.DELETE("/restaurants/:id/messengers/:type", msgH.Delete)
 	}
 
 	log.Printf("Server starting on :%s", cfg.ServerPort)
