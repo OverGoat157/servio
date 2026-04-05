@@ -15,8 +15,8 @@
             <div class="phone-bar"><span>12:30</span></div>
             <div class="phone-body" style="background: linear-gradient(180deg, #1F2937 0%, #374151 50%, #fff 50%)">
               <div class="s1-header">
-                <div class="s1-name">Ricco</div>
-                <div class="s1-sub">Ресторан изысканной кухни</div>
+                <div class="s1-name">AB Team</div>
+                <div class="s1-sub">Автоматизация вашего бизнеса</div>
               </div>
               <div class="s1-card">
                 <div class="s1-label">РЕЖИМ РАБОТЫ</div>

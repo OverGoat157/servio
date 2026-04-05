@@ -73,11 +73,11 @@ async function deleteRestaurant(id) {
         <form @submit.prevent="createRestaurant">
           <div class="field">
             <label class="label">Название</label>
-            <input v-model="form.name" class="input" placeholder="Ricco" required @input="generateSlug" />
+            <input v-model="form.name" class="input" placeholder="Мой ресторан" required @input="generateSlug" />
           </div>
           <div class="field">
             <label class="label">Slug (для ссылки)</label>
-            <input v-model="form.slug" class="input" placeholder="ricco" required pattern="[a-z0-9\-]+" />
+            <input v-model="form.slug" class="input" placeholder="my-restaurant" required pattern="[a-z0-9\-]+" />
             <div class="hint">Меню будет доступно по адресу: /{{ form.slug || '...' }}</div>
           </div>
           <div class="field">

@@ -46,8 +46,8 @@ const menu = [
           <div class="phone-notch" />
           <div class="screen">
             <div class="screen-head">
-              <div class="rest-name">Ricco</div>
-              <div class="rest-sub">Ресторан изысканной кухни</div>
+              <div class="rest-name">AB Team</div>
+              <div class="rest-sub">Автоматизация вашего бизнеса</div>
             </div>
             <div class="screen-body">
               <div class="cat">Популярное</div>
