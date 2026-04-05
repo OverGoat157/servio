@@ -18,7 +18,7 @@ onMounted(async () => {
 async function loadList() {
   loading.value = true
   try {
-    list.value = await api.list()
+    list.value = await api.list() || []
   } catch { /* empty */ }
   loading.value = false
 }
