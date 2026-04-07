@@ -125,6 +125,10 @@ async function deleteRestaurant(id) {
         </div>
         <p class="rest-desc" v-if="r.description">{{ r.description }}</p>
         <div class="rest-actions">
+          <a :href="'https://menu.ab-team.ru/' + r.slug" target="_blank" class="btn btn-accent btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+            Сайт
+          </a>
           <router-link :to="{ name: 'menu', params: { id: r.id } }" class="btn btn-primary btn-sm">Меню</router-link>
           <router-link :to="{ name: 'orders', params: { id: r.id } }" class="btn btn-outline btn-sm">Заказы</router-link>
           <router-link :to="{ name: 'messengers', params: { id: r.id } }" class="btn btn-outline btn-sm">Мессенджеры</router-link>
@@ -281,6 +285,19 @@ async function deleteRestaurant(id) {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.btn-accent {
+  background: #EFF6FF;
+  color: #2167C7;
+  border: 1px solid #BFDBFE;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-accent:hover {
+  background: #DBEAFE;
 }
 
 .delete-btn {
