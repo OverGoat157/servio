@@ -93,6 +93,21 @@ func (h *RestaurantHandler) Update(c *gin.Context) {
 		return
 	}
 
+	// Delete old uploaded files when replaced
+	if req.Logo != nil && *req.Logo != "" && rest.Logo != nil && *rest.Logo != *req.Logo {
+		DeleteFile(*rest.Logo)
+	}
+	if req.CoverImage != nil && *req.CoverImage != "" && rest.CoverImage != nil && *rest.CoverImage != *req.CoverImage {
+		DeleteFile(*rest.CoverImage)
+	}
+	// Delete old files when cleared
+	if req.Logo != nil && *req.Logo == "" && rest.Logo != nil {
+		DeleteFile(*rest.Logo)
+	}
+	if req.CoverImage != nil && *req.CoverImage == "" && rest.CoverImage != nil {
+		DeleteFile(*rest.CoverImage)
+	}
+
 	updated, err := h.restaurants.Update(id, &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update"})

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { restaurants as api } from '../api/client'
+import { restaurants as api, uploadFile } from '../api/client'
 
 const route = useRoute()
 const router = useRouter()
@@ -11,6 +11,7 @@ const rest = ref(null)
 const loading = ref(true)
 const saving = ref(false)
 const success = ref(false)
+const error = ref('')
 
 const form = ref({
   name: '',
@@ -20,9 +21,13 @@ const form = ref({
   working_hours: '',
   theme: '',
   cover_image: '',
+  logo: '',
   promo_title: '',
   promo_description: '',
 })
+
+const uploadingLogo = ref(false)
+const uploadingCover = ref(false)
 
 onMounted(async () => {
   try {
@@ -36,6 +41,7 @@ onMounted(async () => {
       working_hours: data.working_hours ? JSON.stringify(data.working_hours) : '',
       theme: data.theme,
       cover_image: data.cover_image || '',
+      logo: data.logo || '',
       promo_title: data.promo_title || '',
       promo_description: data.promo_description || '',
     }
@@ -45,14 +51,36 @@ onMounted(async () => {
   loading.value = false
 })
 
+async function handleUpload(field, event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+
+  const uploading = field === 'logo' ? uploadingLogo : uploadingCover
+  uploading.value = true
+  try {
+    const { url } = await uploadFile(file)
+    form.value[field] = url
+  } catch (e) {
+    error.value = 'Ошибка загрузки: ' + e.message
+  }
+  uploading.value = false
+}
+
+function clearImage(field) {
+  form.value[field] = ''
+}
+
 async function save() {
   saving.value = true
   success.value = false
+  error.value = ''
   try {
     await api.update(id, form.value)
     success.value = true
     setTimeout(() => success.value = false, 2000)
-  } catch { /* empty */ }
+  } catch (e) {
+    error.value = 'Ошибка сохранения: ' + e.message
+  }
   saving.value = false
 }
 </script>
@@ -97,10 +125,40 @@ async function save() {
           <label class="label">Адрес</label>
           <input v-model="form.address" class="input" placeholder="г. Москва, ул. Тверская, 1" />
         </div>
+
+        <div class="divider"></div>
+
+        <!-- Логотип -->
         <div class="field">
-          <label class="label">Фото обложки (URL)</label>
-          <input v-model="form.cover_image" class="input" placeholder="https://example.com/photo.jpg" />
-          <div class="hint">Ссылка на фото ресторана для фона на главной странице</div>
+          <label class="label">Логотип</label>
+          <div class="upload-area">
+            <div class="preview" v-if="form.logo">
+              <img :src="form.logo" alt="Логотип" />
+              <button type="button" class="preview-remove" @click="clearImage('logo')">×</button>
+            </div>
+            <label class="upload-btn" v-else>
+              <input type="file" accept="image/*" hidden @change="handleUpload('logo', $event)" />
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              {{ uploadingLogo ? 'Загрузка...' : 'Загрузить логотип' }}
+            </label>
+          </div>
+        </div>
+
+        <!-- Обложка -->
+        <div class="field">
+          <label class="label">Фото обложки</label>
+          <div class="upload-area">
+            <div class="preview preview-wide" v-if="form.cover_image">
+              <img :src="form.cover_image" alt="Обложка" />
+              <button type="button" class="preview-remove" @click="clearImage('cover_image')">×</button>
+            </div>
+            <label class="upload-btn" v-else>
+              <input type="file" accept="image/*" hidden @change="handleUpload('cover_image', $event)" />
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              {{ uploadingCover ? 'Загрузка...' : 'Загрузить обложку' }}
+            </label>
+          </div>
+          <div class="hint">Фон за названием на главной странице ресторана</div>
         </div>
 
         <div class="divider"></div>
@@ -120,6 +178,8 @@ async function save() {
           <textarea v-model="form.working_hours" class="input textarea" rows="4" placeholder='{"Пн — Пт": "10:00 — 22:00", "Сб — Вс": "11:00 — 23:00"}'></textarea>
           <div class="hint">Формат JSON: {"день": "время", ...}</div>
         </div>
+
+        <div class="error-msg" v-if="error">{{ error }}</div>
 
         <div class="form-footer">
           <div class="success-msg" v-if="success">Сохранено!</div>
@@ -187,6 +247,94 @@ async function save() {
   margin-top: 4px;
 }
 
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+/* Upload */
+.upload-area {
+  display: flex;
+  gap: 12px;
+}
+
+.upload-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-secondary);
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.upload-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.preview {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-wide {
+  width: 160px;
+  height: 90px;
+}
+
+.preview-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  line-height: 1;
+}
+
+.preview-remove:hover {
+  background: rgba(220,38,38,0.8);
+}
+
+/* Messages */
+.error-msg {
+  padding: 10px 14px;
+  background: #FEE2E2;
+  color: #DC2626;
+  border-radius: var(--radius);
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
 .form-footer {
   display: flex;
   align-items: center;
@@ -199,18 +347,6 @@ async function save() {
   font-size: 14px;
   color: var(--success);
   font-weight: 600;
-}
-
-.divider {
-  height: 1px;
-  background: var(--border);
-  margin: 8px 0;
-}
-
-.section-title {
-  font-size: 15px;
-  font-weight: 700;
-  margin-bottom: 4px;
 }
 
 @media (max-width: 640px) {

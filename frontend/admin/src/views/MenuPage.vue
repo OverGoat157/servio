@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { restaurants as restApi, categories as catApi, menuItems as itemApi } from '../api/client'
+import { restaurants as restApi, categories as catApi, menuItems as itemApi, uploadFile } from '../api/client'
 
 const route = useRoute()
 const router = useRouter()
@@ -18,9 +18,10 @@ const editingCatId = ref(null)
 
 // Item form
 const showItemForm = ref(false)
-const itemForm = ref({ name: '', description: '', price: '', sort_order: 0 })
+const itemForm = ref({ name: '', description: '', price: '', sort_order: 0, image: '' })
 const editingItemId = ref(null)
 const targetCatId = ref(null)
+const uploadingItemImage = ref(false)
 
 onMounted(async () => {
   try {
@@ -79,10 +80,11 @@ function openItemForm(catId, item = null) {
       description: item.description || '',
       price: String(item.price / 100),
       sort_order: item.sort_order,
+      image: item.image || '',
     }
   } else {
     editingItemId.value = null
-    itemForm.value = { name: '', description: '', price: '', sort_order: 0 }
+    itemForm.value = { name: '', description: '', price: '', sort_order: 0, image: '' }
   }
   showItemForm.value = true
 }
@@ -105,6 +107,17 @@ async function deleteItem(itemId) {
   if (!confirm('Удалить позицию?')) return
   await itemApi.delete(itemId)
   await loadCategories()
+}
+
+async function handleItemImage(event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+  uploadingItemImage.value = true
+  try {
+    const { url } = await uploadFile(file)
+    itemForm.value.image = url
+  } catch { /* empty */ }
+  uploadingItemImage.value = false
 }
 
 function formatPrice(kopecks) {
@@ -156,6 +169,9 @@ function formatPrice(kopecks) {
 
         <div class="items-list" v-if="cat.items?.length">
           <div class="item-row" v-for="item in cat.items" :key="item.id">
+            <div class="item-thumb" v-if="item.image">
+              <img :src="item.image" :alt="item.name" />
+            </div>
             <div class="item-info">
               <span class="item-name">{{ item.name }}</span>
               <span class="item-desc" v-if="item.description">{{ item.description }}</span>
@@ -206,6 +222,20 @@ function formatPrice(kopecks) {
       <div class="modal card">
         <h2>{{ editingItemId ? 'Редактировать позицию' : 'Новая позиция' }}</h2>
         <form @submit.prevent="saveItem">
+          <div class="field">
+            <label class="label">Фото блюда</label>
+            <div class="upload-area">
+              <div class="img-preview" v-if="itemForm.image">
+                <img :src="itemForm.image" alt="" />
+                <button type="button" class="img-remove" @click="itemForm.image = ''">×</button>
+              </div>
+              <label class="upload-btn" v-else>
+                <input type="file" accept="image/*" hidden @change="handleItemImage" />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                {{ uploadingItemImage ? 'Загрузка...' : 'Загрузить фото' }}
+              </label>
+            </div>
+          </div>
           <div class="field">
             <label class="label">Название</label>
             <input v-model="itemForm.name" class="input" placeholder="Том Ям" required />
@@ -425,5 +455,81 @@ function formatPrice(kopecks) {
   gap: 10px;
   justify-content: flex-end;
   margin-top: 20px;
+}
+
+/* Thumbnails */
+.item-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.item-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Upload in modal */
+.upload-area {
+  display: flex;
+  gap: 10px;
+}
+
+.upload-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-secondary);
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.upload-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.img-preview {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.img-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.img-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  line-height: 1;
+}
+
+.img-remove:hover {
+  background: rgba(220,38,38,0.8);
 }
 </style>

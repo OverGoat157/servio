@@ -108,6 +108,11 @@ func (h *MenuItemHandler) Update(c *gin.Context) {
 		return
 	}
 
+	// Delete old image when replaced or cleared
+	if req.Image != nil && item.Image != nil && *req.Image != *item.Image {
+		DeleteFile(*item.Image)
+	}
+
 	updated, err := h.items.Update(id, &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update"})
@@ -132,6 +137,11 @@ func (h *MenuItemHandler) Delete(c *gin.Context) {
 
 	if !h.checkCategoryOwnership(c, item.CategoryID) {
 		return
+	}
+
+	// Delete image file
+	if item.Image != nil {
+		DeleteFile(*item.Image)
 	}
 
 	if err := h.items.Delete(id); err != nil {

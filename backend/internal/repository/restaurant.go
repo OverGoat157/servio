@@ -50,16 +50,20 @@ func (r *RestaurantRepo) Update(id int64, req *model.UpdateRestaurantRequest) (*
 		`UPDATE restaurants SET
 			name = COALESCE($2, name),
 			description = COALESCE($3, description),
-			phone = COALESCE($4, phone),
-			address = COALESCE($5, address),
-			working_hours = COALESCE($6, working_hours),
-			theme = COALESCE($7, theme),
-			cover_image = COALESCE($8, cover_image),
-			promo_title = COALESCE($9, promo_title),
-			promo_description = COALESCE($10, promo_description)
+			logo = COALESCE($4, logo),
+			phone = COALESCE($5, phone),
+			address = COALESCE($6, address),
+			working_hours = COALESCE($7, working_hours),
+			theme = COALESCE($8, theme),
+			cover_image = COALESCE($9, cover_image),
+			promo_title = COALESCE($10, promo_title),
+			promo_description = COALESCE($11, promo_description)
 		 WHERE id = $1 RETURNING *`,
-		id, req.Name, req.Description, req.Phone, req.Address, req.WorkingHours, req.Theme,
-		req.CoverImage, req.PromoTitle, req.PromoDescription,
+		id, emptyPtrToNil(req.Name), emptyPtrToNil(req.Description),
+		emptyPtrToNil(req.Logo), emptyPtrToNil(req.Phone),
+		emptyPtrToNil(req.Address), emptyPtrToNil(req.WorkingHours),
+		emptyPtrToNil(req.Theme), emptyPtrToNil(req.CoverImage),
+		emptyPtrToNil(req.PromoTitle), emptyPtrToNil(req.PromoDescription),
 	).StructScan(rest)
 	return rest, err
 }
@@ -74,4 +78,13 @@ func nullStr(s string) *string {
 		return nil
 	}
 	return &s
+}
+
+// emptyPtrToNil converts a pointer to an empty string to nil.
+// Prevents JSONB and other typed columns from receiving empty strings.
+func emptyPtrToNil(s *string) *string {
+	if s != nil && *s == "" {
+		return nil
+	}
+	return s
 }

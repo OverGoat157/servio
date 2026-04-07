@@ -40,9 +40,13 @@ func main() {
 	orderH := handler.NewOrderHandler(orderRepo, restRepo)
 	msgH := handler.NewMessengerHandler(msgRepo, restRepo)
 	publicH := handler.NewPublicHandler(restRepo, catRepo, itemRepo, orderRepo, msgRepo)
+	uploadH := handler.NewUploadHandler()
 
 	r := gin.Default()
 	r.Use(middleware.CORS())
+
+	// Static files — uploaded images
+	r.Static("/uploads", "./uploads")
 
 	// --- Public API (без авторизации) ---
 	pub := r.Group("/api/public")
@@ -62,6 +66,7 @@ func main() {
 	api := r.Group("/api", middleware.AuthRequired(cfg.JWTSecret))
 	{
 		api.GET("/me", authH.Me)
+		api.POST("/upload", uploadH.Upload)
 
 		// Restaurants
 		api.POST("/restaurants", restH.Create)

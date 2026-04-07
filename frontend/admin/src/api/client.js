@@ -21,6 +21,23 @@ async function request(path, options = {}) {
   return data
 }
 
+// Upload
+export async function uploadFile(file) {
+  const form = new FormData()
+  form.append('file', file)
+  const token = getToken()
+  const res = await fetch(`${API_BASE}/api/upload`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  })
+  if (!res.ok) {
+    const data = await res.json()
+    throw new Error(data.error || 'Upload failed')
+  }
+  return res.json()
+}
+
 // Auth
 export const auth = {
   register: (body) => request('/api/auth/register', { method: 'POST', body: JSON.stringify(body) }),
