@@ -20,13 +20,19 @@ func NewDB(cfg *config.Config) (*sqlx.DB, error) {
 }
 
 func RunMigrations(db *sqlx.DB) error {
-	data, err := os.ReadFile("migrations/001_init.up.sql")
-	if err != nil {
-		return fmt.Errorf("reading migration file: %w", err)
+	files := []string{
+		"migrations/001_init.up.sql",
+		"migrations/002_restaurant_cover_promo.up.sql",
 	}
-	_, err = db.Exec(string(data))
-	if err != nil {
-		return fmt.Errorf("executing migration: %w", err)
+	for _, f := range files {
+		data, err := os.ReadFile(f)
+		if err != nil {
+			return fmt.Errorf("reading migration %s: %w", f, err)
+		}
+		_, err = db.Exec(string(data))
+		if err != nil {
+			return fmt.Errorf("executing migration %s: %w", f, err)
+		}
 	}
 	return nil
 }

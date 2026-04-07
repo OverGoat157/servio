@@ -19,6 +19,9 @@ const form = ref({
   address: '',
   working_hours: '',
   theme: '',
+  cover_image: '',
+  promo_title: '',
+  promo_description: '',
 })
 
 onMounted(async () => {
@@ -32,6 +35,9 @@ onMounted(async () => {
       address: data.address || '',
       working_hours: data.working_hours ? JSON.stringify(data.working_hours) : '',
       theme: data.theme,
+      cover_image: data.cover_image || '',
+      promo_title: data.promo_title || '',
+      promo_description: data.promo_description || '',
     }
   } catch {
     router.push({ name: 'dashboard' })
@@ -91,6 +97,24 @@ async function save() {
           <label class="label">Адрес</label>
           <input v-model="form.address" class="input" placeholder="г. Москва, ул. Тверская, 1" />
         </div>
+        <div class="field">
+          <label class="label">Фото обложки (URL)</label>
+          <input v-model="form.cover_image" class="input" placeholder="https://example.com/photo.jpg" />
+          <div class="hint">Ссылка на фото ресторана для фона на главной странице</div>
+        </div>
+
+        <div class="divider"></div>
+        <h3 class="section-title">Акция / Спецпредложение</h3>
+        <div class="field">
+          <label class="label">Заголовок акции</label>
+          <input v-model="form.promo_title" class="input" placeholder="Бизнес-ланч за 350 ₽" />
+        </div>
+        <div class="field">
+          <label class="label">Описание акции</label>
+          <textarea v-model="form.promo_description" class="input textarea" rows="2" placeholder="Каждый будний день с 12:00 до 15:00"></textarea>
+        </div>
+
+        <div class="divider"></div>
         <div class="field">
           <label class="label">Часы работы (JSON)</label>
           <textarea v-model="form.working_hours" class="input textarea" rows="4" placeholder='{"Пн — Пт": "10:00 — 22:00", "Сб — Вс": "11:00 — 23:00"}'></textarea>
@@ -175,6 +199,18 @@ async function save() {
   font-size: 14px;
   color: var(--success);
   font-weight: 600;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
 }
 
 @media (max-width: 640px) {

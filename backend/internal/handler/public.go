@@ -52,17 +52,20 @@ type PublicMenuItem struct {
 }
 
 type PublicRestaurant struct {
-	ID           int64          `json:"id"`
-	Name         string         `json:"name"`
-	Slug         string         `json:"slug"`
-	Description  *string        `json:"description"`
-	Logo         *string        `json:"logo"`
-	Phone        *string        `json:"phone"`
-	Address      *string        `json:"address"`
-	WorkingHours json.RawMessage `json:"working_hours"`
-	Theme        string         `json:"theme"`
-	Categories   []MenuCategory `json:"categories"`
-	Messengers   []string       `json:"messengers"`
+	ID               int64           `json:"id"`
+	Name             string          `json:"name"`
+	Slug             string          `json:"slug"`
+	Description      *string         `json:"description"`
+	Logo             *string         `json:"logo"`
+	CoverImage       *string         `json:"cover_image"`
+	Phone            *string         `json:"phone"`
+	Address          *string         `json:"address"`
+	WorkingHours     json.RawMessage `json:"working_hours"`
+	Theme            string          `json:"theme"`
+	PromoTitle       *string         `json:"promo_title"`
+	PromoDescription *string         `json:"promo_description"`
+	Categories       []MenuCategory  `json:"categories"`
+	Messengers       []string        `json:"messengers"`
 }
 
 // GetMenu возвращает полное меню ресторана по slug
@@ -117,16 +120,19 @@ func (h *PublicHandler) GetMenu(c *gin.Context) {
 	}
 
 	pub := PublicRestaurant{
-		ID:          rest.ID,
-		Name:        rest.Name,
-		Slug:        rest.Slug,
-		Description: rest.Description,
-		Logo:        rest.Logo,
-		Phone:       rest.Phone,
-		Address:     rest.Address,
-		Theme:       rest.Theme,
-		Categories:  menuCats,
-		Messengers:  messengers,
+		ID:               rest.ID,
+		Name:             rest.Name,
+		Slug:             rest.Slug,
+		Description:      rest.Description,
+		Logo:             rest.Logo,
+		CoverImage:       rest.CoverImage,
+		Phone:            rest.Phone,
+		Address:          rest.Address,
+		Theme:            rest.Theme,
+		PromoTitle:       rest.PromoTitle,
+		PromoDescription: rest.PromoDescription,
+		Categories:       menuCats,
+		Messengers:       messengers,
 	}
 
 	if rest.WorkingHours != nil {

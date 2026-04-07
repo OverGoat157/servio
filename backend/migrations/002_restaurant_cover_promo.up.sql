@@ -1,0 +1,3 @@
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS cover_image VARCHAR(512);
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS promo_title VARCHAR(255);
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS promo_description TEXT;

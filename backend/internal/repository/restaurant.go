@@ -16,11 +16,12 @@ func NewRestaurantRepo(db *sqlx.DB) *RestaurantRepo {
 func (r *RestaurantRepo) Create(userID int64, req *model.CreateRestaurantRequest) (*model.Restaurant, error) {
 	rest := &model.Restaurant{}
 	err := r.db.QueryRowx(
-		`INSERT INTO restaurants (user_id, name, slug, description, phone, address, working_hours, theme)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, COALESCE(NULLIF($8,''), 'default'))
+		`INSERT INTO restaurants (user_id, name, slug, description, phone, address, working_hours, theme, cover_image, promo_title, promo_description)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, COALESCE(NULLIF($8,''), 'default'), $9, $10, $11)
 		 RETURNING *`,
 		userID, req.Name, req.Slug, nullStr(req.Description), nullStr(req.Phone),
 		nullStr(req.Address), nullStr(req.WorkingHours), req.Theme,
+		nullStr(req.CoverImage), nullStr(req.PromoTitle), nullStr(req.PromoDescription),
 	).StructScan(rest)
 	return rest, err
 }
@@ -52,9 +53,13 @@ func (r *RestaurantRepo) Update(id int64, req *model.UpdateRestaurantRequest) (*
 			phone = COALESCE($4, phone),
 			address = COALESCE($5, address),
 			working_hours = COALESCE($6, working_hours),
-			theme = COALESCE($7, theme)
+			theme = COALESCE($7, theme),
+			cover_image = COALESCE($8, cover_image),
+			promo_title = COALESCE($9, promo_title),
+			promo_description = COALESCE($10, promo_description)
 		 WHERE id = $1 RETURNING *`,
 		id, req.Name, req.Description, req.Phone, req.Address, req.WorkingHours, req.Theme,
+		req.CoverImage, req.PromoTitle, req.PromoDescription,
 	).StructScan(rest)
 	return rest, err
 }
