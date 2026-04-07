@@ -1,15 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 :root {
-  --primary: #2167C7;
-  --primary-light: #E3EFFF;
+  --primary: #3a3a3a;
+  --primary-foreground: #f8f8f8;
+  --accent: #2167C7;
   --bg: #ffffff;
-  --bg-secondary: #F5F7FA;
-  --text: #1A1A1A;
-  --text-secondary: #6B7280;
-  --border: #E5E7EB;
+  --bg-secondary: #f5f5f7;
+  --bg-tertiary: #ebebf0;
+  --text: #222222;
+  --text-secondary: #8c8c8c;
+  --text-muted: #c4c4c4;
+  --border: #e5e5e5;
+  --danger: #ff2d39;
+  --success: #22c55e;
   --radius: 12px;
+  --radius-sm: 8px;
   --radius-lg: 16px;
-  --shadow: 0 2px 8px rgba(0,0,0,0.08);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
   --ease: 0.2s ease;
 }
 
@@ -20,19 +29,23 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
   color: var(--text);
   background: var(--bg-secondary);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  touch-action: manipulation;
+  overscroll-behavior: none;
 }
 
 #app {
-  max-width: 480px;
+  max-width: 520px;
   margin: 0 auto;
   background: var(--bg);
   min-height: 100vh;
   position: relative;
+  overflow-x: hidden;
 }
 
 a {
@@ -54,4 +67,8 @@ img {
 
 ul {
   list-style: none;
+}
+
+input, textarea, select {
+  font-family: inherit;
 }
