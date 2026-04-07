@@ -26,7 +26,7 @@ const waSuccess = ref(false)
 onMounted(async () => {
   try {
     rest.value = await restApi.get(id)
-    configs.value = await msgApi.list(id)
+    configs.value = await msgApi.list(id) || []
 
     // Заполняем формы из существующих конфигов
     const tgConfig = configs.value.find(c => c.type === 'telegram')
