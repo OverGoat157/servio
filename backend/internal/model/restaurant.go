@@ -34,6 +34,7 @@ type CreateRestaurantRequest struct {
 
 type UpdateRestaurantRequest struct {
 	Name             *string `json:"name"`
+	Slug             *string `json:"slug"`
 	Description      *string `json:"description"`
 	Logo             *string `json:"logo"`
 	Phone            *string `json:"phone"`

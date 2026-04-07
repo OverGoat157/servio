@@ -15,6 +15,7 @@ const error = ref('')
 
 const form = ref({
   name: '',
+  slug: '',
   description: '',
   phone: '',
   address: '',
@@ -35,6 +36,7 @@ onMounted(async () => {
     rest.value = data
     form.value = {
       name: data.name,
+      slug: data.slug || '',
       description: data.description || '',
       phone: data.phone || '',
       address: data.address || '',
@@ -102,6 +104,11 @@ async function save() {
         <div class="field">
           <label class="label">Название ресторана</label>
           <input v-model="form.name" class="input" required />
+        </div>
+        <div class="field">
+          <label class="label">Slug (URL)</label>
+          <input v-model="form.slug" class="input" required placeholder="my-restaurant" />
+          <div class="hint">Адрес меню: menu.ab-team.ru/<strong>{{ form.slug || 'slug' }}</strong></div>
         </div>
         <div class="field">
           <label class="label">Описание</label>

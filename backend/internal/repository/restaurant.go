@@ -49,21 +49,23 @@ func (r *RestaurantRepo) Update(id int64, req *model.UpdateRestaurantRequest) (*
 	err := r.db.QueryRowx(
 		`UPDATE restaurants SET
 			name = COALESCE($2, name),
-			description = COALESCE($3, description),
-			logo = COALESCE($4, logo),
-			phone = COALESCE($5, phone),
-			address = COALESCE($6, address),
-			working_hours = COALESCE($7, working_hours),
-			theme = COALESCE($8, theme),
-			cover_image = COALESCE($9, cover_image),
-			promo_title = COALESCE($10, promo_title),
-			promo_description = COALESCE($11, promo_description)
+			slug = COALESCE($3, slug),
+			description = COALESCE($4, description),
+			logo = COALESCE($5, logo),
+			phone = COALESCE($6, phone),
+			address = COALESCE($7, address),
+			working_hours = COALESCE($8, working_hours),
+			theme = COALESCE($9, theme),
+			cover_image = COALESCE($10, cover_image),
+			promo_title = COALESCE($11, promo_title),
+			promo_description = COALESCE($12, promo_description)
 		 WHERE id = $1 RETURNING *`,
-		id, emptyPtrToNil(req.Name), emptyPtrToNil(req.Description),
-		emptyPtrToNil(req.Logo), emptyPtrToNil(req.Phone),
-		emptyPtrToNil(req.Address), emptyPtrToNil(req.WorkingHours),
-		emptyPtrToNil(req.Theme), emptyPtrToNil(req.CoverImage),
-		emptyPtrToNil(req.PromoTitle), emptyPtrToNil(req.PromoDescription),
+		id, emptyPtrToNil(req.Name), emptyPtrToNil(req.Slug),
+		emptyPtrToNil(req.Description), emptyPtrToNil(req.Logo),
+		emptyPtrToNil(req.Phone), emptyPtrToNil(req.Address),
+		emptyPtrToNil(req.WorkingHours), emptyPtrToNil(req.Theme),
+		emptyPtrToNil(req.CoverImage), emptyPtrToNil(req.PromoTitle),
+		emptyPtrToNil(req.PromoDescription),
 	).StructScan(rest)
 	return rest, err
 }
