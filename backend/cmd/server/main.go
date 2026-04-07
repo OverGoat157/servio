@@ -34,13 +34,14 @@ func main() {
 
 	// Handlers
 	authH := handler.NewAuthHandler(userRepo, cfg.JWTSecret)
-	restH := handler.NewRestaurantHandler(restRepo)
+	restH := handler.NewRestaurantHandler(restRepo, userRepo)
 	catH := handler.NewCategoryHandler(catRepo, restRepo)
 	itemH := handler.NewMenuItemHandler(itemRepo, catRepo, restRepo)
 	orderH := handler.NewOrderHandler(orderRepo, restRepo)
 	msgH := handler.NewMessengerHandler(msgRepo, restRepo)
 	publicH := handler.NewPublicHandler(restRepo, catRepo, itemRepo, orderRepo, msgRepo)
 	uploadH := handler.NewUploadHandler()
+	adminH := handler.NewAdminHandler(userRepo, restRepo)
 
 	r := gin.Default()
 	r.Use(middleware.CORS())
@@ -58,7 +59,6 @@ func main() {
 	// --- Auth ---
 	auth := r.Group("/api/auth")
 	{
-		auth.POST("/register", authH.Register)
 		auth.POST("/login", authH.Login)
 	}
 
@@ -95,6 +95,18 @@ func main() {
 		api.GET("/restaurants/:id/messengers", msgH.List)
 		api.POST("/restaurants/:id/messengers", msgH.Upsert)
 		api.DELETE("/restaurants/:id/messengers/:type", msgH.Delete)
+	}
+
+	// --- Admin API ---
+	adm := r.Group("/api/admin", middleware.AuthRequired(cfg.JWTSecret), middleware.AdminRequired())
+	{
+		adm.GET("/users", adminH.ListUsers)
+		adm.GET("/users/:id", adminH.GetUser)
+		adm.POST("/users", adminH.CreateUser)
+		adm.PUT("/users/:id", adminH.UpdateUser)
+		adm.DELETE("/users/:id", adminH.DeleteUser)
+		adm.GET("/restaurants", adminH.ListAllRestaurants)
+		adm.PUT("/restaurants/:id", adminH.UpdateAnyRestaurant)
 	}
 
 	log.Printf("Server starting on :%s", cfg.ServerPort)

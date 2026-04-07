@@ -12,14 +12,6 @@ export async function login(email, password) {
   return data
 }
 
-export async function register(email, password, name) {
-  const data = await authApi.register({ email, password, name })
-  localStorage.setItem('token', data.token)
-  user.value = data.user
-  isAuthenticated.value = true
-  return data
-}
-
 export async function fetchUser() {
   try {
     user.value = await authApi.me()

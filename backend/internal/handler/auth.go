@@ -21,34 +21,6 @@ func NewAuthHandler(users *repository.UserRepo, jwtSecret string) *AuthHandler {
 	return &AuthHandler{users: users, jwtSecret: jwtSecret}
 }
 
-func (h *AuthHandler) Register(c *gin.Context) {
-	var req model.RegisterRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash password"})
-		return
-	}
-
-	user, err := h.users.Create(req.Email, string(hash), req.Name)
-	if err != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "email already exists"})
-		return
-	}
-
-	token, err := middleware.GenerateToken(user.ID, h.jwtSecret)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate token"})
-		return
-	}
-
-	c.JSON(http.StatusCreated, model.AuthResponse{Token: token, User: *user})
-}
-
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req model.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -71,7 +43,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := middleware.GenerateToken(user.ID, h.jwtSecret)
+	token, err := middleware.GenerateToken(user.ID, user.Role, h.jwtSecret)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate token"})
 		return

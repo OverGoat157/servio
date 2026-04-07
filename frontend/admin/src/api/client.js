@@ -40,9 +40,19 @@ export async function uploadFile(file) {
 
 // Auth
 export const auth = {
-  register: (body) => request('/api/auth/register', { method: 'POST', body: JSON.stringify(body) }),
   login: (body) => request('/api/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   me: () => request('/api/me'),
+}
+
+// Admin
+export const admin = {
+  listUsers: () => request('/api/admin/users'),
+  getUser: (id) => request(`/api/admin/users/${id}`),
+  createUser: (body) => request('/api/admin/users', { method: 'POST', body: JSON.stringify(body) }),
+  updateUser: (id, body) => request(`/api/admin/users/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  deleteUser: (id) => request(`/api/admin/users/${id}`, { method: 'DELETE' }),
+  listRestaurants: () => request('/api/admin/restaurants'),
+  updateRestaurant: (id, body) => request(`/api/admin/restaurants/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
 }
 
 // Restaurants

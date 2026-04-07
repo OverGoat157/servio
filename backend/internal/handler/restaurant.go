@@ -13,14 +13,32 @@ import (
 
 type RestaurantHandler struct {
 	restaurants *repository.RestaurantRepo
+	users       *repository.UserRepo
 }
 
-func NewRestaurantHandler(restaurants *repository.RestaurantRepo) *RestaurantHandler {
-	return &RestaurantHandler{restaurants: restaurants}
+func NewRestaurantHandler(restaurants *repository.RestaurantRepo, users *repository.UserRepo) *RestaurantHandler {
+	return &RestaurantHandler{restaurants: restaurants, users: users}
 }
 
 func (h *RestaurantHandler) Create(c *gin.Context) {
 	userID := middleware.GetUserID(c)
+
+	// Check max restaurants limit
+	user, err := h.users.GetByID(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user"})
+		return
+	}
+	count, err := h.users.CountRestaurants(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to count restaurants"})
+		return
+	}
+	if count >= user.MaxRestaurants {
+		c.JSON(http.StatusForbidden, gin.H{"error": "достигнут лимит ресторанов"})
+		return
+	}
+
 	var req model.CreateRestaurantRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

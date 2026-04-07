@@ -44,6 +44,12 @@ func (r *RestaurantRepo) ListByUser(userID int64) ([]model.Restaurant, error) {
 	return list, err
 }
 
+func (r *RestaurantRepo) ListAll() ([]model.Restaurant, error) {
+	var list []model.Restaurant
+	err := r.db.Select(&list, `SELECT * FROM restaurants ORDER BY created_at DESC`)
+	return list, err
+}
+
 func (r *RestaurantRepo) Update(id int64, req *model.UpdateRestaurantRequest) (*model.Restaurant, error) {
 	rest := &model.Restaurant{}
 	err := r.db.QueryRowx(

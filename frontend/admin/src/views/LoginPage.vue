@@ -48,7 +48,7 @@ async function handleSubmit() {
       </form>
 
       <div class="auth-footer">
-        Нет аккаунта? <router-link to="/register">Зарегистрироваться</router-link>
+        Аккаунт создаётся администратором
       </div>
     </div>
   </div>

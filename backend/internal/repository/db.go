@@ -23,6 +23,7 @@ func RunMigrations(db *sqlx.DB) error {
 	files := []string{
 		"migrations/001_init.up.sql",
 		"migrations/002_restaurant_cover_promo.up.sql",
+		"migrations/003_user_role.up.sql",
 	}
 	for _, f := range files {
 		data, err := os.ReadFile(f)
