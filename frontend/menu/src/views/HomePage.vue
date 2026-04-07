@@ -20,112 +20,70 @@ function goToMenu() {
 
     <!-- Error -->
     <div v-else-if="error" class="error-screen">
-      <div class="error-icon">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
-        </svg>
-      </div>
-      <p class="error-title">Ресторан не найден</p>
-      <p class="error-sub">Проверьте правильность ссылки</p>
+      <div class="error-icon">!</div>
+      <p>Ресторан не найден</p>
     </div>
 
     <!-- Content -->
     <template v-else>
-      <!-- Hero — full screen -->
+      <!-- Header -->
       <div class="hero">
-        <div class="hero-overlay"></div>
+        <div class="hero-bg"></div>
         <div class="hero-content">
-          <div class="hero-top">
-            <div class="logo" v-if="restaurant.logo">
-              <img :src="restaurant.logo" :alt="restaurant.name" />
-            </div>
-            <div class="logo logo-letter" v-else>
-              {{ restaurant.name.charAt(0) }}
-            </div>
+          <div class="logo-circle" v-if="restaurant.logo">
+            <img :src="restaurant.logo" :alt="restaurant.name" />
           </div>
-
-          <div class="hero-center">
-            <h1>{{ restaurant.name }}</h1>
-            <p class="tagline" v-if="restaurant.description">{{ restaurant.description }}</p>
+          <div class="logo-circle logo-placeholder" v-else>
+            {{ restaurant.name.charAt(0) }}
           </div>
-
-          <div class="hero-bottom">
-            <div class="hours-inline" v-if="restaurant.working_hours">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-              </svg>
-              <span v-for="(time, day) in restaurant.working_hours" :key="day">
-                {{ day }}: {{ time }}
-              </span>
-            </div>
-          </div>
+          <h1>{{ restaurant.name }}</h1>
+          <p class="subtitle" v-if="restaurant.description">{{ restaurant.description }}</p>
         </div>
       </div>
 
-      <!-- Info section -->
-      <div class="info-section">
-        <!-- Address card -->
-        <div class="info-card" v-if="restaurant.address">
-          <div class="info-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
-            </svg>
-          </div>
-          <div>
-            <div class="info-label">Адрес</div>
-            <div class="info-value">{{ restaurant.address }}</div>
-          </div>
-        </div>
-
-        <!-- Phone card -->
-        <a class="info-card" v-if="restaurant.phone" :href="'tel:' + restaurant.phone">
-          <div class="info-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round">
-              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.11 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
-            </svg>
-          </div>
-          <div>
-            <div class="info-label">Телефон</div>
-            <div class="info-value">{{ restaurant.phone }}</div>
-          </div>
-        </a>
-
-        <!-- Working hours card -->
-        <div class="info-card hours-card" v-if="restaurant.working_hours">
-          <div class="info-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round">
-              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-            </svg>
-          </div>
-          <div class="hours-full">
-            <div class="info-label">Режим работы</div>
-            <div class="hours-grid">
-              <div class="hours-row" v-for="(time, day) in restaurant.working_hours" :key="day">
-                <span class="day">{{ day }}</span>
-                <span class="time">{{ time }}</span>
-              </div>
-            </div>
-          </div>
+      <!-- Working hours -->
+      <div class="card" v-if="restaurant.working_hours">
+        <div class="card-label">Режим работы</div>
+        <div
+          class="hours-row"
+          v-for="(time, day) in restaurant.working_hours"
+          :key="day"
+        >
+          <span class="day">{{ day }}</span>
+          <span class="time">{{ time }}</span>
         </div>
       </div>
 
-      <!-- CTA Button -->
-      <div class="cta-section">
-        <button class="btn-menu" @click="goToMenu">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M4 6h16M4 12h16M4 18h16"/>
+      <!-- Address -->
+      <div class="card" v-if="restaurant.address">
+        <div class="card-label">Адрес</div>
+        <p class="card-text">{{ restaurant.address }}</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions">
+        <button class="btn-primary" @click="goToMenu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18M3 12h18M3 18h18"/>
           </svg>
-          Смотреть меню
+          Открыть меню
         </button>
 
-        <a v-if="restaurant.phone" :href="'tel:' + restaurant.phone" class="btn-call">
-          Позвонить
+        <a
+          v-if="restaurant.phone"
+          :href="'tel:' + restaurant.phone"
+          class="btn-outline"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+          </svg>
+          Связаться с нами
         </a>
       </div>
 
       <!-- Messengers -->
       <div class="messengers" v-if="restaurant.messengers?.length">
-        <div class="msg-label">Мы в мессенджерах</div>
+        <div class="card-label">Мы в мессенджерах</div>
         <div class="msg-list">
           <div class="msg-chip" v-for="m in restaurant.messengers" :key="m">
             <svg v-if="m === 'whatsapp'" width="18" height="18" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.556 4.12 1.525 5.855L0 24l6.335-1.652A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
@@ -134,23 +92,15 @@ function goToMenu() {
           </div>
         </div>
       </div>
-
-      <!-- Footer -->
-      <footer class="footer">
-        <p>Сделано на <a href="https://ab-team.ru" target="_blank">AB Team</a></p>
-      </footer>
     </template>
   </div>
 </template>
 
 <style scoped>
 .home {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  padding-bottom: 32px;
 }
 
-/* Loading */
 .loading-screen {
   display: flex;
   align-items: center;
@@ -159,243 +109,154 @@ function goToMenu() {
 }
 
 .spinner {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border: 3px solid var(--border);
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
-/* Error */
 .error-screen {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  gap: 12px;
+  gap: 16px;
   color: var(--text-secondary);
-  padding: 24px;
 }
 
 .error-icon {
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background: var(--bg-tertiary);
+  background: #FEE2E2;
+  color: #DC2626;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
-  margin-bottom: 8px;
-}
-
-.error-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.error-sub {
-  font-size: 14px;
+  font-size: 24px;
+  font-weight: 700;
 }
 
 /* Hero */
 .hero {
   position: relative;
-  min-height: 100svh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg);
+  padding: 60px 24px 32px;
+  text-align: center;
   overflow: hidden;
 }
 
-.hero-overlay {
+.hero-bg {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse at 30% 20%, rgba(33,103,199,0.06) 0%, transparent 60%),
-    radial-gradient(ellipse at 70% 80%, rgba(33,103,199,0.04) 0%, transparent 60%);
+  background: linear-gradient(180deg, #1F2937 0%, #374151 100%);
+  z-index: 0;
 }
 
 .hero-content {
   position: relative;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 100svh;
-  width: 100%;
-  padding: 60px 24px 40px;
 }
 
-.hero-top {
-  display: flex;
-  justify-content: center;
-}
-
-.logo {
-  width: 88px;
-  height: 88px;
+.logo-circle {
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
+  margin: 0 auto 16px;
   overflow: hidden;
-  box-shadow: var(--shadow);
+  border: 3px solid rgba(255,255,255,0.2);
 }
 
-.logo img {
+.logo-circle img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.logo-letter {
+.logo-placeholder {
   background: var(--primary);
-  color: var(--primary-foreground);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36px;
-  font-weight: 700;
-}
-
-.hero-center {
-  text-align: center;
-  max-width: 380px;
-}
-
-.hero-center h1 {
   font-size: 32px;
   font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.5px;
-  line-height: 1.2;
 }
 
-.tagline {
-  font-size: 15px;
-  color: var(--text-secondary);
-  margin-top: 12px;
+.hero h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.subtitle {
+  color: rgba(255,255,255,0.7);
+  font-size: 14px;
   line-height: 1.5;
 }
 
-.hero-bottom {
-  width: 100%;
-}
-
-.hours-inline {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.hours-inline svg {
-  flex-shrink: 0;
-}
-
-.hours-inline span::after {
-  content: ' · ';
-}
-
-.hours-inline span:last-child::after {
-  content: '';
-}
-
-/* Info Section */
-.info-section {
-  padding: 0 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  background: var(--border);
-  margin: 0 20px;
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.info-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 16px;
+/* Cards */
+.card {
+  margin: 16px 16px 0;
   background: var(--bg);
-  text-decoration: none;
-  color: inherit;
-}
-
-.info-card:only-child {
+  border: 1px solid var(--border);
   border-radius: var(--radius);
+  padding: 16px;
 }
 
-.info-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--bg-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.info-label {
+.card-label {
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: var(--text-muted);
-  margin-bottom: 4px;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
 }
 
-.info-value {
+.card-text {
   font-size: 14px;
   color: var(--text);
-  line-height: 1.4;
-}
-
-.hours-full {
-  flex: 1;
-}
-
-.hours-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  line-height: 1.5;
 }
 
 .hours-row {
   display: flex;
   justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
   font-size: 14px;
 }
 
-.hours-row .day {
+.hours-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.day {
   color: var(--text-secondary);
 }
 
-.hours-row .time {
-  font-weight: 500;
-  color: var(--text);
+.time {
+  font-weight: 600;
 }
 
-/* CTA */
-.cta-section {
-  padding: 24px 20px;
+/* Actions */
+.actions {
+  padding: 24px 16px 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
-.btn-menu {
+.btn-primary {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -410,46 +271,38 @@ function goToMenu() {
   transition: opacity var(--ease);
 }
 
-.btn-menu:active {
+.btn-primary:active {
   opacity: 0.85;
 }
 
-.btn-call {
+.btn-outline {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   width: 100%;
-  padding: 14px;
+  padding: 16px;
   background: var(--bg);
   color: var(--text);
-  border: 1.5px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--radius);
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
   transition: border-color var(--ease);
 }
 
-.btn-call:active {
+.btn-outline:active {
   border-color: var(--primary);
 }
 
 /* Messengers */
 .messengers {
-  padding: 0 20px 24px;
-}
-
-.msg-label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: var(--text-muted);
-  margin-bottom: 12px;
+  padding: 24px 16px 0;
 }
 
 .msg-list {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .msg-chip {
@@ -460,23 +313,6 @@ function goToMenu() {
   background: var(--bg-secondary);
   border-radius: 100px;
   font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-/* Footer */
-.footer {
-  padding: 32px 20px 40px;
-  text-align: center;
-}
-
-.footer p {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.footer a {
-  color: var(--text-secondary);
   font-weight: 500;
 }
 </style>
