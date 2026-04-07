@@ -33,14 +33,10 @@ onMounted(async () => {
 })
 
 async function loadCategories() {
-  const catList = await catApi.list(id)
+  const catList = await catApi.list(id) || []
   // Load items for each category
   for (const cat of catList) {
-    try {
-      cat.items = await itemApi.list(cat.id)
-    } catch {
-      cat.items = []
-    }
+    cat.items = await itemApi.list(cat.id) || []
   }
   cats.value = catList
 }
