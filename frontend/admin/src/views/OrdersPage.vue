@@ -32,7 +32,7 @@ const statusColors = {
 onMounted(async () => {
   try {
     rest.value = await restApi.get(id)
-    orderList.value = await ordersApi.list(id)
+    orderList.value = await ordersApi.list(id) || []
   } catch {
     router.push({ name: 'dashboard' })
   }
