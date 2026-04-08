@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { restaurant, loading, error } from '../stores/restaurant'
-import { addToCart } from '../stores/cart'
+import { addToCart, cartCount } from '../stores/cart'
 import { imageUrl } from '../api/client'
 
 const route = useRoute()
@@ -17,6 +17,10 @@ const popularItems = computed(() => {
 
 function goToMenu() {
   router.push({ name: 'menu', params: { slug } })
+}
+
+function goToCart() {
+  router.push({ name: 'cart', params: { slug } })
 }
 
 function formatPrice(kopecks) {
@@ -162,6 +166,18 @@ function handleAdd(item) {
       <footer class="footer">
         <p>Сделано на <a href="https://ab-team.ru" target="_blank">AB Team</a></p>
       </footer>
+
+      <!-- Cart floating button -->
+      <Transition name="slide-up">
+        <button v-if="cartCount > 0" class="cart-fab" @click="goToCart">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>
+          </svg>
+          <span>Корзина</span>
+          <span class="fab-badge">{{ cartCount }}</span>
+        </button>
+      </Transition>
     </template>
   </div>
 </template>
@@ -572,5 +588,52 @@ function handleAdd(item) {
 .footer a {
   color: var(--text-secondary);
   font-weight: 500;
+}
+
+/* Cart FAB */
+.cart-fab {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: 100px;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  z-index: 50;
+  transition: opacity var(--ease);
+}
+
+.cart-fab:active {
+  opacity: 0.9;
+}
+
+.fab-badge {
+  background: #fff;
+  color: var(--primary);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateX(-50%) translateY(80px);
+  opacity: 0;
 }
 </style>
