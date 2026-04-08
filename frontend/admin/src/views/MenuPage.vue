@@ -18,7 +18,7 @@ const editingCatId = ref(null)
 
 // Item form
 const showItemForm = ref(false)
-const itemForm = ref({ name: '', description: '', price: '', sort_order: 0, image: '' })
+const itemForm = ref({ name: '', description: '', price: '', sort_order: 0, image: '', ingredients: '', weight: '', calories: '', proteins: '', fats: '', carbs: '', cook_time: '' })
 const editingItemId = ref(null)
 const targetCatId = ref(null)
 const uploadingItemImage = ref(false)
@@ -81,10 +81,17 @@ function openItemForm(catId, item = null) {
       price: String(item.price / 100),
       sort_order: item.sort_order,
       image: item.image || '',
+      ingredients: item.ingredients || '',
+      weight: item.weight || '',
+      calories: item.calories ?? '',
+      proteins: item.proteins ?? '',
+      fats: item.fats ?? '',
+      carbs: item.carbs ?? '',
+      cook_time: item.cook_time || '',
     }
   } else {
     editingItemId.value = null
-    itemForm.value = { name: '', description: '', price: '', sort_order: 0, image: '' }
+    itemForm.value = { name: '', description: '', price: '', sort_order: 0, image: '', ingredients: '', weight: '', calories: '', proteins: '', fats: '', carbs: '', cook_time: '' }
   }
   showItemForm.value = true
 }
@@ -93,6 +100,10 @@ async function saveItem() {
   const data = {
     ...itemForm.value,
     price: Math.round(parseFloat(itemForm.value.price) * 100),
+    calories: itemForm.value.calories !== '' ? Number(itemForm.value.calories) : null,
+    proteins: itemForm.value.proteins !== '' ? Number(itemForm.value.proteins) : null,
+    fats: itemForm.value.fats !== '' ? Number(itemForm.value.fats) : null,
+    carbs: itemForm.value.carbs !== '' ? Number(itemForm.value.carbs) : null,
   }
   if (editingItemId.value) {
     await itemApi.update(editingItemId.value, data)
@@ -252,6 +263,42 @@ function formatPrice(kopecks) {
             <div class="field">
               <label class="label">Порядок</label>
               <input v-model.number="itemForm.sort_order" type="number" class="input" />
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-label">Подробности (необязательно)</div>
+
+          <div class="field">
+            <label class="label">Ингредиенты</label>
+            <textarea v-model="itemForm.ingredients" class="input textarea" rows="2" placeholder="Креветки, кокосовое молоко, лемонграсс..."></textarea>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label class="label">Граммовка</label>
+              <input v-model="itemForm.weight" class="input" placeholder="350 г" />
+            </div>
+            <div class="field">
+              <label class="label">Время готовки</label>
+              <input v-model="itemForm.cook_time" class="input" placeholder="15 мин" />
+            </div>
+          </div>
+          <div class="row row-4">
+            <div class="field">
+              <label class="label">Ккал</label>
+              <input v-model="itemForm.calories" type="number" min="0" class="input" placeholder="320" />
+            </div>
+            <div class="field">
+              <label class="label">Белки</label>
+              <input v-model="itemForm.proteins" type="number" step="0.1" min="0" class="input" placeholder="12" />
+            </div>
+            <div class="field">
+              <label class="label">Жиры</label>
+              <input v-model="itemForm.fats" type="number" step="0.1" min="0" class="input" placeholder="8" />
+            </div>
+            <div class="field">
+              <label class="label">Углев.</label>
+              <input v-model="itemForm.carbs" type="number" step="0.1" min="0" class="input" placeholder="45" />
             </div>
           </div>
           <div class="modal-actions">
@@ -448,6 +495,29 @@ function formatPrice(kopecks) {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
+}
+
+.row-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 0 14px;
+}
+
+.section-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.textarea {
+  resize: vertical;
 }
 
 .modal-actions {

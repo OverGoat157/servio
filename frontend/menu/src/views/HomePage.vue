@@ -1,8 +1,8 @@
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { restaurant, loading, error } from '../stores/restaurant'
-import { addToCart, cartCount } from '../stores/cart'
+import { cart, addToCart, cartCount, updateQuantity } from '../stores/cart'
 import { imageUrl } from '../api/client'
 
 const route = useRoute()
@@ -27,8 +27,28 @@ function formatPrice(kopecks) {
   return Math.floor(kopecks / 100).toLocaleString('ru-RU') + ' \u20BD'
 }
 
+const selectedItem = ref(null)
+
 function handleAdd(item) {
   addToCart(item)
+}
+
+function getQty(itemId) {
+  const ci = cart.find(i => i.id === itemId)
+  return ci ? ci.quantity : 0
+}
+
+function increment(item) {
+  addToCart(item)
+}
+
+function decrement(itemId) {
+  const ci = cart.find(i => i.id === itemId)
+  if (ci) updateQuantity(itemId, ci.quantity - 1)
+}
+
+function openDetail(item) {
+  selectedItem.value = item
 }
 </script>
 
@@ -78,7 +98,7 @@ function handleAdd(item) {
           <h2>Популярные блюда</h2>
         </div>
         <div class="popular-grid">
-          <div class="popular-card" v-for="item in popularItems" :key="item.id" @click="handleAdd(item)">
+          <div class="popular-card" v-for="item in popularItems" :key="item.id" @click="openDetail(item)">
             <div class="pop-img" v-if="item.image">
               <img :src="imageUrl(item.image)" :alt="item.name" loading="lazy" />
             </div>
@@ -91,7 +111,12 @@ function handleAdd(item) {
               <div class="pop-name">{{ item.name }}</div>
               <div class="pop-price">{{ formatPrice(item.price) }}</div>
             </div>
-            <button class="pop-add" @click.stop="handleAdd(item)">+</button>
+            <div class="pop-qty" v-if="getQty(item.id)" @click.stop>
+              <button class="pop-qty-btn" @click="decrement(item.id)">-</button>
+              <span>{{ getQty(item.id) }}</span>
+              <button class="pop-qty-btn" @click="increment(item)">+</button>
+            </div>
+            <button v-else class="pop-add" @click.stop="increment(item)">+</button>
           </div>
         </div>
       </div>
@@ -166,6 +191,54 @@ function handleAdd(item) {
       <footer class="footer">
         <p>Сделано на <a href="https://ab-team.ru" target="_blank">AB Team</a></p>
       </footer>
+
+      <!-- Item detail modal -->
+      <Transition name="fade">
+        <div class="modal-overlay" v-if="selectedItem" @click.self="selectedItem = null">
+          <div class="detail-modal">
+            <button class="modal-close" @click="selectedItem = null">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+            <div class="detail-img" v-if="selectedItem.image">
+              <img :src="imageUrl(selectedItem.image)" :alt="selectedItem.name" />
+            </div>
+            <div class="detail-body">
+              <h3 class="detail-name">{{ selectedItem.name }}</h3>
+              <div class="detail-price">{{ formatPrice(selectedItem.price) }}</div>
+              <p class="detail-desc" v-if="selectedItem.description">{{ selectedItem.description }}</p>
+              <div class="detail-meta" v-if="selectedItem.weight || selectedItem.cook_time">
+                <div class="meta-chip" v-if="selectedItem.weight">{{ selectedItem.weight }}</div>
+                <div class="meta-chip" v-if="selectedItem.cook_time">{{ selectedItem.cook_time }}</div>
+              </div>
+              <div class="kbzhu" v-if="selectedItem.calories || selectedItem.proteins || selectedItem.fats || selectedItem.carbs">
+                <div class="kbzhu-label">Пищевая ценность</div>
+                <div class="kbzhu-grid">
+                  <div class="kbzhu-item" v-if="selectedItem.calories"><span class="kbzhu-val">{{ selectedItem.calories }}</span><span class="kbzhu-unit">ккал</span></div>
+                  <div class="kbzhu-item" v-if="selectedItem.proteins"><span class="kbzhu-val">{{ selectedItem.proteins }}</span><span class="kbzhu-unit">белки</span></div>
+                  <div class="kbzhu-item" v-if="selectedItem.fats"><span class="kbzhu-val">{{ selectedItem.fats }}</span><span class="kbzhu-unit">жиры</span></div>
+                  <div class="kbzhu-item" v-if="selectedItem.carbs"><span class="kbzhu-val">{{ selectedItem.carbs }}</span><span class="kbzhu-unit">углев.</span></div>
+                </div>
+              </div>
+              <div class="detail-section" v-if="selectedItem.ingredients">
+                <div class="detail-section-label">Состав</div>
+                <p class="detail-section-text">{{ selectedItem.ingredients }}</p>
+              </div>
+              <div class="detail-actions">
+                <div class="detail-qty" v-if="getQty(selectedItem.id)">
+                  <button class="detail-qty-btn" @click="decrement(selectedItem.id)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>
+                  </button>
+                  <span class="detail-qty-val">{{ getQty(selectedItem.id) }}</span>
+                  <button class="detail-qty-btn" @click="increment(selectedItem)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                  </button>
+                </div>
+                <button v-else class="detail-add-btn" @click="increment(selectedItem)">Добавить в корзину</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
 
       <!-- Cart floating button -->
       <Transition name="slide-up">
@@ -448,6 +521,43 @@ function handleAdd(item) {
   opacity: 0.8;
 }
 
+.pop-qty {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--primary);
+  border-radius: 8px;
+  padding: 2px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.pop-qty-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-foreground);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.pop-qty-btn:active {
+  opacity: 0.7;
+}
+
+.pop-qty span {
+  min-width: 18px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary-foreground);
+}
+
 /* ===== Actions ===== */
 .actions {
   padding: 24px 16px 0;
@@ -588,6 +698,213 @@ function handleAdd(item) {
 .footer a {
   color: var(--text-secondary);
   font-weight: 500;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.detail-modal {
+  background: var(--bg);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.detail-img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+}
+
+.detail-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detail-body {
+  padding: 20px 20px 24px;
+}
+
+.detail-name {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.detail-price {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-top: 6px;
+}
+
+.detail-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: 12px;
+}
+
+.detail-meta {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.meta-chip {
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border-radius: 100px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.kbzhu {
+  margin-top: 16px;
+  padding: 14px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+}
+
+.kbzhu-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.kbzhu-grid {
+  display: flex;
+  gap: 6px;
+}
+
+.kbzhu-item {
+  flex: 1;
+  text-align: center;
+  padding: 8px 4px;
+  background: var(--bg);
+  border-radius: 8px;
+}
+
+.kbzhu-val {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.kbzhu-unit {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.detail-section {
+  margin-top: 16px;
+}
+
+.detail-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.detail-section-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.detail-actions {
+  margin-top: 20px;
+}
+
+.detail-add-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.detail-add-btn:active {
+  opacity: 0.85;
+}
+
+.detail-qty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  padding: 6px;
+}
+
+.detail-qty-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+
+.detail-qty-btn:active {
+  background: var(--border);
+}
+
+.detail-qty-val {
+  min-width: 40px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 /* Cart FAB */

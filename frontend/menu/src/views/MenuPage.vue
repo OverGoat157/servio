@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { restaurant, loading } from '../stores/restaurant'
-import { addToCart, cartCount } from '../stores/cart'
+import { cart, addToCart, cartCount, updateQuantity } from '../stores/cart'
 import { imageUrl } from '../api/client'
 
 const route = useRoute()
@@ -11,6 +11,7 @@ const slug = route.params.slug
 
 const activeCategory = ref(null)
 const categories = computed(() => restaurant.categories || [])
+const selectedItem = ref(null)
 
 const displayCategories = computed(() => {
   if (!activeCategory.value) return categories.value
@@ -26,8 +27,22 @@ function formatPrice(kopecks) {
   return Math.floor(kopecks / 100).toLocaleString('ru-RU') + ' \u20BD'
 }
 
-function handleAdd(item) {
+function getQty(itemId) {
+  const ci = cart.find(i => i.id === itemId)
+  return ci ? ci.quantity : 0
+}
+
+function increment(item) {
   addToCart(item)
+}
+
+function decrement(itemId) {
+  const ci = cart.find(i => i.id === itemId)
+  if (ci) updateQuantity(itemId, ci.quantity - 1)
+}
+
+function openDetail(item) {
+  selectedItem.value = item
 }
 
 function goToCart() {
@@ -88,7 +103,7 @@ function goBack() {
         <div class="category-name" v-if="!activeCategory && categories.length > 1">{{ cat.name }}</div>
 
         <div class="items-grid" v-if="cat.items?.length">
-          <div class="item-card" v-for="item in cat.items" :key="item.id" @click="handleAdd(item)">
+          <div class="item-card" v-for="item in cat.items" :key="item.id" @click="openDetail(item)">
             <!-- Image -->
             <div class="item-img" v-if="item.image">
               <img :src="imageUrl(item.image)" :alt="item.name" loading="lazy" />
@@ -105,7 +120,17 @@ function goBack() {
               <div class="item-desc" v-if="item.description">{{ item.description }}</div>
               <div class="item-footer">
                 <span class="item-price">{{ formatPrice(item.price) }}</span>
-                <button class="add-btn" @click.stop="handleAdd(item)">
+                <!-- Quantity controls or add button -->
+                <div class="qty-inline" v-if="getQty(item.id)" @click.stop>
+                  <button class="qty-btn-sm" @click="decrement(item.id)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>
+                  </button>
+                  <span class="qty-val">{{ getQty(item.id) }}</span>
+                  <button class="qty-btn-sm" @click="increment(item)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                  </button>
+                </div>
+                <button v-else class="add-btn" @click.stop="increment(item)">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
                     <path d="M12 5v14M5 12h14"/>
                   </svg>
@@ -124,6 +149,84 @@ function goBack() {
         <p>Меню пока формируется</p>
       </div>
     </div>
+
+    <!-- Item detail modal -->
+    <Transition name="fade">
+      <div class="modal-overlay" v-if="selectedItem" @click.self="selectedItem = null">
+        <div class="detail-modal">
+          <button class="modal-close" @click="selectedItem = null">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+
+          <div class="detail-img" v-if="selectedItem.image">
+            <img :src="imageUrl(selectedItem.image)" :alt="selectedItem.name" />
+          </div>
+
+          <div class="detail-body">
+            <h3 class="detail-name">{{ selectedItem.name }}</h3>
+            <div class="detail-price">{{ formatPrice(selectedItem.price) }}</div>
+            <p class="detail-desc" v-if="selectedItem.description">{{ selectedItem.description }}</p>
+
+            <!-- Метаданные -->
+            <div class="detail-meta" v-if="selectedItem.weight || selectedItem.cook_time">
+              <div class="meta-chip" v-if="selectedItem.weight">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg>
+                {{ selectedItem.weight }}
+              </div>
+              <div class="meta-chip" v-if="selectedItem.cook_time">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                {{ selectedItem.cook_time }}
+              </div>
+            </div>
+
+            <!-- КБЖУ -->
+            <div class="kbzhu" v-if="selectedItem.calories || selectedItem.proteins || selectedItem.fats || selectedItem.carbs">
+              <div class="kbzhu-label">Пищевая ценность</div>
+              <div class="kbzhu-grid">
+                <div class="kbzhu-item" v-if="selectedItem.calories">
+                  <span class="kbzhu-val">{{ selectedItem.calories }}</span>
+                  <span class="kbzhu-unit">ккал</span>
+                </div>
+                <div class="kbzhu-item" v-if="selectedItem.proteins">
+                  <span class="kbzhu-val">{{ selectedItem.proteins }}</span>
+                  <span class="kbzhu-unit">белки</span>
+                </div>
+                <div class="kbzhu-item" v-if="selectedItem.fats">
+                  <span class="kbzhu-val">{{ selectedItem.fats }}</span>
+                  <span class="kbzhu-unit">жиры</span>
+                </div>
+                <div class="kbzhu-item" v-if="selectedItem.carbs">
+                  <span class="kbzhu-val">{{ selectedItem.carbs }}</span>
+                  <span class="kbzhu-unit">углев.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ингредиенты -->
+            <div class="detail-section" v-if="selectedItem.ingredients">
+              <div class="detail-section-label">Состав</div>
+              <p class="detail-section-text">{{ selectedItem.ingredients }}</p>
+            </div>
+
+            <!-- Кнопка добавить / счётчик -->
+            <div class="detail-actions">
+              <div class="detail-qty" v-if="getQty(selectedItem.id)">
+                <button class="detail-qty-btn" @click="decrement(selectedItem.id)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>
+                </button>
+                <span class="detail-qty-val">{{ getQty(selectedItem.id) }}</span>
+                <button class="detail-qty-btn" @click="increment(selectedItem)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+              </div>
+              <button v-else class="detail-add-btn" @click="increment(selectedItem)">
+                Добавить в корзину
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
 
     <!-- Cart floating button -->
     <Transition name="slide-up">
@@ -366,6 +469,258 @@ function goBack() {
 
 .add-btn:active {
   opacity: 0.8;
+}
+
+/* Quantity inline on card */
+.qty-inline {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  padding: 2px;
+}
+
+.qty-btn-sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  transition: background var(--ease);
+}
+
+.qty-btn-sm:active {
+  background: var(--border);
+}
+
+.qty-val {
+  min-width: 20px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.detail-modal {
+  background: var(--bg);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.detail-img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+}
+
+.detail-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detail-body {
+  padding: 20px 20px 24px;
+}
+
+.detail-name {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.detail-price {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-top: 6px;
+}
+
+.detail-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: 12px;
+}
+
+.detail-meta {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.meta-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border-radius: 100px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* КБЖУ */
+.kbzhu {
+  margin-top: 16px;
+  padding: 14px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+}
+
+.kbzhu-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.kbzhu-grid {
+  display: flex;
+  gap: 6px;
+}
+
+.kbzhu-item {
+  flex: 1;
+  text-align: center;
+  padding: 8px 4px;
+  background: var(--bg);
+  border-radius: 8px;
+}
+
+.kbzhu-val {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.kbzhu-unit {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Detail sections */
+.detail-section {
+  margin-top: 16px;
+}
+
+.detail-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.detail-section-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Detail actions */
+.detail-actions {
+  margin-top: 20px;
+}
+
+.detail-add-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-weight: 600;
+  transition: opacity var(--ease);
+}
+
+.detail-add-btn:active {
+  opacity: 0.85;
+}
+
+.detail-qty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  padding: 6px;
+}
+
+.detail-qty-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  font-weight: 600;
+  transition: background var(--ease);
+}
+
+.detail-qty-btn:active {
+  background: var(--border);
+}
+
+.detail-qty-val {
+  min-width: 40px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 /* Empty states */

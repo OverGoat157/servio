@@ -1,0 +1,8 @@
+ALTER TABLE menu_items
+    DROP COLUMN IF EXISTS ingredients,
+    DROP COLUMN IF EXISTS weight,
+    DROP COLUMN IF EXISTS calories,
+    DROP COLUMN IF EXISTS proteins,
+    DROP COLUMN IF EXISTS fats,
+    DROP COLUMN IF EXISTS carbs,
+    DROP COLUMN IF EXISTS cook_time;

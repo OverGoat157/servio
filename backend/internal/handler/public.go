@@ -44,11 +44,18 @@ type MenuCategory struct {
 }
 
 type PublicMenuItem struct {
-	ID          int64   `json:"id"`
-	Name        string  `json:"name"`
-	Description *string `json:"description"`
-	Price       int     `json:"price"`
-	Image       *string `json:"image"`
+	ID          int64    `json:"id"`
+	Name        string   `json:"name"`
+	Description *string  `json:"description"`
+	Price       int      `json:"price"`
+	Image       *string  `json:"image"`
+	Ingredients *string  `json:"ingredients"`
+	Weight      *string  `json:"weight"`
+	Calories    *int     `json:"calories"`
+	Proteins    *float64 `json:"proteins"`
+	Fats        *float64 `json:"fats"`
+	Carbs       *float64 `json:"carbs"`
+	CookTime    *string  `json:"cook_time"`
 }
 
 type PublicRestaurant struct {
@@ -101,6 +108,13 @@ func (h *PublicHandler) GetMenu(c *gin.Context) {
 				Description: item.Description,
 				Price:       item.Price,
 				Image:       item.Image,
+				Ingredients: item.Ingredients,
+				Weight:      item.Weight,
+				Calories:    item.Calories,
+				Proteins:    item.Proteins,
+				Fats:        item.Fats,
+				Carbs:       item.Carbs,
+				CookTime:    item.CookTime,
 			})
 		}
 		menuCats = append(menuCats, MenuCategory{
