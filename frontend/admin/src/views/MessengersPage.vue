@@ -55,6 +55,16 @@ onMounted(async () => {
 const tgError = ref('')
 const waError = ref('')
 
+async function toggleTelegram() {
+  tgEnabled.value = !tgEnabled.value
+  if (tgForm.value.bot_token) await saveTelegram()
+}
+
+async function toggleWhatsApp() {
+  waEnabled.value = !waEnabled.value
+  if (waForm.value.phone) await saveWhatsApp()
+}
+
 async function saveTelegram() {
   tgSaving.value = true
   tgSuccess.value = false
@@ -144,12 +154,12 @@ async function deleteConfig(type) {
             <input v-model="tgForm.chat_id" class="input" placeholder="-1001234567890" />
             <div class="hint">ID чата или группы, куда бот будет отправлять заказы</div>
           </div>
-          <div class="toggle-row">
+          <div class="toggle-row" @click.prevent="toggleTelegram">
             <label class="toggle">
-              <input type="checkbox" v-model="tgEnabled" />
+              <input type="checkbox" :checked="tgEnabled" />
               <span class="toggle-slider"></span>
             </label>
-            <span>Включено</span>
+            <span>{{ tgEnabled ? 'Включено' : 'Выключено' }}</span>
           </div>
           <div class="error-msg" v-if="tgError">{{ tgError }}</div>
           <div class="section-actions">
@@ -180,12 +190,12 @@ async function deleteConfig(type) {
             <input v-model="waForm.phone" class="input" placeholder="79991234567" />
             <div class="hint">Без +, пробелов и скобок. Пример: 79991234567</div>
           </div>
-          <div class="toggle-row">
+          <div class="toggle-row" @click.prevent="toggleWhatsApp">
             <label class="toggle">
-              <input type="checkbox" v-model="waEnabled" />
+              <input type="checkbox" :checked="waEnabled" />
               <span class="toggle-slider"></span>
             </label>
-            <span>Включено</span>
+            <span>{{ waEnabled ? 'Включено' : 'Выключено' }}</span>
           </div>
           <div class="error-msg" v-if="waError">{{ waError }}</div>
           <div class="section-actions">
@@ -305,6 +315,8 @@ async function deleteConfig(type) {
   gap: 10px;
   margin-bottom: 16px;
   font-size: 14px;
+  cursor: pointer;
+  user-select: none;
 }
 
 .toggle {
