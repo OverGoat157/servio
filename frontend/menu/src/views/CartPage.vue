@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { restaurant } from '../stores/restaurant'
-import { cart, cartTotal, updateQuantity, removeFromCart, clearCart } from '../stores/cart'
+import { cart, cartTotal, orderComment, updateQuantity, updateComment, removeFromCart, clearCart } from '../stores/cart'
 import { createOrder } from '../api/client'
 
 const route = useRoute()
@@ -35,10 +35,12 @@ async function submitOrder() {
       items: cart.map(i => ({
         menu_item_id: i.id,
         quantity: i.quantity,
+        comment: i.comment || undefined,
       })),
       messenger: selectedMessenger.value,
       customer_name: customerName.value || undefined,
       customer_phone: customerPhone.value || undefined,
+      comment: orderComment.value || undefined,
     })
 
     sent.value = true
@@ -123,6 +125,9 @@ function goHome() {
             </div>
             <div class="ci-price">{{ formatPrice(item.price * item.quantity) }}</div>
           </div>
+          <div class="ci-comment">
+            <input :value="item.comment" @input="updateComment(item.id, $event.target.value)" class="ci-comment-input" placeholder="Комментарий к блюду..." />
+          </div>
         </div>
       </div>
 
@@ -148,6 +153,12 @@ function goHome() {
             placeholder="Телефон"
           />
         </div>
+      </div>
+
+      <!-- Order comment -->
+      <div class="form-section">
+        <div class="section-label">Комментарий к заказу</div>
+        <textarea v-model="orderComment" class="field-input order-comment" placeholder="Пожелания к заказу, аллергии, время доставки..." rows="2"></textarea>
       </div>
 
       <!-- Messenger selection -->
@@ -410,6 +421,38 @@ function goHome() {
   font-size: 16px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+/* Item comment */
+.ci-comment {
+  margin-top: 8px;
+}
+
+.ci-comment-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg-secondary);
+  outline: none;
+  transition: border-color var(--ease);
+}
+
+.ci-comment-input:focus {
+  border-color: var(--primary);
+  background: var(--bg);
+}
+
+.ci-comment-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Order comment */
+.order-comment {
+  resize: vertical;
+  min-height: 44px;
 }
 
 /* Total */

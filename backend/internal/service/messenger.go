@@ -31,6 +31,7 @@ type OrderMessage struct {
 	CustomerName   string
 	CustomerPhone  string
 	Messenger      string
+	Comment        string
 }
 
 // FormatOrderText создаёт текстовое представление заказа
@@ -43,6 +44,9 @@ func FormatOrderText(msg *OrderMessage) string {
 	for _, item := range msg.Items {
 		price := float64(item.Price*item.Quantity) / 100
 		b.WriteString(fmt.Sprintf("• %s x%d — %.0f ₽\n", item.Name, item.Quantity, price))
+		if item.Comment != "" {
+			b.WriteString(fmt.Sprintf("  💬 %s\n", item.Comment))
+		}
 	}
 
 	total := float64(msg.Total) / 100
@@ -53,6 +57,10 @@ func FormatOrderText(msg *OrderMessage) string {
 	}
 	if msg.CustomerPhone != "" {
 		b.WriteString(fmt.Sprintf("📞 %s\n", msg.CustomerPhone))
+	}
+
+	if msg.Comment != "" {
+		b.WriteString(fmt.Sprintf("\n📝 Комментарий: %s\n", msg.Comment))
 	}
 
 	b.WriteString(fmt.Sprintf("\nМессенджер: %s", msg.Messenger))

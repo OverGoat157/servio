@@ -7,6 +7,7 @@ type OrderItem struct {
 	Name       string `json:"name"`
 	Price      int    `json:"price"`
 	Quantity   int    `json:"quantity"`
+	Comment    string `json:"comment,omitempty"`
 }
 
 type Order struct {
@@ -26,4 +27,5 @@ type CreateOrderRequest struct {
 	Messenger     string      `json:"messenger" binding:"required"`
 	CustomerName  string      `json:"customer_name"`
 	CustomerPhone string      `json:"customer_phone"`
+	Comment       string      `json:"comment"`
 }

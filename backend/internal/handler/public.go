@@ -235,6 +235,7 @@ func (h *PublicHandler) CreateOrder(c *gin.Context) {
 			Name:       item.Name,
 			Price:      item.Price,
 			Quantity:   oi.Quantity,
+			Comment:    oi.Comment,
 		})
 		total += item.Price * oi.Quantity
 	}
@@ -256,6 +257,7 @@ func (h *PublicHandler) CreateOrder(c *gin.Context) {
 		CustomerName:   req.CustomerName,
 		CustomerPhone:  req.CustomerPhone,
 		Messenger:      req.Messenger,
+		Comment:        req.Comment,
 	}
 	orderText := service.FormatOrderText(msg)
 

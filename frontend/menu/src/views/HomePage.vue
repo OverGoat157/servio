@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { restaurant, loading, error } from '../stores/restaurant'
-import { cart, addToCart, cartCount, updateQuantity } from '../stores/cart'
+import { cart, addToCart, cartCount, updateQuantity, updateComment } from '../stores/cart'
 import { imageUrl } from '../api/client'
 
 const route = useRoute()
@@ -47,8 +47,20 @@ function decrement(itemId) {
   if (ci) updateQuantity(itemId, ci.quantity - 1)
 }
 
+const detailComment = ref('')
+
 function openDetail(item) {
   selectedItem.value = item
+  const ci = cart.find(i => i.id === item.id)
+  detailComment.value = ci?.comment || ''
+}
+
+function addWithComment() {
+  if (getQty(selectedItem.value.id)) {
+    updateComment(selectedItem.value.id, detailComment.value)
+  } else {
+    addToCart(selectedItem.value, detailComment.value)
+  }
 }
 </script>
 
@@ -243,6 +255,9 @@ function openDetail(item) {
                 <div class="detail-section-label">Состав</div>
                 <p class="detail-section-text">{{ selectedItem.ingredients }}</p>
               </div>
+              <div class="detail-comment">
+                <input v-model="detailComment" class="detail-comment-input" placeholder="Комментарий к блюду..." @change="getQty(selectedItem.id) && updateComment(selectedItem.id, detailComment)" />
+              </div>
               <div class="detail-actions">
                 <div class="detail-qty" v-if="getQty(selectedItem.id)">
                   <button class="detail-qty-btn" @click="decrement(selectedItem.id)">
@@ -253,7 +268,7 @@ function openDetail(item) {
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
                   </button>
                 </div>
-                <button v-else class="detail-add-btn" @click="increment(selectedItem)">Добавить в корзину</button>
+                <button v-else class="detail-add-btn" @click="addWithComment()">Добавить в корзину</button>
               </div>
             </div>
           </div>
@@ -911,6 +926,30 @@ function openDetail(item) {
   font-size: 14px;
   color: var(--text-secondary);
   line-height: 1.5;
+}
+
+.detail-comment {
+  margin-top: 16px;
+}
+
+.detail-comment-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm, 8px);
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+  transition: border-color var(--ease);
+}
+
+.detail-comment-input:focus {
+  border-color: var(--primary);
+}
+
+.detail-comment-input::placeholder {
+  color: var(--text-muted);
 }
 
 .detail-actions {
