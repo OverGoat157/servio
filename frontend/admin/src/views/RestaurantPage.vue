@@ -259,16 +259,11 @@ async function save() {
         <div class="divider"></div>
         <h3 class="section-title">QR-код меню</h3>
         <div class="qr-section">
-          <div class="qr-preview">
-            <img :src="qrUrl" :key="qrKey" alt="QR Code" />
-          </div>
-          <div class="qr-info">
-            <p class="qr-hint">Распечатайте и разместите на столах. Гости отсканируют и попадут в ваше меню.</p>
-            <p class="qr-link">menu.ab-team.ru/{{ form.slug }}</p>
-            <div class="qr-actions">
-              <button type="button" class="btn btn-primary btn-sm" @click="downloadQR">Скачать PNG</button>
-              <button type="button" class="btn btn-outline btn-sm" @click="regenerateQR">Перегенерировать</button>
-            </div>
+          <p class="qr-hint">Распечатайте и разместите на столах. Гости отсканируют и попадут в ваше меню.</p>
+          <p class="qr-link">menu.ab-team.ru/{{ form.slug }}</p>
+          <div class="qr-actions">
+            <button type="button" class="btn btn-primary btn-sm" @click="downloadQR">Скачать PNG</button>
+            <button type="button" class="btn btn-outline btn-sm" @click="regenerateQR">Перегенерировать</button>
           </div>
         </div>
 
@@ -420,30 +415,7 @@ async function save() {
 
 /* QR Code */
 .qr-section {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
   margin-bottom: 16px;
-}
-
-.qr-preview {
-  width: 160px;
-  height: 160px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  flex-shrink: 0;
-  background: #fff;
-}
-
-.qr-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.qr-info {
-  flex: 1;
 }
 
 .qr-hint {
