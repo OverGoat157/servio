@@ -1,6 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { admin as api } from '../api/client'
+
+const router = useRouter()
 
 const users = ref([])
 const loading = ref(true)
@@ -78,7 +81,13 @@ function formatDate(d) {
 <template>
   <div class="page">
     <div class="page-header">
-      <h1>Пользователи</h1>
+      <div>
+        <button class="back-link" @click="router.push({ name: 'dashboard' })">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Назад
+        </button>
+        <h1>Пользователи</h1>
+      </div>
       <button class="btn btn-primary" @click="openCreate">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         Создать
@@ -177,6 +186,15 @@ function formatDate(d) {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
 }
 
 .page-header h1 {
