@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { restaurant, loading, error } from '../stores/restaurant'
 import { addToCart } from '../stores/cart'
+import { imageUrl } from '../api/client'
 
 const route = useRoute()
 const router = useRouter()
@@ -45,12 +46,12 @@ function handleAdd(item) {
       <!-- Hero с фото фоном -->
       <div class="hero" :class="{ 'hero-with-image': restaurant.cover_image }">
         <div class="hero-bg">
-          <img v-if="restaurant.cover_image" :src="restaurant.cover_image" alt="" class="hero-img" />
+          <img v-if="restaurant.cover_image" :src="imageUrl(restaurant.cover_image)" alt="" class="hero-img" />
         </div>
         <div class="hero-overlay"></div>
         <div class="hero-content">
           <div class="logo-circle" v-if="restaurant.logo">
-            <img :src="restaurant.logo" :alt="restaurant.name" />
+            <img :src="imageUrl(restaurant.logo)" :alt="restaurant.name" />
           </div>
           <div class="logo-circle logo-placeholder" v-else>
             {{ restaurant.name.charAt(0) }}
@@ -75,7 +76,7 @@ function handleAdd(item) {
         <div class="popular-grid">
           <div class="popular-card" v-for="item in popularItems" :key="item.id" @click="handleAdd(item)">
             <div class="pop-img" v-if="item.image">
-              <img :src="item.image" :alt="item.name" loading="lazy" />
+              <img :src="imageUrl(item.image)" :alt="item.name" loading="lazy" />
             </div>
             <div class="pop-img pop-img-empty" v-else>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round">

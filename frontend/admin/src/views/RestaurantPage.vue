@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { restaurants as api, uploadFile } from '../api/client'
+import { restaurants as api, uploadFile, imageUrl } from '../api/client'
 
 const route = useRoute()
 const router = useRouter()
@@ -140,7 +140,7 @@ async function save() {
           <label class="label">Логотип</label>
           <div class="upload-area">
             <div class="preview" v-if="form.logo">
-              <img :src="form.logo" alt="Логотип" />
+              <img :src="imageUrl(form.logo)" alt="Логотип" />
               <button type="button" class="preview-remove" @click="clearImage('logo')">×</button>
             </div>
             <label class="upload-btn" v-else>
@@ -156,7 +156,7 @@ async function save() {
           <label class="label">Фото обложки</label>
           <div class="upload-area">
             <div class="preview preview-wide" v-if="form.cover_image">
-              <img :src="form.cover_image" alt="Обложка" />
+              <img :src="imageUrl(form.cover_image)" alt="Обложка" />
               <button type="button" class="preview-remove" @click="clearImage('cover_image')">×</button>
             </div>
             <label class="upload-btn" v-else>

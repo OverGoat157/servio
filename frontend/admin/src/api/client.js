@@ -1,5 +1,11 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
+export function imageUrl(path) {
+  if (!path) return ''
+  if (path.startsWith('http')) return path
+  return API_BASE + path
+}
+
 function getToken() {
   return localStorage.getItem('token')
 }

@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { restaurant, loading } from '../stores/restaurant'
 import { addToCart, cartCount } from '../stores/cart'
+import { imageUrl } from '../api/client'
 
 const route = useRoute()
 const router = useRouter()
@@ -90,7 +91,7 @@ function goBack() {
           <div class="item-card" v-for="item in cat.items" :key="item.id" @click="handleAdd(item)">
             <!-- Image -->
             <div class="item-img" v-if="item.image">
-              <img :src="item.image" :alt="item.name" loading="lazy" />
+              <img :src="imageUrl(item.image)" :alt="item.name" loading="lazy" />
             </div>
             <div class="item-img item-img-placeholder" v-else>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round">

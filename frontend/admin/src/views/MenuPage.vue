@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { restaurants as restApi, categories as catApi, menuItems as itemApi, uploadFile } from '../api/client'
+import { restaurants as restApi, categories as catApi, menuItems as itemApi, uploadFile, imageUrl } from '../api/client'
 
 const route = useRoute()
 const router = useRouter()
@@ -170,7 +170,7 @@ function formatPrice(kopecks) {
         <div class="items-list" v-if="cat.items?.length">
           <div class="item-row" v-for="item in cat.items" :key="item.id">
             <div class="item-thumb" v-if="item.image">
-              <img :src="item.image" :alt="item.name" />
+              <img :src="imageUrl(item.image)" :alt="item.name" />
             </div>
             <div class="item-info">
               <span class="item-name">{{ item.name }}</span>
@@ -226,7 +226,7 @@ function formatPrice(kopecks) {
             <label class="label">Фото блюда</label>
             <div class="upload-area">
               <div class="img-preview" v-if="itemForm.image">
-                <img :src="itemForm.image" alt="" />
+                <img :src="imageUrl(itemForm.image)" alt="" />
                 <button type="button" class="img-remove" @click="itemForm.image = ''">×</button>
               </div>
               <label class="upload-btn" v-else>
