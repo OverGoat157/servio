@@ -47,11 +47,17 @@ async function submitOrder() {
       comment: orderComment.value || undefined,
     })
 
-    sent.value = true
-    clearCart()
+    if (result.messenger_sent === false && result.messenger_error) {
+      orderError.value = result.messenger_error
+    } else {
+      sent.value = true
+      clearCart()
+    }
 
     if (result.whatsapp_url) {
       window.open(result.whatsapp_url, '_blank')
+      sent.value = true
+      clearCart()
     }
   } catch {
     orderError.value = 'Не удалось отправить заказ. Попробуйте ещё раз.'

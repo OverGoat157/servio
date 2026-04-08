@@ -73,9 +73,8 @@ func SendTelegram(cfg TelegramConfig, text string) error {
 	apiURL := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", cfg.BotToken)
 
 	data := url.Values{
-		"chat_id":    {cfg.ChatID},
-		"text":       {text},
-		"parse_mode": {"HTML"},
+		"chat_id": {cfg.ChatID},
+		"text":    {text},
 	}
 
 	resp, err := http.PostForm(apiURL, data)

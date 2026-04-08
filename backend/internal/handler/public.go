@@ -286,22 +286,29 @@ func (h *PublicHandler) CreateOrder(c *gin.Context) {
 	// Обрабатываем в зависимости от мессенджера
 	switch req.Messenger {
 	case "telegram":
-		// Отправляем в Telegram от имени бота
 		msgCfg, err := h.messengers.GetEnabled(rest.ID, "telegram")
-		if err == nil {
-			tgCfg, err := service.ParseTelegramConfig(msgCfg.Config)
-			if err == nil {
-				go func() {
-					if err := service.SendTelegram(tgCfg, orderText); err != nil {
-						log.Printf("telegram send error: %v", err)
-					}
-				}()
-			}
+		if err != nil {
+			log.Printf("telegram config not found for restaurant %d: %v", rest.ID, err)
+			response["messenger_sent"] = false
+			response["messenger_error"] = "Telegram не настроен"
+			break
 		}
-		response["messenger_sent"] = true
+		tgCfg, err := service.ParseTelegramConfig(msgCfg.Config)
+		if err != nil {
+			log.Printf("telegram config parse error: %v", err)
+			response["messenger_sent"] = false
+			response["messenger_error"] = "Ошибка конфигурации Telegram"
+			break
+		}
+		if err := service.SendTelegram(tgCfg, orderText); err != nil {
+			log.Printf("telegram send error: %v", err)
+			response["messenger_sent"] = false
+			response["messenger_error"] = "Не удалось отправить в Telegram"
+		} else {
+			response["messenger_sent"] = true
+		}
 
 	case "whatsapp":
-		// Генерируем ссылку wa.me
 		msgCfg, err := h.messengers.GetEnabled(rest.ID, "whatsapp")
 		if err == nil {
 			waCfg, err := service.ParseWhatsAppConfig(msgCfg.Config)
