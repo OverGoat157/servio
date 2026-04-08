@@ -16,12 +16,13 @@ func NewRestaurantRepo(db *sqlx.DB) *RestaurantRepo {
 func (r *RestaurantRepo) Create(userID int64, req *model.CreateRestaurantRequest) (*model.Restaurant, error) {
 	rest := &model.Restaurant{}
 	err := r.db.QueryRowx(
-		`INSERT INTO restaurants (user_id, name, slug, description, phone, address, working_hours, theme, cover_image, promo_title, promo_description)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, COALESCE(NULLIF($8,''), 'default'), $9, $10, $11)
+		`INSERT INTO restaurants (user_id, name, slug, description, phone, address, working_hours, theme, cover_image, promo_title, promo_description, social_links)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, COALESCE(NULLIF($8,''), 'default'), $9, $10, $11, COALESCE(NULLIF($12,'')::jsonb, '[]'))
 		 RETURNING *`,
 		userID, req.Name, req.Slug, nullStr(req.Description), nullStr(req.Phone),
 		nullStr(req.Address), nullStr(req.WorkingHours), req.Theme,
 		nullStr(req.CoverImage), nullStr(req.PromoTitle), nullStr(req.PromoDescription),
+		nullStr(req.SocialLinks),
 	).StructScan(rest)
 	return rest, err
 }
@@ -64,7 +65,8 @@ func (r *RestaurantRepo) Update(id int64, req *model.UpdateRestaurantRequest) (*
 			theme = COALESCE($9, theme),
 			cover_image = COALESCE($10, cover_image),
 			promo_title = COALESCE($11, promo_title),
-			promo_description = COALESCE($12, promo_description)
+			promo_description = COALESCE($12, promo_description),
+			social_links = COALESCE($13::jsonb, social_links)
 		 WHERE id = $1 RETURNING *`,
 		id, emptyPtrToNil(req.Name), emptyPtrToNil(req.Slug),
 		emptyPtrToNil(req.Description), emptyPtrToNil(req.Logo),
@@ -72,6 +74,7 @@ func (r *RestaurantRepo) Update(id int64, req *model.UpdateRestaurantRequest) (*
 		emptyPtrToNil(req.WorkingHours), emptyPtrToNil(req.Theme),
 		emptyPtrToNil(req.CoverImage), emptyPtrToNil(req.PromoTitle),
 		emptyPtrToNil(req.PromoDescription),
+		emptyPtrToNil(req.SocialLinks),
 	).StructScan(rest)
 	return rest, err
 }

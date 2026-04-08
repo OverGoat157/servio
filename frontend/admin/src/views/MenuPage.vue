@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { restaurants as restApi, categories as catApi, menuItems as itemApi, uploadFile, imageUrl } from '../api/client'
 
@@ -10,6 +10,16 @@ const id = route.params.id
 const rest = ref(null)
 const cats = ref([])
 const loading = ref(true)
+const searchQuery = ref('')
+
+const filteredCats = computed(() => {
+  if (!searchQuery.value.trim()) return cats.value
+  const q = searchQuery.value.trim().toLowerCase()
+  return cats.value.map(cat => ({
+    ...cat,
+    items: (cat.items || []).filter(item => item.name.toLowerCase().includes(q))
+  })).filter(cat => cat.items.length > 0)
+})
 
 // Category form
 const showCatForm = ref(false)
@@ -114,6 +124,11 @@ async function saveItem() {
   await loadCategories()
 }
 
+async function toggleAvailable(item) {
+  await itemApi.update(item.id, { available: !item.available })
+  await loadCategories()
+}
+
 async function deleteItem(itemId) {
   if (!confirm('Удалить позицию?')) return
   await itemApi.delete(itemId)
@@ -152,6 +167,15 @@ function formatPrice(kopecks) {
       </button>
     </div>
 
+    <!-- Search -->
+    <div class="search-bar" v-if="cats.length > 0">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input v-model="searchQuery" class="search-input" placeholder="Поиск блюд..." />
+      <button v-if="searchQuery" class="search-clear" @click="searchQuery = ''">×</button>
+    </div>
+
     <div v-if="loading" class="loading">Загрузка...</div>
 
     <!-- Empty -->
@@ -162,7 +186,7 @@ function formatPrice(kopecks) {
 
     <!-- Categories -->
     <div class="categories" v-else>
-      <div class="cat-section card" v-for="cat in cats" :key="cat.id">
+      <div class="cat-section card" v-for="cat in filteredCats" :key="cat.id">
         <div class="cat-header">
           <h3>{{ cat.name }}</h3>
           <div class="cat-actions">
@@ -179,16 +203,21 @@ function formatPrice(kopecks) {
         </div>
 
         <div class="items-list" v-if="cat.items?.length">
-          <div class="item-row" v-for="item in cat.items" :key="item.id">
+          <div class="item-row" :class="{ 'item-unavailable': !item.available }" v-for="item in cat.items" :key="item.id">
             <div class="item-thumb" v-if="item.image">
               <img :src="imageUrl(item.image)" :alt="item.name" />
             </div>
             <div class="item-info">
               <span class="item-name">{{ item.name }}</span>
               <span class="item-desc" v-if="item.description">{{ item.description }}</span>
+              <span class="item-badge-off" v-if="!item.available">Нет в наличии</span>
             </div>
             <div class="item-price">{{ formatPrice(item.price) }}</div>
             <div class="item-actions">
+              <button class="icon-btn-sm" :class="item.available ? 'available' : 'unavailable'" :title="item.available ? 'Убрать из меню' : 'Вернуть в меню'" @click="toggleAvailable(item)">
+                <svg v-if="item.available" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+                <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
               <button class="icon-btn-sm" @click="openItemForm(cat.id, item)">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               </button>
@@ -339,6 +368,47 @@ function formatPrice(kopecks) {
   font-weight: 700;
 }
 
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.search-clear {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.search-clear:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
 .loading {
   text-align: center;
   padding: 60px 0;
@@ -454,9 +524,40 @@ function formatPrice(kopecks) {
   background: var(--bg);
 }
 
+.icon-btn-sm.available {
+  color: #16A34A;
+}
+
+.icon-btn-sm.available:hover {
+  background: #DCFCE7;
+}
+
+.icon-btn-sm.unavailable {
+  color: #DC2626;
+}
+
+.icon-btn-sm.unavailable:hover {
+  background: #FEE2E2;
+}
+
 .icon-btn-sm.danger:hover {
   background: #FEE2E2;
   color: var(--danger);
+}
+
+.item-unavailable {
+  opacity: 0.5;
+}
+
+.item-badge-off {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #DC2626;
+  background: #FEE2E2;
+  padding: 1px 8px;
+  border-radius: 100px;
+  margin-top: 2px;
 }
 
 .empty-items {

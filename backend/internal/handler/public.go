@@ -18,6 +18,7 @@ type PublicHandler struct {
 	items       *repository.MenuItemRepo
 	orders      *repository.OrderRepo
 	messengers  *repository.MessengerRepo
+	combos      *repository.ComboRepo
 }
 
 func NewPublicHandler(
@@ -26,6 +27,7 @@ func NewPublicHandler(
 	items *repository.MenuItemRepo,
 	orders *repository.OrderRepo,
 	messengers *repository.MessengerRepo,
+	combos *repository.ComboRepo,
 ) *PublicHandler {
 	return &PublicHandler{
 		restaurants: restaurants,
@@ -33,6 +35,7 @@ func NewPublicHandler(
 		items:       items,
 		orders:      orders,
 		messengers:  messengers,
+		combos:      combos,
 	}
 }
 
@@ -49,6 +52,7 @@ type PublicMenuItem struct {
 	Description *string  `json:"description"`
 	Price       int      `json:"price"`
 	Image       *string  `json:"image"`
+	Available   bool     `json:"available"`
 	Ingredients *string  `json:"ingredients"`
 	Weight      *string  `json:"weight"`
 	Calories    *int     `json:"calories"`
@@ -68,11 +72,28 @@ type PublicRestaurant struct {
 	Phone            *string         `json:"phone"`
 	Address          *string         `json:"address"`
 	WorkingHours     json.RawMessage `json:"working_hours"`
+	SocialLinks      json.RawMessage `json:"social_links"`
 	Theme            string          `json:"theme"`
 	PromoTitle       *string         `json:"promo_title"`
 	PromoDescription *string         `json:"promo_description"`
 	Categories       []MenuCategory  `json:"categories"`
+	Combos           []PublicCombo   `json:"combos"`
 	Messengers       []string        `json:"messengers"`
+}
+
+type PublicCombo struct {
+	ID          int64            `json:"id"`
+	Name        string           `json:"name"`
+	Description *string          `json:"description"`
+	Image       *string          `json:"image"`
+	Price       int              `json:"price"`
+	Available   bool             `json:"available"`
+	Items       []PublicComboItem `json:"items"`
+}
+
+type PublicComboItem struct {
+	Name     string `json:"name"`
+	Quantity int    `json:"quantity"`
 }
 
 // GetMenu возвращает полное меню ресторана по slug
@@ -99,15 +120,13 @@ func (h *PublicHandler) GetMenu(c *gin.Context) {
 		}
 		var pubItems []PublicMenuItem
 		for _, item := range items {
-			if !item.Available {
-				continue
-			}
 			pubItems = append(pubItems, PublicMenuItem{
 				ID:          item.ID,
 				Name:        item.Name,
 				Description: item.Description,
 				Price:       item.Price,
 				Image:       item.Image,
+				Available:   item.Available,
 				Ingredients: item.Ingredients,
 				Weight:      item.Weight,
 				Calories:    item.Calories,
@@ -121,6 +140,32 @@ func (h *PublicHandler) GetMenu(c *gin.Context) {
 			ID:    cat.ID,
 			Name:  cat.Name,
 			Items: pubItems,
+		})
+	}
+
+	// Получаем комбо-наборы
+	comboList, _ := h.combos.ListByRestaurant(rest.ID)
+	var pubCombos []PublicCombo
+	for _, combo := range comboList {
+		items, _ := h.combos.GetItems(combo.ID)
+		var pubItems []PublicComboItem
+		for _, ci := range items {
+			pubItems = append(pubItems, PublicComboItem{
+				Name:     ci.Name,
+				Quantity: ci.Quantity,
+			})
+		}
+		if pubItems == nil {
+			pubItems = []PublicComboItem{}
+		}
+		pubCombos = append(pubCombos, PublicCombo{
+			ID:          combo.ID,
+			Name:        combo.Name,
+			Description: combo.Description,
+			Image:       combo.Image,
+			Price:       combo.Price,
+			Available:   combo.Available,
+			Items:       pubItems,
 		})
 	}
 
@@ -146,11 +191,15 @@ func (h *PublicHandler) GetMenu(c *gin.Context) {
 		PromoTitle:       rest.PromoTitle,
 		PromoDescription: rest.PromoDescription,
 		Categories:       menuCats,
+		Combos:           pubCombos,
 		Messengers:       messengers,
 	}
 
 	if rest.WorkingHours != nil {
 		pub.WorkingHours = json.RawMessage(*rest.WorkingHours)
+	}
+	if rest.SocialLinks != nil {
+		pub.SocialLinks = json.RawMessage(*rest.SocialLinks)
 	}
 
 	c.JSON(http.StatusOK, pub)

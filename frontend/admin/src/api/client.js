@@ -92,6 +92,14 @@ export const orders = {
   updateStatus: (id, status) => request(`/api/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
 }
 
+// Combos
+export const combos = {
+  list: (restaurantId) => request(`/api/restaurants/${restaurantId}/combos`),
+  create: (restaurantId, body) => request(`/api/restaurants/${restaurantId}/combos`, { method: 'POST', body: JSON.stringify(body) }),
+  update: (id, body) => request(`/api/combos/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  delete: (id) => request(`/api/combos/${id}`, { method: 'DELETE' }),
+}
+
 // Messengers
 export const messengers = {
   list: (restaurantId) => request(`/api/restaurants/${restaurantId}/messengers`),

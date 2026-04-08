@@ -7,6 +7,7 @@ import RestaurantPage from './views/RestaurantPage.vue'
 import MenuPage from './views/MenuPage.vue'
 import OrdersPage from './views/OrdersPage.vue'
 import MessengersPage from './views/MessengersPage.vue'
+import CombosPage from './views/CombosPage.vue'
 import AdminUsersPage from './views/AdminUsersPage.vue'
 
 const routes = [
@@ -15,6 +16,7 @@ const routes = [
   { path: '/restaurant/:id', name: 'restaurant', component: RestaurantPage, meta: { auth: true } },
   { path: '/restaurant/:id/menu', name: 'menu', component: MenuPage, meta: { auth: true } },
   { path: '/restaurant/:id/orders', name: 'orders', component: OrdersPage, meta: { auth: true } },
+  { path: '/restaurant/:id/combos', name: 'combos', component: CombosPage, meta: { auth: true } },
   { path: '/restaurant/:id/messengers', name: 'messengers', component: MessengersPage, meta: { auth: true } },
   // Admin
   { path: '/admin/users', name: 'admin-users', component: AdminUsersPage, meta: { auth: true, admin: true } },

@@ -98,7 +98,7 @@ function openDetail(item) {
           <h2>Популярные блюда</h2>
         </div>
         <div class="popular-grid">
-          <div class="popular-card" v-for="item in popularItems" :key="item.id" @click="openDetail(item)">
+          <div class="popular-card" :class="{ 'pop-stopped': !item.available }" v-for="item in popularItems" :key="item.id" @click="item.available && openDetail(item)">
             <div class="pop-img" v-if="item.image">
               <img :src="imageUrl(item.image)" :alt="item.name" loading="lazy" />
             </div>
@@ -107,16 +107,19 @@ function openDetail(item) {
                 <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/>
               </svg>
             </div>
+            <div class="pop-stopped-badge" v-if="!item.available">Нет в наличии</div>
             <div class="pop-info">
               <div class="pop-name">{{ item.name }}</div>
               <div class="pop-price">{{ formatPrice(item.price) }}</div>
             </div>
-            <div class="pop-qty" v-if="getQty(item.id)" @click.stop>
-              <button class="pop-qty-btn" @click="decrement(item.id)">-</button>
-              <span>{{ getQty(item.id) }}</span>
-              <button class="pop-qty-btn" @click="increment(item)">+</button>
-            </div>
-            <button v-else class="pop-add" @click.stop="increment(item)">+</button>
+            <template v-if="item.available">
+              <div class="pop-qty" v-if="getQty(item.id)" @click.stop>
+                <button class="pop-qty-btn" @click="decrement(item.id)">-</button>
+                <span>{{ getQty(item.id) }}</span>
+                <button class="pop-qty-btn" @click="increment(item)">+</button>
+              </div>
+              <button v-else class="pop-add" @click.stop="increment(item)">+</button>
+            </template>
           </div>
         </div>
       </div>
@@ -170,6 +173,23 @@ function openDetail(item) {
             <div class="info-label">Адрес</div>
             <div class="info-value">{{ restaurant.address }}</div>
           </div>
+        </div>
+      </div>
+
+      <!-- Соцсети -->
+      <div class="section" v-if="restaurant.social_links?.length">
+        <div class="section-header">
+          <h2>Мы в соцсетях</h2>
+        </div>
+        <div class="social-list">
+          <a v-for="link in restaurant.social_links" :key="link.type + link.url" :href="link.url" target="_blank" rel="noopener" class="social-chip">
+            <svg v-if="link.type === 'instagram'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><path d="M17.5 6.5h.01"/></svg>
+            <svg v-else-if="link.type === 'telegram'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>
+            <svg v-else-if="link.type === 'vk'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16v16H4z"/><path d="M7 12c1 4 3 5 5 5s3-1 3-3c0-1-1-2-2-2"/></svg>
+            <svg v-else-if="link.type === 'youtube'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="4"/><path d="M10 9l5 3-5 3V9z"/></svg>
+            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+            {{ link.type === 'instagram' ? 'Instagram' : link.type === 'vk' ? 'VK' : link.type === 'telegram' ? 'Telegram' : link.type === 'youtube' ? 'YouTube' : link.type === 'tiktok' ? 'TikTok' : link.type === 'facebook' ? 'Facebook' : 'Сайт' }}
+          </a>
         </div>
       </div>
 
@@ -521,6 +541,25 @@ function openDetail(item) {
   opacity: 0.8;
 }
 
+.pop-stopped {
+  opacity: 0.5;
+  pointer-events: none;
+  position: relative;
+}
+
+.pop-stopped-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 3px 10px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 100px;
+  z-index: 2;
+}
+
 .pop-qty {
   position: absolute;
   bottom: 8px;
@@ -665,6 +704,31 @@ function openDetail(item) {
 
 .time {
   font-weight: 600;
+}
+
+/* ===== Social links ===== */
+.social-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.social-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: var(--bg-secondary);
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  transition: background var(--ease);
+}
+
+.social-chip:active {
+  background: var(--border);
 }
 
 /* ===== Messengers ===== */

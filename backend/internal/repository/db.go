@@ -25,6 +25,8 @@ func RunMigrations(db *sqlx.DB) error {
 		"migrations/002_restaurant_cover_promo.up.sql",
 		"migrations/003_user_role.up.sql",
 		"migrations/004_menu_item_details.up.sql",
+		"migrations/005_social_links.up.sql",
+		"migrations/006_combos.up.sql",
 	}
 	for _, f := range files {
 		data, err := os.ReadFile(f)

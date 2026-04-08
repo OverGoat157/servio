@@ -16,6 +16,7 @@ type Restaurant struct {
 	Theme            string    `json:"theme" db:"theme"`
 	PromoTitle       *string   `json:"promo_title" db:"promo_title"`
 	PromoDescription *string   `json:"promo_description" db:"promo_description"`
+	SocialLinks      *string   `json:"social_links" db:"social_links"`
 	CreatedAt        time.Time `json:"created_at" db:"created_at"`
 }
 
@@ -30,6 +31,7 @@ type CreateRestaurantRequest struct {
 	CoverImage       string `json:"cover_image"`
 	PromoTitle       string `json:"promo_title"`
 	PromoDescription string `json:"promo_description"`
+	SocialLinks      string `json:"social_links"`
 }
 
 type UpdateRestaurantRequest struct {
@@ -44,4 +46,5 @@ type UpdateRestaurantRequest struct {
 	CoverImage       *string `json:"cover_image"`
 	PromoTitle       *string `json:"promo_title"`
 	PromoDescription *string `json:"promo_description"`
+	SocialLinks      *string `json:"social_links"`
 }

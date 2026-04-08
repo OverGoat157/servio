@@ -1,7 +1,9 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { restaurants as api, uploadFile, imageUrl } from '../api/client'
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
 const route = useRoute()
 const router = useRouter()
@@ -27,8 +29,53 @@ const form = ref({
   promo_description: '',
 })
 
+const socialLinks = ref([])
+const socialTypes = [
+  { value: 'instagram', label: 'Instagram' },
+  { value: 'vk', label: 'VK' },
+  { value: 'telegram', label: 'Telegram' },
+  { value: 'youtube', label: 'YouTube' },
+  { value: 'tiktok', label: 'TikTok' },
+  { value: 'facebook', label: 'Facebook' },
+  { value: 'website', label: 'Сайт' },
+]
+
+function addSocialLink() {
+  socialLinks.value.push({ type: 'instagram', url: '' })
+}
+
+function removeSocialLink(idx) {
+  socialLinks.value.splice(idx, 1)
+}
+
 const uploadingLogo = ref(false)
 const uploadingCover = ref(false)
+const qrKey = ref(0)
+
+const qrUrl = computed(() => {
+  if (!rest.value) return ''
+  return `${API_BASE}/api/restaurants/${id}/qrcode?size=512&_=${qrKey.value}`
+})
+
+function regenerateQR() {
+  qrKey.value++
+}
+
+function downloadQR() {
+  const token = localStorage.getItem('token')
+  fetch(`${API_BASE}/api/restaurants/${id}/qrcode?size=1024`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(r => r.blob())
+    .then(blob => {
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `qr-${rest.value?.slug || 'menu'}.png`
+      a.click()
+      URL.revokeObjectURL(url)
+    })
+}
 
 onMounted(async () => {
   try {
@@ -47,6 +94,10 @@ onMounted(async () => {
       promo_title: data.promo_title || '',
       promo_description: data.promo_description || '',
     }
+    try {
+      const links = typeof data.social_links === 'string' ? JSON.parse(data.social_links) : (data.social_links || [])
+      socialLinks.value = Array.isArray(links) ? links : []
+    } catch { socialLinks.value = [] }
   } catch {
     router.push({ name: 'dashboard' })
   }
@@ -77,7 +128,8 @@ async function save() {
   success.value = false
   error.value = ''
   try {
-    await api.update(id, form.value)
+    const validLinks = socialLinks.value.filter(l => l.url.trim())
+    await api.update(id, { ...form.value, social_links: JSON.stringify(validLinks) })
     success.value = true
     setTimeout(() => success.value = false, 2000)
   } catch (e) {
@@ -180,10 +232,44 @@ async function save() {
         </div>
 
         <div class="divider"></div>
+        <h3 class="section-title">Соцсети и ссылки</h3>
+        <div class="social-list">
+          <div class="social-row" v-for="(link, idx) in socialLinks" :key="idx">
+            <select v-model="link.type" class="input social-type">
+              <option v-for="st in socialTypes" :key="st.value" :value="st.value">{{ st.label }}</option>
+            </select>
+            <input v-model="link.url" class="input" placeholder="https://..." />
+            <button type="button" class="social-remove" @click="removeSocialLink(idx)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+        <button type="button" class="btn-add-social" @click="addSocialLink">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Добавить ссылку
+        </button>
+
+        <div class="divider"></div>
         <div class="field">
           <label class="label">Часы работы (JSON)</label>
           <textarea v-model="form.working_hours" class="input textarea" rows="4" placeholder='{"Пн — Пт": "10:00 — 22:00", "Сб — Вс": "11:00 — 23:00"}'></textarea>
           <div class="hint">Формат JSON: {"день": "время", ...}</div>
+        </div>
+
+        <div class="divider"></div>
+        <h3 class="section-title">QR-код меню</h3>
+        <div class="qr-section">
+          <div class="qr-preview">
+            <img :src="qrUrl" :key="qrKey" alt="QR Code" />
+          </div>
+          <div class="qr-info">
+            <p class="qr-hint">Распечатайте и разместите на столах. Гости отсканируют и попадут в ваше меню.</p>
+            <p class="qr-link">menu.ab-team.ru/{{ form.slug }}</p>
+            <div class="qr-actions">
+              <button type="button" class="btn btn-primary btn-sm" @click="downloadQR">Скачать PNG</button>
+              <button type="button" class="btn btn-outline btn-sm" @click="regenerateQR">Перегенерировать</button>
+            </div>
+          </div>
         </div>
 
         <div class="error-msg" v-if="error">{{ error }}</div>
@@ -330,6 +416,105 @@ async function save() {
 
 .preview-remove:hover {
   background: rgba(220,38,38,0.8);
+}
+
+/* QR Code */
+.qr-section {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.qr-preview {
+  width: 160px;
+  height: 160px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.qr-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.qr-info {
+  flex: 1;
+}
+
+.qr-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.qr-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+
+.qr-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Social links */
+.social-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.social-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.social-type {
+  width: 140px;
+  flex-shrink: 0;
+}
+
+.social-remove {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.social-remove:hover {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.btn-add-social {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--primary);
+  border: 1px dashed var(--primary);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+}
+
+.btn-add-social:hover {
+  background: var(--bg);
 }
 
 /* Messages */

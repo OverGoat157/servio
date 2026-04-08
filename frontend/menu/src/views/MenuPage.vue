@@ -10,13 +10,25 @@ const router = useRouter()
 const slug = route.params.slug
 
 const activeCategory = ref(null)
+const searchQuery = ref('')
 const categories = computed(() => restaurant.categories || [])
+const combos = computed(() => (restaurant.combos || []).filter(c => c.available))
 const selectedItem = ref(null)
 
 const displayCategories = computed(() => {
-  if (!activeCategory.value) return categories.value
-  const cat = categories.value.find(c => c.id === activeCategory.value)
-  return cat ? [cat] : []
+  let cats = categories.value
+  if (activeCategory.value) {
+    const cat = cats.find(c => c.id === activeCategory.value)
+    cats = cat ? [cat] : []
+  }
+  const q = searchQuery.value.trim().toLowerCase()
+  if (q) {
+    cats = cats.map(cat => ({
+      ...cat,
+      items: (cat.items || []).filter(item => item.name.toLowerCase().includes(q))
+    })).filter(cat => cat.items.length > 0)
+  }
+  return cats
 })
 
 function selectCategory(id) {
@@ -47,6 +59,10 @@ function openDetail(item) {
 
 function goToCart() {
   router.push({ name: 'cart', params: { slug } })
+}
+
+function addComboToCart(combo) {
+  addToCart({ id: 'combo-' + combo.id, name: combo.name, price: combo.price, image: combo.image })
 }
 
 function goBack() {
@@ -92,6 +108,17 @@ function goBack() {
       </div>
     </div>
 
+    <!-- Search -->
+    <div class="search-bar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input v-model="searchQuery" type="text" placeholder="Поиск блюд..." class="search-input" />
+      <button v-if="searchQuery" class="search-clear" @click="searchQuery = ''">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
     <!-- Loading -->
     <div v-if="loading" class="loading">
       <div class="spinner"></div>
@@ -99,11 +126,36 @@ function goBack() {
 
     <!-- Content -->
     <div class="content" v-else>
+      <!-- Combos -->
+      <div class="combos-section" v-if="combos.length && !searchQuery">
+        <div class="category-name">Комбо-наборы</div>
+        <div class="combos-list">
+          <div class="combo-card" v-for="combo in combos" :key="combo.id">
+            <div class="combo-img" v-if="combo.image">
+              <img :src="imageUrl(combo.image)" :alt="combo.name" loading="lazy" />
+            </div>
+            <div class="combo-body">
+              <div class="combo-name">{{ combo.name }}</div>
+              <div class="combo-desc" v-if="combo.description">{{ combo.description }}</div>
+              <div class="combo-contents" v-if="combo.items?.length">
+                <span v-for="ci in combo.items" :key="ci.name" class="combo-chip">{{ ci.name }}<template v-if="ci.quantity > 1"> ×{{ ci.quantity }}</template></span>
+              </div>
+              <div class="combo-footer">
+                <span class="combo-price">{{ formatPrice(combo.price) }}</span>
+                <button class="add-btn" @click="addComboToCart(combo)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div v-for="cat in displayCategories" :key="cat.id" class="category-section">
         <div class="category-name" v-if="!activeCategory && categories.length > 1">{{ cat.name }}</div>
 
         <div class="items-grid" v-if="cat.items?.length">
-          <div class="item-card" v-for="item in cat.items" :key="item.id" @click="openDetail(item)">
+          <div class="item-card" :class="{ 'item-stopped': !item.available }" v-for="item in cat.items" :key="item.id" @click="item.available && openDetail(item)">
             <!-- Image -->
             <div class="item-img" v-if="item.image">
               <img :src="imageUrl(item.image)" :alt="item.name" loading="lazy" />
@@ -113,6 +165,7 @@ function goBack() {
                 <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/>
               </svg>
             </div>
+            <div class="stopped-badge" v-if="!item.available">Нет в наличии</div>
 
             <!-- Info -->
             <div class="item-body">
@@ -120,21 +173,23 @@ function goBack() {
               <div class="item-desc" v-if="item.description">{{ item.description }}</div>
               <div class="item-footer">
                 <span class="item-price">{{ formatPrice(item.price) }}</span>
-                <!-- Quantity controls or add button -->
-                <div class="qty-inline" v-if="getQty(item.id)" @click.stop>
-                  <button class="qty-btn-sm" @click="decrement(item.id)">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>
+                <template v-if="item.available">
+                  <!-- Quantity controls or add button -->
+                  <div class="qty-inline" v-if="getQty(item.id)" @click.stop>
+                    <button class="qty-btn-sm" @click="decrement(item.id)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>
+                    </button>
+                    <span class="qty-val">{{ getQty(item.id) }}</span>
+                    <button class="qty-btn-sm" @click="increment(item)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                    </button>
+                  </div>
+                  <button v-else class="add-btn" @click.stop="increment(item)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                      <path d="M12 5v14M5 12h14"/>
+                    </svg>
                   </button>
-                  <span class="qty-val">{{ getQty(item.id) }}</span>
-                  <button class="qty-btn-sm" @click="increment(item)">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                  </button>
-                </div>
-                <button v-else class="add-btn" @click.stop="increment(item)">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                    <path d="M12 5v14M5 12h14"/>
-                  </svg>
-                </button>
+                </template>
               </div>
             </div>
           </div>
@@ -353,6 +408,45 @@ function goBack() {
   font-weight: 600;
 }
 
+/* Search */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 16px 0;
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-clear {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  border-radius: 50%;
+}
+
+.search-clear:active {
+  background: var(--border);
+}
+
 /* Content */
 .content {
   padding: 16px;
@@ -371,6 +465,84 @@ function goBack() {
   font-weight: 700;
   color: var(--text);
   padding: 4px 0 14px;
+}
+
+/* Combos */
+.combos-section {
+  margin-bottom: 24px;
+}
+
+.combos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.combo-card {
+  background: var(--bg);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  display: flex;
+}
+
+.combo-img {
+  width: 100px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.combo-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.combo-body {
+  flex: 1;
+  padding: 12px;
+  min-width: 0;
+}
+
+.combo-name {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.combo-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.combo-contents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.combo-chip {
+  padding: 2px 8px;
+  background: var(--bg-secondary);
+  border-radius: 100px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.combo-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.combo-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
 }
 
 /* Grid layout */
@@ -392,6 +564,30 @@ function goBack() {
 
 .item-card:active {
   transform: scale(0.97);
+}
+
+.item-stopped {
+  opacity: 0.5;
+  pointer-events: none;
+  position: relative;
+}
+
+.item-stopped .add-btn,
+.item-stopped .qty-inline {
+  display: none;
+}
+
+.stopped-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 3px 10px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 100px;
+  z-index: 2;
 }
 
 /* Image */

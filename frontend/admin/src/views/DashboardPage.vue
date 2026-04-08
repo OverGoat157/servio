@@ -131,6 +131,7 @@ async function deleteRestaurant(id) {
           </a>
           <router-link :to="{ name: 'menu', params: { id: r.id } }" class="btn btn-primary btn-sm">Меню</router-link>
           <router-link :to="{ name: 'orders', params: { id: r.id } }" class="btn btn-outline btn-sm">Заказы</router-link>
+          <router-link :to="{ name: 'combos', params: { id: r.id } }" class="btn btn-outline btn-sm">Комбо</router-link>
           <router-link :to="{ name: 'messengers', params: { id: r.id } }" class="btn btn-outline btn-sm">Мессенджеры</router-link>
           <router-link :to="{ name: 'restaurant', params: { id: r.id } }" class="btn btn-outline btn-sm">Настройки</router-link>
           <button class="btn btn-sm delete-btn" @click="deleteRestaurant(r.id)">
