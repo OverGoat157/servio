@@ -707,16 +707,17 @@ function openDetail(item) {
   background: rgba(0,0,0,0.5);
   z-index: 100;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+  padding: 24px;
 }
 
 .detail-modal {
   background: var(--bg);
-  border-radius: 20px 20px 0 0;
+  border-radius: 16px;
   width: 100%;
   max-width: 500px;
-  max-height: 90vh;
+  max-height: 85vh;
   overflow-y: auto;
   position: relative;
 }
