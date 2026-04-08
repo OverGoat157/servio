@@ -32,11 +32,15 @@ async function submitOrder() {
 
   try {
     const result = await createOrder(slug, {
-      items: cart.map(i => ({
-        menu_item_id: i.id,
-        quantity: i.quantity,
-        comment: i.comment || undefined,
-      })),
+      items: cart.map(i => {
+        const isCombo = typeof i.id === 'string' && i.id.startsWith('combo-')
+        return {
+          menu_item_id: isCombo ? 0 : i.id,
+          combo_id: isCombo ? Number(i.id.replace('combo-', '')) : undefined,
+          quantity: i.quantity,
+          comment: i.comment || undefined,
+        }
+      }),
       messenger: selectedMessenger.value,
       customer_name: customerName.value || undefined,
       customer_phone: customerPhone.value || undefined,

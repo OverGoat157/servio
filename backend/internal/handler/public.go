@@ -225,24 +225,42 @@ func (h *PublicHandler) CreateOrder(c *gin.Context) {
 	var total int
 	var enrichedItems []model.OrderItem
 	for _, oi := range req.Items {
-		item, err := h.items.GetByID(oi.MenuItemID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid menu item"})
-			return
+		if oi.ComboID > 0 {
+			// Комбо-набор
+			combo, err := h.combos.GetByID(oi.ComboID)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "invalid combo"})
+				return
+			}
+			enrichedItems = append(enrichedItems, model.OrderItem{
+				ComboID:  combo.ID,
+				Name:     combo.Name,
+				Price:    combo.Price,
+				Quantity: oi.Quantity,
+				Comment:  oi.Comment,
+			})
+			total += combo.Price * oi.Quantity
+		} else {
+			// Обычное блюдо
+			item, err := h.items.GetByID(oi.MenuItemID)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "invalid menu item"})
+				return
+			}
+			enrichedItems = append(enrichedItems, model.OrderItem{
+				MenuItemID: item.ID,
+				Name:       item.Name,
+				Price:      item.Price,
+				Quantity:   oi.Quantity,
+				Comment:    oi.Comment,
+			})
+			total += item.Price * oi.Quantity
 		}
-		enrichedItems = append(enrichedItems, model.OrderItem{
-			MenuItemID: item.ID,
-			Name:       item.Name,
-			Price:      item.Price,
-			Quantity:   oi.Quantity,
-			Comment:    oi.Comment,
-		})
-		total += item.Price * oi.Quantity
 	}
 
 	itemsJSON, _ := json.Marshal(enrichedItems)
 
-	order, err := h.orders.Create(rest.ID, string(itemsJSON), total, req.Messenger, req.CustomerName, req.CustomerPhone)
+	order, err := h.orders.Create(rest.ID, string(itemsJSON), total, req.Messenger, req.CustomerName, req.CustomerPhone, req.Comment)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create order"})
 		return

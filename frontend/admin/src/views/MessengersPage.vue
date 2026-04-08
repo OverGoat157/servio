@@ -52,9 +52,13 @@ onMounted(async () => {
   loading.value = false
 })
 
+const tgError = ref('')
+const waError = ref('')
+
 async function saveTelegram() {
   tgSaving.value = true
   tgSuccess.value = false
+  tgError.value = ''
   try {
     await msgApi.upsert(id, {
       type: 'telegram',
@@ -63,13 +67,16 @@ async function saveTelegram() {
     })
     tgSuccess.value = true
     setTimeout(() => tgSuccess.value = false, 2000)
-  } catch { /* empty */ }
+  } catch (e) {
+    tgError.value = e.message || 'Ошибка сохранения'
+  }
   tgSaving.value = false
 }
 
 async function saveWhatsApp() {
   waSaving.value = true
   waSuccess.value = false
+  waError.value = ''
   try {
     await msgApi.upsert(id, {
       type: 'whatsapp',
@@ -78,20 +85,24 @@ async function saveWhatsApp() {
     })
     waSuccess.value = true
     setTimeout(() => waSuccess.value = false, 2000)
-  } catch { /* empty */ }
+  } catch (e) {
+    waError.value = e.message || 'Ошибка сохранения'
+  }
   waSaving.value = false
 }
 
 async function deleteConfig(type) {
   if (!confirm(`Удалить настройки ${type}?`)) return
-  await msgApi.delete(id, type)
-  if (type === 'telegram') {
-    tgForm.value = { bot_token: '', chat_id: '' }
-    tgEnabled.value = false
-  } else {
-    waForm.value = { phone: '' }
-    waEnabled.value = false
-  }
+  try {
+    await msgApi.delete(id, type)
+    if (type === 'telegram') {
+      tgForm.value = { bot_token: '', chat_id: '' }
+      tgEnabled.value = false
+    } else {
+      waForm.value = { phone: '' }
+      waEnabled.value = false
+    }
+  } catch { /* empty */ }
 }
 </script>
 
@@ -140,6 +151,7 @@ async function deleteConfig(type) {
             </label>
             <span>Включено</span>
           </div>
+          <div class="error-msg" v-if="tgError">{{ tgError }}</div>
           <div class="section-actions">
             <div class="success-msg" v-if="tgSuccess">Сохранено!</div>
             <button type="button" class="btn btn-sm" style="color: var(--danger)" @click="deleteConfig('telegram')" v-if="tgForm.bot_token">Удалить</button>
@@ -175,6 +187,7 @@ async function deleteConfig(type) {
             </label>
             <span>Включено</span>
           </div>
+          <div class="error-msg" v-if="waError">{{ waError }}</div>
           <div class="section-actions">
             <div class="success-msg" v-if="waSuccess">Сохранено!</div>
             <button type="button" class="btn btn-sm" style="color: var(--danger)" @click="deleteConfig('whatsapp')" v-if="waForm.phone">Удалить</button>
@@ -334,6 +347,15 @@ async function deleteConfig(type) {
 
 .toggle input:checked + .toggle-slider::before {
   transform: translateX(20px);
+}
+
+.error-msg {
+  padding: 8px 12px;
+  background: #FEE2E2;
+  color: #DC2626;
+  border-radius: var(--radius);
+  font-size: 13px;
+  margin-bottom: 10px;
 }
 
 .section-actions {

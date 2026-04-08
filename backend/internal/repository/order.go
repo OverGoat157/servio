@@ -13,12 +13,12 @@ func NewOrderRepo(db *sqlx.DB) *OrderRepo {
 	return &OrderRepo{db: db}
 }
 
-func (r *OrderRepo) Create(restaurantID int64, itemsJSON string, total int, messenger, customerName, customerPhone string) (*model.Order, error) {
+func (r *OrderRepo) Create(restaurantID int64, itemsJSON string, total int, messenger, customerName, customerPhone, comment string) (*model.Order, error) {
 	order := &model.Order{}
 	err := r.db.QueryRowx(
-		`INSERT INTO orders (restaurant_id, items, total, messenger, customer_name, customer_phone)
-		 VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-		restaurantID, itemsJSON, total, messenger, customerName, customerPhone,
+		`INSERT INTO orders (restaurant_id, items, total, messenger, customer_name, customer_phone, comment)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+		restaurantID, itemsJSON, total, messenger, customerName, customerPhone, nullStr(comment),
 	).StructScan(order)
 	return order, err
 }
