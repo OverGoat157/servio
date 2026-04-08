@@ -131,14 +131,14 @@ async function deleteConfig(type) {
           <div class="field">
             <label class="label">Chat ID</label>
             <input v-model="tgForm.chat_id" class="input" placeholder="-1001234567890" />
-            <div class="hint">ID чата и��и группы, куда бот будет отправлять заказы</div>
+            <div class="hint">ID чата или группы, куда бот будет отправлять заказы</div>
           </div>
           <div class="toggle-row">
             <label class="toggle">
               <input type="checkbox" v-model="tgEnabled" />
               <span class="toggle-slider"></span>
             </label>
-            <span>Включен��</span>
+            <span>Включено</span>
           </div>
           <div class="section-actions">
             <div class="success-msg" v-if="tgSuccess">Сохранено!</div>
@@ -189,10 +189,10 @@ async function deleteConfig(type) {
       <div class="card info-card">
         <h3>Как это работает?</h3>
         <div class="info-item">
-          <strong>Telegram:</strong> Создайт�� бота через @BotFather, добавьте его в группу. Заказы будут приходит�� автоматически от бота.
+          <strong>Telegram:</strong> Создайте бота через @BotFather, добавьте его в группу. Заказы будут приходить автоматически от бота.
         </div>
         <div class="info-item">
-          <strong>WhatsApp:</strong> Укажите номер. Когда клиент ��формляет заказ, он переходит в WhatsApp с готовым текстом заказа и отправляет его вам.
+          <strong>WhatsApp:</strong> Укажите номер. Когда клиент оформляет заказ, он переходит в WhatsApp с готовым текстом заказа и отправляет его вам.
         </div>
       </div>
     </div>
