@@ -97,13 +97,6 @@ function addWithComment() {
         </div>
       </div>
 
-      <!-- Акция -->
-      <div class="promo-card" v-if="restaurant.promo_title">
-        <div class="promo-badge">Акция</div>
-        <h3 class="promo-title">{{ restaurant.promo_title }}</h3>
-        <p class="promo-desc" v-if="restaurant.promo_description">{{ restaurant.promo_description }}</p>
-      </div>
-
       <!-- Популярные блюда -->
       <div class="section" v-if="popularItems.length">
         <div class="section-header">
@@ -407,43 +400,6 @@ function addWithComment() {
   line-height: 1.5;
   max-width: 320px;
   margin: 0 auto;
-}
-
-/* ===== Promo Card ===== */
-.promo-card {
-  margin: 16px 16px 0;
-  padding: 18px 20px;
-  background: linear-gradient(135deg, #FFF7ED 0%, #FEF3C7 100%);
-  border: 1px solid #FDE68A;
-  border-radius: var(--radius);
-  position: relative;
-}
-
-.promo-badge {
-  display: inline-block;
-  padding: 3px 10px;
-  background: #F59E0B;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-radius: 100px;
-  margin-bottom: 10px;
-}
-
-.promo-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: #92400E;
-  line-height: 1.3;
-}
-
-.promo-desc {
-  font-size: 13px;
-  color: #A16207;
-  margin-top: 6px;
-  line-height: 1.4;
 }
 
 /* ===== Sections ===== */
