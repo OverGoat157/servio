@@ -221,8 +221,9 @@ func (h *PublicHandler) CreateOrder(c *gin.Context) {
 		return
 	}
 
-	// Подсчитываем итого и обогащаем items
+	// Подсчитываем итого, время готовки и обогащаем items
 	var total int
+	var maxCookMin int
 	var enrichedItems []model.OrderItem
 	for _, oi := range req.Items {
 		if oi.ComboID > 0 {
@@ -255,6 +256,11 @@ func (h *PublicHandler) CreateOrder(c *gin.Context) {
 				Comment:    oi.Comment,
 			})
 			total += item.Price * oi.Quantity
+			if item.CookTime != nil {
+				if mins := service.ParseCookTimeMinutes(*item.CookTime); mins > maxCookMin {
+					maxCookMin = mins
+				}
+			}
 		}
 	}
 
@@ -276,11 +282,14 @@ func (h *PublicHandler) CreateOrder(c *gin.Context) {
 		CustomerPhone:  req.CustomerPhone,
 		Comment:        req.Comment,
 		MenuURL:        req.MenuURL,
+		DesiredTime:    req.DesiredTime,
+		EstCookMin:     maxCookMin,
 	}
 	orderText := service.FormatOrderText(msg)
 
 	response := gin.H{
-		"order": order,
+		"order":        order,
+		"est_cook_min": maxCookMin,
 	}
 
 	// Обрабатываем в зависимости от мессенджера

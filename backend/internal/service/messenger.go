@@ -6,11 +6,15 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
 	"ab-team/internal/model"
 )
+
+var reDigits = regexp.MustCompile(`\d+`)
 
 // TelegramConfig — настройки для Telegram-бота
 type TelegramConfig struct {
@@ -33,6 +37,8 @@ type OrderMessage struct {
 	CustomerPhone  string
 	Comment        string
 	MenuURL        string
+	DesiredTime    string // "asap" или "HH:MM"
+	EstCookMin     int    // примерное время готовки в минутах
 }
 
 // FormatOrderText создаёт текстовое представление заказа
@@ -64,6 +70,16 @@ func FormatOrderText(msg *OrderMessage) string {
 	b.WriteString("──────────────────\n")
 	b.WriteString(fmt.Sprintf("📦 Позиций: %d (блюд: %d)\n", len(msg.Items), totalQty))
 	b.WriteString(fmt.Sprintf("💰 ИТОГО: %.0f ₽\n", total))
+
+	if msg.EstCookMin > 0 {
+		b.WriteString(fmt.Sprintf("⏱ Примерное время готовки: ~%d мин\n", msg.EstCookMin))
+	}
+
+	if msg.DesiredTime != "" && msg.DesiredTime != "asap" {
+		b.WriteString(fmt.Sprintf("\n⏰ ПРИГОТОВИТЬ К: %s\n", msg.DesiredTime))
+	} else {
+		b.WriteString("\n⚡ КАК МОЖНО БЫСТРЕЕ\n")
+	}
 
 	if msg.CustomerName != "" || msg.CustomerPhone != "" {
 		b.WriteString("\n👤 КЛИЕНТ:\n")
@@ -122,6 +138,22 @@ func BuildWhatsAppURL(cfg WhatsAppConfig, text string) string {
 	phone = strings.ReplaceAll(phone, "-", "")
 
 	return fmt.Sprintf("https://wa.me/%s?text=%s", phone, url.QueryEscape(text))
+}
+
+// ParseCookTimeMinutes извлекает число минут из строки вроде "15 мин", "30", "1 час"
+func ParseCookTimeMinutes(s string) int {
+	if s == "" {
+		return 0
+	}
+	m := reDigits.FindString(s)
+	if m == "" {
+		return 0
+	}
+	n, _ := strconv.Atoi(m)
+	if strings.Contains(strings.ToLower(s), "час") {
+		n *= 60
+	}
+	return n
 }
 
 // ParseTelegramConfig парсит JSON конфиг Telegram

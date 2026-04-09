@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { restaurant } from '../stores/restaurant'
-import { cart, cartTotal, orderComment, updateQuantity, updateComment, removeFromCart, clearCart } from '../stores/cart'
+import { cart, cartTotal, orderComment, estCookMin, updateQuantity, updateComment, removeFromCart, clearCart } from '../stores/cart'
 import { createOrder } from '../api/client'
 
 const route = useRoute()
@@ -12,6 +12,8 @@ const slug = route.params.slug
 const customerName = ref('')
 const customerPhone = ref('')
 const selectedMessenger = ref('')
+const timeMode = ref('asap') // 'asap' | 'scheduled'
+const scheduledTime = ref('')
 const sending = ref(false)
 const sent = ref(false)
 const orderError = ref(null)
@@ -46,6 +48,7 @@ async function submitOrder() {
       customer_phone: customerPhone.value || undefined,
       comment: orderComment.value || undefined,
       menu_url: window.location.origin + '/' + slug,
+      desired_time: timeMode.value === 'scheduled' ? scheduledTime.value : 'asap',
     })
 
     if (result.messenger_sent === false && result.messenger_error) {
@@ -170,6 +173,33 @@ function goHome() {
       <div class="form-section">
         <div class="section-label">Комментарий к заказу</div>
         <textarea v-model="orderComment" class="field-input order-comment" placeholder="Пожелания к заказу, аллергии, время доставки..." rows="2"></textarea>
+      </div>
+
+      <!-- Time selection -->
+      <div class="form-section">
+        <div class="section-label">Когда приготовить?</div>
+        <div class="time-hint" v-if="estCookMin">Примерное время готовки: ~{{ estCookMin }} мин</div>
+        <div class="time-options">
+          <button
+            class="time-option"
+            :class="{ active: timeMode === 'asap' }"
+            @click="timeMode = 'asap'"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            <span>Как можно быстрее</span>
+          </button>
+          <button
+            class="time-option"
+            :class="{ active: timeMode === 'scheduled' }"
+            @click="timeMode = 'scheduled'"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <span>Ко времени</span>
+          </button>
+        </div>
+        <div class="time-picker-row" v-if="timeMode === 'scheduled'">
+          <input type="time" v-model="scheduledTime" class="field-input time-picker" />
+        </div>
       </div>
 
       <!-- Messenger selection -->
@@ -526,6 +556,53 @@ function goHome() {
 
 .field-input::placeholder {
   color: var(--text-muted);
+}
+
+/* Time selection */
+.time-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.time-options {
+  display: flex;
+  gap: 10px;
+}
+
+.time-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all var(--ease);
+}
+
+.time-option.active {
+  border-color: var(--primary);
+  color: var(--text);
+  background: var(--bg-secondary);
+}
+
+.time-picker-row {
+  margin-top: 12px;
+}
+
+.time-picker {
+  max-width: 160px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 /* Messenger options */

@@ -23,9 +23,21 @@ export function addToCart(menuItem, comment = '') {
       price: menuItem.price,
       quantity: 1,
       comment: comment || '',
+      cook_time: menuItem.cook_time || null,
     })
   }
 }
+
+export const estCookMin = computed(() => {
+  let max = 0
+  for (const item of cart) {
+    if (item.cook_time) {
+      const m = parseInt(item.cook_time)
+      if (m > max) max = m
+    }
+  }
+  return max
+})
 
 export function removeFromCart(itemId) {
   const idx = cart.findIndex(i => i.id === itemId)

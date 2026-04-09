@@ -31,4 +31,5 @@ type CreateOrderRequest struct {
 	CustomerPhone string      `json:"customer_phone"`
 	Comment       string      `json:"comment"`
 	MenuURL       string      `json:"menu_url"`
+	DesiredTime   string      `json:"desired_time"`
 }
