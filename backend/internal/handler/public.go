@@ -33,6 +33,16 @@ var dayMap = map[time.Weekday]string{
 	time.Sunday:    "Вс",
 }
 
+var moscowTZ *time.Location
+
+func init() {
+	var err error
+	moscowTZ, err = time.LoadLocation("Europe/Moscow")
+	if err != nil {
+		moscowTZ = time.FixedZone("MSK", 3*60*60)
+	}
+}
+
 // checkRestaurantOpen проверяет можно ли принять заказ (закрывается ли ресторан через 30 мин)
 // Возвращает: open, closingSoon, closeTime, error message
 func checkRestaurantOpen(workingHoursJSON *string) (open bool, closingSoon bool, closeTime string) {
@@ -42,10 +52,11 @@ func checkRestaurantOpen(workingHoursJSON *string) (open bool, closingSoon bool,
 
 	var schedule []daySchedule
 	if err := json.Unmarshal([]byte(*workingHoursJSON), &schedule); err != nil {
+		log.Printf("schedule parse error: %v (data: %.100s)", err, *workingHoursJSON)
 		return true, false, "" // не удалось распарсить — пропускаем
 	}
 
-	now := time.Now()
+	now := time.Now().In(moscowTZ)
 	todayName := dayMap[now.Weekday()]
 
 	var today *daySchedule
