@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"ab-team/internal/model"
 )
@@ -38,34 +39,53 @@ type OrderMessage struct {
 func FormatOrderText(msg *OrderMessage) string {
 	var b strings.Builder
 
-	b.WriteString(fmt.Sprintf("🍽 Новый заказ #%d\n", msg.OrderID))
-	b.WriteString(fmt.Sprintf("Ресторан: %s\n\n", msg.RestaurantName))
+	now := time.Now().Format("02.01.2006 15:04")
 
-	for _, item := range msg.Items {
+	b.WriteString("🔔🔔🔔 НОВЫЙ ЗАКАЗ 🔔🔔🔔\n")
+	b.WriteString("━━━━━━━━━━━━━━━━━━━━\n")
+	b.WriteString(fmt.Sprintf("🆔 Заказ #%d\n", msg.OrderID))
+	b.WriteString(fmt.Sprintf("🏪 %s\n", msg.RestaurantName))
+	b.WriteString(fmt.Sprintf("🕐 %s\n", now))
+	b.WriteString("━━━━━━━━━━━━━━━━━━━━\n\n")
+
+	b.WriteString("📋 СОСТАВ ЗАКАЗА:\n")
+	b.WriteString("──────────────────\n")
+	var totalQty int
+	for i, item := range msg.Items {
 		price := float64(item.Price*item.Quantity) / 100
-		b.WriteString(fmt.Sprintf("• %s x%d — %.0f ₽\n", item.Name, item.Quantity, price))
+		b.WriteString(fmt.Sprintf("%d. %s × %d — %.0f ₽\n", i+1, item.Name, item.Quantity, price))
 		if item.Comment != "" {
-			b.WriteString(fmt.Sprintf("  💬 %s\n", item.Comment))
+			b.WriteString(fmt.Sprintf("   💬 %s\n", item.Comment))
 		}
+		totalQty += item.Quantity
 	}
 
 	total := float64(msg.Total) / 100
-	b.WriteString(fmt.Sprintf("\n💰 Итого: %.0f ₽\n", total))
+	b.WriteString("──────────────────\n")
+	b.WriteString(fmt.Sprintf("📦 Позиций: %d (блюд: %d)\n", len(msg.Items), totalQty))
+	b.WriteString(fmt.Sprintf("💰 ИТОГО: %.0f ₽\n", total))
 
-	if msg.CustomerName != "" {
-		b.WriteString(fmt.Sprintf("👤 %s\n", msg.CustomerName))
-	}
-	if msg.CustomerPhone != "" {
-		b.WriteString(fmt.Sprintf("📞 %s\n", msg.CustomerPhone))
+	if msg.CustomerName != "" || msg.CustomerPhone != "" {
+		b.WriteString("\n👤 КЛИЕНТ:\n")
+		if msg.CustomerName != "" {
+			b.WriteString(fmt.Sprintf("   Имя: %s\n", msg.CustomerName))
+		}
+		if msg.CustomerPhone != "" {
+			b.WriteString(fmt.Sprintf("   Тел: %s\n", msg.CustomerPhone))
+		}
 	}
 
 	if msg.Comment != "" {
-		b.WriteString(fmt.Sprintf("\n📝 Комментарий: %s\n", msg.Comment))
+		b.WriteString(fmt.Sprintf("\n📝 КОММЕНТАРИЙ:\n   %s\n", msg.Comment))
 	}
 
+	b.WriteString("\n━━━━━━━━━━━━━━━━━━━━\n")
+
 	if msg.MenuURL != "" {
-		b.WriteString(fmt.Sprintf("\n🔗 Меню: %s", msg.MenuURL))
+		b.WriteString(fmt.Sprintf("🔗 Меню: %s\n", msg.MenuURL))
 	}
+
+	b.WriteString("⚡ Обработайте заказ как можно скорее!")
 
 	return b.String()
 }
