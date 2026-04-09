@@ -238,13 +238,21 @@ function goHome() {
         </div>
       </div>
 
+      <!-- Closed / Closing soon banner -->
+      <div class="closed-banner" v-if="!restaurant.is_open">
+        Ресторан сейчас закрыт. Заказы не принимаются.
+      </div>
+      <div class="closing-banner" v-else-if="restaurant.closing_soon">
+        Ресторан скоро закрывается (в {{ restaurant.close_time }}). Заказы больше не принимаются.
+      </div>
+
       <!-- Error -->
       <div class="order-error" v-if="orderError">{{ orderError }}</div>
 
       <!-- Submit -->
       <button
         class="submit-btn"
-        :disabled="!selectedMessenger || sending || (timeMode === 'scheduled' && (!scheduledTime || timeError))"
+        :disabled="!selectedMessenger || sending || !restaurant.is_open || restaurant.closing_soon || (timeMode === 'scheduled' && (!scheduledTime || timeError))"
         @click="submitOrder"
       >
         {{ sending ? 'Отправка...' : 'Отправить заказ' }}
@@ -654,6 +662,27 @@ function goHome() {
   border-color: var(--primary);
   color: var(--text);
   background: var(--bg-secondary);
+}
+
+/* Closed / Closing banners */
+.closed-banner,
+.closing-banner {
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 16px;
+}
+
+.closed-banner {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.closing-banner {
+  background: #FEF3C7;
+  color: #92400E;
 }
 
 /* Error */

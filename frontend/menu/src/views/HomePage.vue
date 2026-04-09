@@ -117,6 +117,14 @@ const todayDayName = computed(() => {
         </div>
       </div>
 
+      <!-- Closed / Closing soon -->
+      <div class="status-banner closed" v-if="!restaurant.is_open">
+        Сейчас закрыто. Заказы не принимаются.
+      </div>
+      <div class="status-banner closing" v-else-if="restaurant.closing_soon">
+        Закрываемся в {{ restaurant.close_time }}. Заказы больше не принимаются.
+      </div>
+
       <!-- Популярные блюда -->
       <div class="section" v-if="popularItems.length">
         <div class="section-header">
@@ -429,6 +437,26 @@ const todayDayName = computed(() => {
   line-height: 1.5;
   max-width: 320px;
   margin: 0 auto;
+}
+
+/* ===== Status banner ===== */
+.status-banner {
+  margin: 12px 16px 0;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.status-banner.closed {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.status-banner.closing {
+  background: #FEF3C7;
+  color: #92400E;
 }
 
 /* ===== Sections ===== */

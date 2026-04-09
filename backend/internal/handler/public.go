@@ -2,8 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -11,6 +13,83 @@ import (
 	"ab-team/internal/repository"
 	"ab-team/internal/service"
 )
+
+type daySchedule struct {
+	Day        string `json:"day"`
+	Open       string `json:"open"`
+	Close      string `json:"close"`
+	BreakStart string `json:"break_start"`
+	BreakEnd   string `json:"break_end"`
+	DayOff     bool   `json:"day_off"`
+}
+
+var dayMap = map[time.Weekday]string{
+	time.Monday:    "Пн",
+	time.Tuesday:   "Вт",
+	time.Wednesday: "Ср",
+	time.Thursday:  "Чт",
+	time.Friday:    "Пт",
+	time.Saturday:  "Сб",
+	time.Sunday:    "Вс",
+}
+
+// checkRestaurantOpen проверяет можно ли принять заказ (закрывается ли ресторан через 30 мин)
+// Возвращает: open, closingSoon, closeTime, error message
+func checkRestaurantOpen(workingHoursJSON *string) (open bool, closingSoon bool, closeTime string) {
+	if workingHoursJSON == nil || *workingHoursJSON == "" {
+		return true, false, "" // нет расписания — всегда открыт
+	}
+
+	var schedule []daySchedule
+	if err := json.Unmarshal([]byte(*workingHoursJSON), &schedule); err != nil {
+		return true, false, "" // не удалось распарсить — пропускаем
+	}
+
+	now := time.Now()
+	todayName := dayMap[now.Weekday()]
+
+	var today *daySchedule
+	for i := range schedule {
+		if schedule[i].Day == todayName {
+			today = &schedule[i]
+			break
+		}
+	}
+
+	if today == nil {
+		return true, false, ""
+	}
+
+	if today.DayOff {
+		return false, false, ""
+	}
+
+	nowMin := now.Hour()*60 + now.Minute()
+
+	openMin := parseTime(today.Open)
+	closeMin := parseTime(today.Close)
+
+	if nowMin < openMin {
+		return false, false, today.Open
+	}
+
+	if nowMin >= closeMin {
+		return false, false, ""
+	}
+
+	// За 30 минут до закрытия
+	if closeMin-nowMin <= 30 {
+		return true, true, today.Close
+	}
+
+	return true, false, today.Close
+}
+
+func parseTime(s string) int {
+	var h, m int
+	fmt.Sscanf(s, "%d:%d", &h, &m)
+	return h*60 + m
+}
 
 type PublicHandler struct {
 	restaurants *repository.RestaurantRepo
@@ -82,6 +161,9 @@ type PublicRestaurant struct {
 	Categories       []MenuCategory  `json:"categories"`
 	Combos           []PublicCombo   `json:"combos"`
 	Messengers       []string        `json:"messengers"`
+	IsOpen           bool            `json:"is_open"`
+	ClosingSoon      bool            `json:"closing_soon"`
+	CloseTime        string          `json:"close_time,omitempty"`
 }
 
 type PublicCombo struct {
@@ -184,6 +266,8 @@ func (h *PublicHandler) GetMenu(c *gin.Context) {
 		}
 	}
 
+	isOpen, closingSoon, closeTime := checkRestaurantOpen(rest.WorkingHours)
+
 	pub := PublicRestaurant{
 		ID:               rest.ID,
 		Name:             rest.Name,
@@ -199,6 +283,9 @@ func (h *PublicHandler) GetMenu(c *gin.Context) {
 		Categories:       menuCats,
 		Combos:           pubCombos,
 		Messengers:       messengers,
+		IsOpen:           isOpen,
+		ClosingSoon:      closingSoon,
+		CloseTime:        closeTime,
 	}
 
 	if rest.WorkingHours != nil {
@@ -218,6 +305,16 @@ func (h *PublicHandler) CreateOrder(c *gin.Context) {
 	rest, err := h.restaurants.GetBySlug(slug)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "restaurant not found"})
+		return
+	}
+
+	open, closingSoon, closeTime := checkRestaurantOpen(rest.WorkingHours)
+	if !open {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Ресторан сейчас закрыт"})
+		return
+	}
+	if closingSoon {
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Ресторан закрывается в %s, заказы больше не принимаются", closeTime)})
 		return
 	}
 
