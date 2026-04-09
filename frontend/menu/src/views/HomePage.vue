@@ -62,6 +62,26 @@ function addWithComment() {
     addToCart(selectedItem.value, detailComment.value)
   }
 }
+
+const parsedSchedule = computed(() => {
+  const wh = restaurant.working_hours
+  if (!wh) return null
+
+  // New format: array of day objects
+  if (Array.isArray(wh)) return wh
+
+  // Old format: { "Пн — Пт": "10:00 — 22:00" } — show as key/value
+  if (typeof wh === 'object') {
+    return Object.entries(wh).map(([day, time]) => ({ day, time, legacy: true }))
+  }
+
+  return null
+})
+
+const todayDayName = computed(() => {
+  const days = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+  return days[new Date().getDay()]
+})
 </script>
 
 <template>
@@ -147,22 +167,31 @@ function addWithComment() {
       </div>
 
       <!-- Часы работы -->
-      <div class="section" v-if="restaurant.working_hours">
-        <div class="info-card">
-          <div class="info-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round">
-              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-            </svg>
-          </div>
-          <div class="info-body">
-            <div class="info-label">Режим работы</div>
-            <div class="hours-grid">
-              <div class="hours-row" v-for="(time, day) in restaurant.working_hours" :key="day">
-                <span class="day">{{ day }}</span>
-                <span class="time">{{ time }}</span>
-              </div>
+      <div class="section" v-if="parsedSchedule?.length">
+        <div class="section-header">
+          <h2>Режим работы</h2>
+        </div>
+        <div class="schedule-card">
+          <template v-if="parsedSchedule[0]?.legacy">
+            <div class="hours-row" v-for="item in parsedSchedule" :key="item.day">
+              <span class="sday">{{ item.day }}</span>
+              <span class="sdots"></span>
+              <span class="stime">{{ item.time }}</span>
             </div>
-          </div>
+          </template>
+          <template v-else>
+            <div class="hours-row" v-for="s in parsedSchedule" :key="s.day" :class="{ 'hours-today': s.day === todayDayName, 'hours-off': s.day_off }">
+              <span class="sday">{{ s.day }}</span>
+              <span class="sdots"></span>
+              <template v-if="s.day_off">
+                <span class="stime stime-off">Выходной</span>
+              </template>
+              <template v-else>
+                <span class="stime">{{ s.open }} — {{ s.close }}</span>
+                <span class="sbreak" v-if="s.break_start">(обед {{ s.break_start }} — {{ s.break_end }})</span>
+              </template>
+            </div>
+          </template>
         </div>
       </div>
 
@@ -643,25 +672,61 @@ function addWithComment() {
   line-height: 1.5;
 }
 
-.hours-grid {
+.schedule-card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .hours-row {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
   font-size: 14px;
-  padding: 4px 0;
+  padding: 6px 8px;
+  border-radius: 8px;
+  gap: 8px;
 }
 
-.day {
-  color: var(--text-secondary);
-}
-
-.time {
+.hours-row.hours-today {
+  background: var(--primary-light, rgba(59,130,246,0.08));
   font-weight: 600;
+}
+
+.hours-row.hours-off {
+  opacity: 0.5;
+}
+
+.sday {
+  width: 26px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.sdots {
+  flex: 1;
+  border-bottom: 1px dotted var(--border);
+  margin: 0 4px;
+  min-width: 20px;
+  align-self: flex-end;
+  margin-bottom: 4px;
+}
+
+.stime {
+  white-space: nowrap;
+}
+
+.stime-off {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.sbreak {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
 /* ===== Social links ===== */

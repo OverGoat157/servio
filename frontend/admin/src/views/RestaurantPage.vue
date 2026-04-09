@@ -21,13 +21,42 @@ const form = ref({
   description: '',
   phone: '',
   address: '',
-  working_hours: '',
   theme: '',
   cover_image: '',
   logo: '',
   promo_title: '',
   promo_description: '',
 })
+
+const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+
+function defaultSchedule() {
+  return dayNames.map(day => ({
+    day,
+    open: '10:00',
+    close: '22:00',
+    break_start: '',
+    break_end: '',
+    day_off: false,
+  }))
+}
+
+const schedule = ref(defaultSchedule())
+
+function parseScheduleFromData(data) {
+  if (!data) return defaultSchedule()
+  const wh = typeof data === 'string' ? JSON.parse(data) : data
+
+  // New format: array of day objects
+  if (Array.isArray(wh)) return wh
+
+  // Old format: { "Пн — Пт": "10:00 — 22:00" } — convert to defaults
+  return defaultSchedule()
+}
+
+function scheduleToJSON() {
+  return JSON.stringify(schedule.value)
+}
 
 const socialLinks = ref([])
 const socialTypes = [
@@ -87,13 +116,15 @@ onMounted(async () => {
       description: data.description || '',
       phone: data.phone || '',
       address: data.address || '',
-      working_hours: data.working_hours ? JSON.stringify(data.working_hours) : '',
       theme: data.theme,
       cover_image: data.cover_image || '',
       logo: data.logo || '',
       promo_title: data.promo_title || '',
       promo_description: data.promo_description || '',
     }
+    try {
+      schedule.value = parseScheduleFromData(data.working_hours)
+    } catch { schedule.value = defaultSchedule() }
     try {
       const links = typeof data.social_links === 'string' ? JSON.parse(data.social_links) : (data.social_links || [])
       socialLinks.value = Array.isArray(links) ? links : []
@@ -129,7 +160,7 @@ async function save() {
   error.value = ''
   try {
     const validLinks = socialLinks.value.filter(l => l.url.trim())
-    await api.update(id, { ...form.value, social_links: JSON.stringify(validLinks) })
+    await api.update(id, { ...form.value, working_hours: scheduleToJSON(), social_links: JSON.stringify(validLinks) })
     success.value = true
     setTimeout(() => success.value = false, 2000)
   } catch (e) {
@@ -250,10 +281,33 @@ async function save() {
         </button>
 
         <div class="divider"></div>
-        <div class="field">
-          <label class="label">Часы работы (JSON)</label>
-          <textarea v-model="form.working_hours" class="input textarea" rows="4" placeholder='{"Пн — Пт": "10:00 — 22:00", "Сб — Вс": "11:00 — 23:00"}'></textarea>
-          <div class="hint">Формат JSON: {"день": "время", ...}</div>
+        <h3 class="section-title">Режим работы</h3>
+        <div class="schedule-list">
+          <div class="sched-row" v-for="s in schedule" :key="s.day" :class="{ 'sched-off': s.day_off }">
+            <div class="sched-day">{{ s.day }}</div>
+            <div class="sched-fields" v-if="!s.day_off">
+              <div class="sched-time-group">
+                <input type="time" v-model="s.open" class="sched-time" />
+                <span class="sched-sep">—</span>
+                <input type="time" v-model="s.close" class="sched-time" />
+              </div>
+              <div class="sched-break">
+                <label class="sched-break-label" v-if="!s.break_start" @click="s.break_start = '13:00'; s.break_end = '14:00'">+ обед</label>
+                <template v-else>
+                  <span class="sched-break-tag">Обед:</span>
+                  <input type="time" v-model="s.break_start" class="sched-time sched-time-sm" />
+                  <span class="sched-sep">—</span>
+                  <input type="time" v-model="s.break_end" class="sched-time sched-time-sm" />
+                  <button type="button" class="sched-break-remove" @click="s.break_start = ''; s.break_end = ''">×</button>
+                </template>
+              </div>
+            </div>
+            <div class="sched-dayoff-label" v-else>Выходной</div>
+            <label class="sched-toggle">
+              <input type="checkbox" :checked="!s.day_off" @change="s.day_off = !s.day_off" />
+              <span class="sched-toggle-slider"></span>
+            </label>
+          </div>
         </div>
 
         <div class="divider"></div>
@@ -487,6 +541,179 @@ async function save() {
 
 .btn-add-social:hover {
   background: var(--bg);
+}
+
+/* Schedule */
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.sched-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: opacity 0.2s;
+}
+
+.sched-row.sched-off {
+  opacity: 0.5;
+  background: var(--bg-secondary, #f9fafb);
+}
+
+.sched-day {
+  width: 28px;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.sched-fields {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.sched-time-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sched-time {
+  width: 100px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.sched-time-sm {
+  width: 90px;
+}
+
+.sched-sep {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.sched-break {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sched-break-label {
+  font-size: 12px;
+  color: var(--primary);
+  cursor: pointer;
+  padding: 4px 10px;
+  border: 1px dashed var(--primary);
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+.sched-break-label:hover {
+  background: var(--primary-light, #f0f5ff);
+}
+
+.sched-break-tag {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.sched-break-remove {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.sched-break-remove:hover {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.sched-dayoff-label {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.sched-toggle {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.sched-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.sched-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--border);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sched-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.sched-toggle input:checked + .sched-toggle-slider {
+  background: var(--success, #22c55e);
+}
+
+.sched-toggle input:checked + .sched-toggle-slider::before {
+  transform: translateX(16px);
+}
+
+@media (max-width: 640px) {
+  .sched-row {
+    flex-wrap: wrap;
+  }
+  .sched-fields {
+    width: 100%;
+  }
+  .sched-time {
+    width: 85px;
+  }
+  .sched-time-sm {
+    width: 80px;
+  }
 }
 
 /* Messages */
