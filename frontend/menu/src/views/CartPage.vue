@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { restaurant } from '../stores/restaurant'
 import { cart, cartTotal, orderComment, estCookMin, updateQuantity, updateComment, removeFromCart, clearCart } from '../stores/cart'
@@ -18,6 +18,22 @@ const sending = ref(false)
 const sent = ref(false)
 const orderError = ref(null)
 
+const minScheduledTime = computed(() => {
+  const now = new Date()
+  now.setMinutes(now.getMinutes() + (estCookMin.value || 15))
+  const hh = String(now.getHours()).padStart(2, '0')
+  const mm = String(now.getMinutes()).padStart(2, '0')
+  return `${hh}:${mm}`
+})
+
+const timeError = computed(() => {
+  if (timeMode.value !== 'scheduled' || !scheduledTime.value) return ''
+  if (scheduledTime.value < minScheduledTime.value) {
+    return `Минимальное время — ${minScheduledTime.value} (нужно ~${estCookMin.value || 15} мин на готовку)`
+  }
+  return ''
+})
+
 function formatPrice(kopecks) {
   return Math.floor(kopecks / 100).toLocaleString('ru-RU') + ' \u20BD'
 }
@@ -28,6 +44,7 @@ function goBack() {
 
 async function submitOrder() {
   if (!selectedMessenger.value || cart.length === 0) return
+  if (timeMode.value === 'scheduled' && (!scheduledTime.value || timeError.value)) return
 
   sending.value = true
   orderError.value = null
@@ -198,7 +215,8 @@ function goHome() {
           </button>
         </div>
         <div class="time-picker-row" v-if="timeMode === 'scheduled'">
-          <input type="time" v-model="scheduledTime" class="field-input time-picker" />
+          <input type="time" v-model="scheduledTime" :min="minScheduledTime" class="field-input time-picker" />
+          <div class="time-error" v-if="timeError">{{ timeError }}</div>
         </div>
       </div>
 
@@ -226,7 +244,7 @@ function goHome() {
       <!-- Submit -->
       <button
         class="submit-btn"
-        :disabled="!selectedMessenger || sending"
+        :disabled="!selectedMessenger || sending || (timeMode === 'scheduled' && (!scheduledTime || timeError))"
         @click="submitOrder"
       >
         {{ sending ? 'Отправка...' : 'Отправить заказ' }}
@@ -603,6 +621,12 @@ function goHome() {
   text-align: center;
   font-size: 18px;
   font-weight: 600;
+}
+
+.time-error {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--danger);
 }
 
 /* Messenger options */
