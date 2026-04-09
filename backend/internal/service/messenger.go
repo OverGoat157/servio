@@ -30,8 +30,8 @@ type OrderMessage struct {
 	Total          int
 	CustomerName   string
 	CustomerPhone  string
-	Messenger      string
 	Comment        string
+	MenuURL        string
 }
 
 // FormatOrderText создаёт текстовое представление заказа
@@ -63,7 +63,9 @@ func FormatOrderText(msg *OrderMessage) string {
 		b.WriteString(fmt.Sprintf("\n📝 Комментарий: %s\n", msg.Comment))
 	}
 
-	b.WriteString(fmt.Sprintf("\nМессенджер: %s", msg.Messenger))
+	if msg.MenuURL != "" {
+		b.WriteString(fmt.Sprintf("\n🔗 Меню: %s", msg.MenuURL))
+	}
 
 	return b.String()
 }

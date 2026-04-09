@@ -16,6 +16,7 @@ type Config struct {
 	DBSSLMode  string
 	JWTSecret  string
 	ServerPort string
+	MenuBaseURL string
 }
 
 func Load() *Config {
@@ -29,7 +30,8 @@ func Load() *Config {
 		DBName:     getEnv("DB_NAME", "abteam"),
 		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
 		JWTSecret:  getEnv("JWT_SECRET", "change-me"),
-		ServerPort: getEnv("SERVER_PORT", "8080"),
+		ServerPort:  getEnv("SERVER_PORT", "8080"),
+		MenuBaseURL: getEnv("MENU_BASE_URL", ""),
 	}
 }
 

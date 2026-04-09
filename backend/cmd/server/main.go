@@ -41,7 +41,7 @@ func main() {
 	orderH := handler.NewOrderHandler(orderRepo, restRepo)
 	msgH := handler.NewMessengerHandler(msgRepo, restRepo)
 	comboH := handler.NewComboHandler(comboRepo, restRepo)
-	publicH := handler.NewPublicHandler(restRepo, catRepo, itemRepo, orderRepo, msgRepo, comboRepo)
+	publicH := handler.NewPublicHandler(restRepo, catRepo, itemRepo, orderRepo, msgRepo, comboRepo, cfg.MenuBaseURL)
 	qrH := handler.NewQRCodeHandler(restRepo)
 	uploadH := handler.NewUploadHandler()
 	adminH := handler.NewAdminHandler(userRepo, restRepo)
