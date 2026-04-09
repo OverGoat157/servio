@@ -18,6 +18,7 @@ const editingId = ref(null)
 const form = ref({ name: '', description: '', price: '', image: '', sort_order: 0 })
 const formItems = ref([])
 const uploadingImage = ref(false)
+const saving = ref(false)
 
 onMounted(async () => {
   try {
@@ -86,25 +87,31 @@ function onSelectMenuItem(idx) {
 }
 
 async function saveCombo() {
-  const data = {
-    name: form.value.name,
-    description: form.value.description,
-    price: Math.round(parseFloat(form.value.price) * 100),
-    image: form.value.image,
-    sort_order: form.value.sort_order,
-    items: formItems.value.filter(i => i.name.trim()).map(i => ({
-      menu_item_id: i.menu_item_id || null,
-      name: i.name,
-      quantity: i.quantity || 1,
-    })),
+  if (saving.value) return
+  saving.value = true
+  try {
+    const data = {
+      name: form.value.name,
+      description: form.value.description,
+      price: Math.round(parseFloat(form.value.price) * 100),
+      image: form.value.image,
+      sort_order: form.value.sort_order,
+      items: formItems.value.filter(i => i.name.trim()).map(i => ({
+        menu_item_id: i.menu_item_id || null,
+        name: i.name,
+        quantity: i.quantity || 1,
+      })),
+    }
+    if (editingId.value) {
+      await comboApi.update(editingId.value, data)
+    } else {
+      await comboApi.create(id, data)
+    }
+    showForm.value = false
+    await loadCombos()
+  } finally {
+    saving.value = false
   }
-  if (editingId.value) {
-    await comboApi.update(editingId.value, data)
-  } else {
-    await comboApi.create(id, data)
-  }
-  showForm.value = false
-  await loadCombos()
 }
 
 async function toggleAvailable(combo) {
@@ -245,7 +252,7 @@ function formatPrice(kopecks) {
 
           <div class="modal-actions">
             <button type="button" class="btn btn-outline" @click="showForm = false">Отмена</button>
-            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <button type="submit" class="btn btn-primary" :disabled="saving">{{ saving ? 'Сохранение...' : 'Сохранить' }}</button>
           </div>
         </form>
       </div>

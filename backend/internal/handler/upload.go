@@ -59,6 +59,11 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"url": url})
 }
 
+// isDuplicate checks if an error is a Postgres unique constraint violation
+func isDuplicate(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "duplicate key")
+}
+
 // DeleteFile removes an old uploaded file by its URL path
 func DeleteFile(urlPath string) {
 	if urlPath == "" || !strings.HasPrefix(urlPath, "/uploads/") {

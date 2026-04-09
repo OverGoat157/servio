@@ -52,6 +52,10 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 
 	cat, err := h.categories.Create(restaurantID, &req)
 	if err != nil {
+		if isDuplicate(err) {
+			c.JSON(http.StatusConflict, gin.H{"error": "Категория с таким названием уже существует"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create category"})
 		return
 	}

@@ -32,6 +32,8 @@ const itemForm = ref({ name: '', description: '', price: '', sort_order: 0, imag
 const editingItemId = ref(null)
 const targetCatId = ref(null)
 const uploadingItemImage = ref(false)
+const savingCat = ref(false)
+const savingItem = ref(false)
 
 onMounted(async () => {
   try {
@@ -65,13 +67,19 @@ function openCatForm(cat = null) {
 }
 
 async function saveCat() {
-  if (editingCatId.value) {
-    await catApi.update(editingCatId.value, catForm.value)
-  } else {
-    await catApi.create(id, catForm.value)
+  if (savingCat.value) return
+  savingCat.value = true
+  try {
+    if (editingCatId.value) {
+      await catApi.update(editingCatId.value, catForm.value)
+    } else {
+      await catApi.create(id, catForm.value)
+    }
+    showCatForm.value = false
+    await loadCategories()
+  } finally {
+    savingCat.value = false
   }
-  showCatForm.value = false
-  await loadCategories()
 }
 
 async function deleteCat(catId) {
@@ -107,21 +115,27 @@ function openItemForm(catId, item = null) {
 }
 
 async function saveItem() {
-  const data = {
-    ...itemForm.value,
-    price: Math.round(parseFloat(itemForm.value.price) * 100),
-    calories: itemForm.value.calories !== '' ? Number(itemForm.value.calories) : null,
-    proteins: itemForm.value.proteins !== '' ? Number(itemForm.value.proteins) : null,
-    fats: itemForm.value.fats !== '' ? Number(itemForm.value.fats) : null,
-    carbs: itemForm.value.carbs !== '' ? Number(itemForm.value.carbs) : null,
+  if (savingItem.value) return
+  savingItem.value = true
+  try {
+    const data = {
+      ...itemForm.value,
+      price: Math.round(parseFloat(itemForm.value.price) * 100),
+      calories: itemForm.value.calories !== '' ? Number(itemForm.value.calories) : null,
+      proteins: itemForm.value.proteins !== '' ? Number(itemForm.value.proteins) : null,
+      fats: itemForm.value.fats !== '' ? Number(itemForm.value.fats) : null,
+      carbs: itemForm.value.carbs !== '' ? Number(itemForm.value.carbs) : null,
+    }
+    if (editingItemId.value) {
+      await itemApi.update(editingItemId.value, data)
+    } else {
+      await itemApi.create(targetCatId.value, data)
+    }
+    showItemForm.value = false
+    await loadCategories()
+  } finally {
+    savingItem.value = false
   }
-  if (editingItemId.value) {
-    await itemApi.update(editingItemId.value, data)
-  } else {
-    await itemApi.create(targetCatId.value, data)
-  }
-  showItemForm.value = false
-  await loadCategories()
 }
 
 async function toggleAvailable(item) {
@@ -251,7 +265,7 @@ function formatPrice(kopecks) {
           </div>
           <div class="modal-actions">
             <button type="button" class="btn btn-outline" @click="showCatForm = false">Отмена</button>
-            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <button type="submit" class="btn btn-primary" :disabled="savingCat">{{ savingCat ? 'Сохранение...' : 'Сохранить' }}</button>
           </div>
         </form>
       </div>
@@ -332,7 +346,7 @@ function formatPrice(kopecks) {
           </div>
           <div class="modal-actions">
             <button type="button" class="btn btn-outline" @click="showItemForm = false">Отмена</button>
-            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <button type="submit" class="btn btn-primary" :disabled="savingItem">{{ savingItem ? 'Сохранение...' : 'Сохранить' }}</button>
           </div>
         </form>
       </div>

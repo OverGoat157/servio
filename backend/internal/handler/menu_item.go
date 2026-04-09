@@ -58,6 +58,10 @@ func (h *MenuItemHandler) Create(c *gin.Context) {
 
 	item, err := h.items.Create(categoryID, &req)
 	if err != nil {
+		if isDuplicate(err) {
+			c.JSON(http.StatusConflict, gin.H{"error": "Блюдо с таким названием уже существует в этой категории"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create item"})
 		return
 	}

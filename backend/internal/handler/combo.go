@@ -51,6 +51,10 @@ func (h *ComboHandler) Create(c *gin.Context) {
 
 	combo, err := h.combos.Create(restID, &req)
 	if err != nil {
+		if isDuplicate(err) {
+			c.JSON(http.StatusConflict, gin.H{"error": "Комбо с таким названием уже существует"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create combo"})
 		return
 	}
