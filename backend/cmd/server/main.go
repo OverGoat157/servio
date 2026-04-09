@@ -46,7 +46,7 @@ func main() {
 	publicH := handler.NewPublicHandler(restRepo, catRepo, itemRepo, orderRepo, msgRepo, comboRepo, analyticsRepo)
 	qrH := handler.NewQRCodeHandler(restRepo)
 	uploadH := handler.NewUploadHandler()
-	adminH := handler.NewAdminHandler(userRepo, restRepo)
+	adminH := handler.NewAdminHandler(userRepo, restRepo, analyticsRepo)
 
 	r := gin.Default()
 	r.Use(middleware.CORS())
@@ -117,6 +117,7 @@ func main() {
 	// --- Admin API ---
 	adm := r.Group("/api/admin", middleware.AuthRequired(cfg.JWTSecret), middleware.AdminRequired())
 	{
+		adm.GET("/analytics", adminH.PlatformAnalytics)
 		adm.GET("/users", adminH.ListUsers)
 		adm.GET("/users/:id", adminH.GetUser)
 		adm.POST("/users", adminH.CreateUser)

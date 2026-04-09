@@ -59,6 +59,7 @@ export const admin = {
   deleteUser: (id) => request(`/api/admin/users/${id}`, { method: 'DELETE' }),
   listRestaurants: () => request('/api/admin/restaurants'),
   updateRestaurant: (id, body) => request(`/api/admin/restaurants/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  analytics: (days = 30) => request(`/api/admin/analytics?days=${days}`),
 }
 
 // Restaurants

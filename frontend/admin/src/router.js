@@ -9,6 +9,7 @@ import OrdersPage from './views/OrdersPage.vue'
 import MessengersPage from './views/MessengersPage.vue'
 import CombosPage from './views/CombosPage.vue'
 import AnalyticsPage from './views/AnalyticsPage.vue'
+import AdminAnalyticsPage from './views/AdminAnalyticsPage.vue'
 import AdminUsersPage from './views/AdminUsersPage.vue'
 
 const routes = [
@@ -21,6 +22,7 @@ const routes = [
   { path: '/restaurant/:id/messengers', name: 'messengers', component: MessengersPage, meta: { auth: true } },
   { path: '/restaurant/:id/analytics', name: 'analytics', component: AnalyticsPage, meta: { auth: true } },
   // Admin
+  { path: '/admin/analytics', name: 'admin-analytics', component: AdminAnalyticsPage, meta: { auth: true, admin: true } },
   { path: '/admin/users', name: 'admin-users', component: AdminUsersPage, meta: { auth: true, admin: true } },
 ]
 

@@ -14,10 +14,11 @@ import (
 type AdminHandler struct {
 	users       *repository.UserRepo
 	restaurants *repository.RestaurantRepo
+	analytics   *repository.AnalyticsRepo
 }
 
-func NewAdminHandler(users *repository.UserRepo, restaurants *repository.RestaurantRepo) *AdminHandler {
-	return &AdminHandler{users: users, restaurants: restaurants}
+func NewAdminHandler(users *repository.UserRepo, restaurants *repository.RestaurantRepo, analytics *repository.AnalyticsRepo) *AdminHandler {
+	return &AdminHandler{users: users, restaurants: restaurants, analytics: analytics}
 }
 
 // ListUsers returns all users
@@ -131,6 +132,24 @@ func (h *AdminHandler) DeleteUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+}
+
+// PlatformAnalytics returns platform-wide analytics for admin
+func (h *AdminHandler) PlatformAnalytics(c *gin.Context) {
+	days := 30
+	if d := c.Query("days"); d != "" {
+		if parsed, err := strconv.Atoi(d); err == nil && parsed > 0 && parsed <= 365 {
+			days = parsed
+		}
+	}
+
+	summary, err := h.analytics.GetPlatformSummary(days)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to load analytics"})
+		return
+	}
+
+	c.JSON(http.StatusOK, summary)
 }
 
 // ListAllRestaurants returns all restaurants across all users

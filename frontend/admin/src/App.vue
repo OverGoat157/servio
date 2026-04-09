@@ -26,6 +26,7 @@ function handleLogout() {
         <span>AB Team</span>
       </router-link>
       <div class="nav-right">
+        <router-link v-if="user?.role === 'admin'" to="/admin/analytics" class="nav-link">Аналитика</router-link>
         <router-link v-if="user?.role === 'admin'" to="/admin/users" class="nav-link">Пользователи</router-link>
         <span class="nav-user" v-if="user">{{ user.name }}</span>
         <button class="nav-logout" @click="handleLogout">Выйти</button>
