@@ -45,6 +45,7 @@ async function submitOrder() {
       customer_name: customerName.value || undefined,
       customer_phone: customerPhone.value || undefined,
       comment: orderComment.value || undefined,
+      menu_url: window.location.origin + '/' + slug,
     })
 
     if (result.messenger_sent === false && result.messenger_error) {

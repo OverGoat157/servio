@@ -19,7 +19,6 @@ type PublicHandler struct {
 	orders      *repository.OrderRepo
 	messengers  *repository.MessengerRepo
 	combos      *repository.ComboRepo
-	menuBaseURL string
 }
 
 func NewPublicHandler(
@@ -29,7 +28,6 @@ func NewPublicHandler(
 	orders *repository.OrderRepo,
 	messengers *repository.MessengerRepo,
 	combos *repository.ComboRepo,
-	menuBaseURL string,
 ) *PublicHandler {
 	return &PublicHandler{
 		restaurants: restaurants,
@@ -38,7 +36,6 @@ func NewPublicHandler(
 		orders:      orders,
 		messengers:  messengers,
 		combos:      combos,
-		menuBaseURL: menuBaseURL,
 	}
 }
 
@@ -270,11 +267,6 @@ func (h *PublicHandler) CreateOrder(c *gin.Context) {
 	}
 
 	// Формируем сообщение о заказе
-	var menuURL string
-	if h.menuBaseURL != "" {
-		menuURL = h.menuBaseURL + "/" + slug
-	}
-
 	msg := &service.OrderMessage{
 		RestaurantName: rest.Name,
 		OrderID:        order.ID,
@@ -283,7 +275,7 @@ func (h *PublicHandler) CreateOrder(c *gin.Context) {
 		CustomerName:   req.CustomerName,
 		CustomerPhone:  req.CustomerPhone,
 		Comment:        req.Comment,
-		MenuURL:        menuURL,
+		MenuURL:        req.MenuURL,
 	}
 	orderText := service.FormatOrderText(msg)
 
