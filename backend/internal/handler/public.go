@@ -328,7 +328,8 @@ func (h *PublicHandler) CreateOrder(c *gin.Context) {
 		if err == nil {
 			waCfg, err := service.ParseWhatsAppConfig(msgCfg.Config)
 			if err == nil {
-				response["whatsapp_url"] = service.BuildWhatsAppURL(waCfg, orderText)
+				waText := service.FormatOrderTextPlain(msg)
+				response["whatsapp_url"] = service.BuildWhatsAppURL(waCfg, waText)
 			}
 		}
 	}
