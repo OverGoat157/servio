@@ -32,6 +32,7 @@ func main() {
 	orderRepo := repository.NewOrderRepo(db)
 	msgRepo := repository.NewMessengerRepo(db)
 	comboRepo := repository.NewComboRepo(db)
+	analyticsRepo := repository.NewAnalyticsRepo(db)
 
 	// Handlers
 	authH := handler.NewAuthHandler(userRepo, cfg.JWTSecret)
@@ -41,7 +42,8 @@ func main() {
 	orderH := handler.NewOrderHandler(orderRepo, restRepo)
 	msgH := handler.NewMessengerHandler(msgRepo, restRepo)
 	comboH := handler.NewComboHandler(comboRepo, restRepo)
-	publicH := handler.NewPublicHandler(restRepo, catRepo, itemRepo, orderRepo, msgRepo, comboRepo)
+	analyticsH := handler.NewAnalyticsHandler(analyticsRepo, restRepo)
+	publicH := handler.NewPublicHandler(restRepo, catRepo, itemRepo, orderRepo, msgRepo, comboRepo, analyticsRepo)
 	qrH := handler.NewQRCodeHandler(restRepo)
 	uploadH := handler.NewUploadHandler()
 	adminH := handler.NewAdminHandler(userRepo, restRepo)
@@ -98,6 +100,9 @@ func main() {
 
 		// QR code
 		api.GET("/restaurants/:id/qrcode", qrH.Generate)
+
+		// Analytics
+		api.GET("/restaurants/:id/analytics", analyticsH.GetSummary)
 
 		// Orders
 		api.GET("/restaurants/:id/orders", orderH.List)

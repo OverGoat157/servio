@@ -100,6 +100,11 @@ export const combos = {
   delete: (id) => request(`/api/combos/${id}`, { method: 'DELETE' }),
 }
 
+// Analytics
+export const analytics = {
+  summary: (restaurantId, days = 30) => request(`/api/restaurants/${restaurantId}/analytics?days=${days}`),
+}
+
 // Messengers
 export const messengers = {
   list: (restaurantId) => request(`/api/restaurants/${restaurantId}/messengers`),

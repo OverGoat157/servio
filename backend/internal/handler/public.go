@@ -19,6 +19,7 @@ type PublicHandler struct {
 	orders      *repository.OrderRepo
 	messengers  *repository.MessengerRepo
 	combos      *repository.ComboRepo
+	analytics   *repository.AnalyticsRepo
 }
 
 func NewPublicHandler(
@@ -28,6 +29,7 @@ func NewPublicHandler(
 	orders *repository.OrderRepo,
 	messengers *repository.MessengerRepo,
 	combos *repository.ComboRepo,
+	analytics *repository.AnalyticsRepo,
 ) *PublicHandler {
 	return &PublicHandler{
 		restaurants: restaurants,
@@ -36,6 +38,7 @@ func NewPublicHandler(
 		orders:      orders,
 		messengers:  messengers,
 		combos:      combos,
+		analytics:   analytics,
 	}
 }
 
@@ -105,6 +108,9 @@ func (h *PublicHandler) GetMenu(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "restaurant not found"})
 		return
 	}
+
+	// Считаем просмотр
+	go h.analytics.IncrementView(rest.ID)
 
 	cats, err := h.categories.ListByRestaurant(rest.ID)
 	if err != nil {
