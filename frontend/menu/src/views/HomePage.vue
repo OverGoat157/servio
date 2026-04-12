@@ -44,12 +44,16 @@ function setupObserver() {
 onMounted(() => { nextTick(setupObserver) })
 onBeforeUnmount(() => observer?.disconnect())
 watch(categories, () => nextTick(setupObserver))
-watch(activeCategory, (id) => {
-  if (!id) return
-  const tab = document.querySelector('.tab.active')
-  if (tab?.scrollIntoView) {
-    tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
-  }
+watch(activeCategory, () => {
+  nextTick(() => {
+    const tab = document.querySelector('.tab.active')
+    const container = document.querySelector('.tabs')
+    if (!tab || !container) return
+    const tabRect = tab.getBoundingClientRect()
+    const containerRect = container.getBoundingClientRect()
+    const target = container.scrollLeft + (tabRect.left - containerRect.left) - (containerRect.width - tabRect.width) / 2
+    container.scrollTo({ left: target, behavior: 'smooth' })
+  })
 })
 
 function goToCart() {
