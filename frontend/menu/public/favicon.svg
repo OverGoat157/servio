@@ -1,4 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36">
-  <rect width="36" height="36" rx="8" fill="#2167C7"/>
-  <text x="50%" y="53%" dominant-baseline="middle" text-anchor="middle" fill="#fff" font-family="system-ui" font-size="16" font-weight="700">AB</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="7" fill="#2167C7"/>
+  <g fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M7 10l5 6-5 6"/>
+    <path d="M13 10l5 6-5 6"/>
+    <path d="M19 10l5 6-5 6"/>
+  </g>
 </svg>
