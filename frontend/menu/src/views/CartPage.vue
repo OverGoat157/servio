@@ -41,7 +41,7 @@ function formatPrice(kopecks) {
 }
 
 function goBack() {
-  router.push({ name: 'menu', params: { slug } })
+  router.push({ name: 'home', params: { slug } })
 }
 
 const contactsValid = computed(() => {

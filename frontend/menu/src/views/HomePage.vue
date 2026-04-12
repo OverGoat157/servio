@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { restaurant, loading, error } from '../stores/restaurant'
 import { cart, addToCart, cartCount, updateQuantity, updateComment } from '../stores/cart'
@@ -9,18 +9,55 @@ const route = useRoute()
 const router = useRouter()
 const slug = route.params.slug
 
+const categories = computed(() => restaurant.categories || [])
+const combos = computed(() => (restaurant.combos || []).filter(c => c.available))
+
 const popularItems = computed(() => {
-  const cats = restaurant.categories || []
-  const all = cats.flatMap(c => c.items || [])
-  return all.slice(0, 4)
+  const all = categories.value.flatMap(c => (c.items || []).filter(i => i.available))
+  return all.slice(0, 8)
 })
 
-function goToMenu() {
-  router.push({ name: 'menu', params: { slug } })
+const activeCategory = ref(null)
+
+function scrollToCategory(id) {
+  const el = document.getElementById('cat-' + id)
+  if (!el) return
+  const y = el.getBoundingClientRect().top + window.scrollY - 80
+  window.scrollTo({ top: y, behavior: 'smooth' })
 }
+
+let observer = null
+function setupObserver() {
+  if (observer) observer.disconnect()
+  const els = categories.value.map(c => document.getElementById('cat-' + c.id)).filter(Boolean)
+  if (!els.length) return
+  observer = new IntersectionObserver((entries) => {
+    const visible = entries.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+    if (visible.length) {
+      const id = Number(visible[0].target.id.replace('cat-', ''))
+      activeCategory.value = id
+    }
+  }, { rootMargin: '-120px 0px -60% 0px', threshold: 0 })
+  els.forEach(el => observer.observe(el))
+}
+
+onMounted(() => { nextTick(setupObserver) })
+onBeforeUnmount(() => observer?.disconnect())
+watch(categories, () => nextTick(setupObserver))
+watch(activeCategory, (id) => {
+  if (!id) return
+  const tab = document.querySelector('.tab.active')
+  if (tab?.scrollIntoView) {
+    tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+  }
+})
 
 function goToCart() {
   router.push({ name: 'cart', params: { slug } })
+}
+
+function addComboToCart(combo) {
+  addToCart({ id: 'combo-' + combo.id, name: combo.name, price: combo.price, image: combo.image })
 }
 
 function formatPrice(kopecks) {
@@ -146,13 +183,13 @@ const todaySchedule = computed(() => {
         Закрываемся в {{ restaurant.close_time }}. Заказы больше не принимаются.
       </div>
 
-      <!-- Популярные блюда -->
-      <div class="section" v-if="popularItems.length">
+      <!-- Популярные блюда (горизонтальный скролл) -->
+      <div class="section section-popular" v-if="popularItems.length">
         <div class="section-header">
           <h2>Популярные блюда</h2>
         </div>
-        <div class="popular-grid">
-          <div class="popular-card" :class="{ 'pop-stopped': !item.available }" v-for="item in popularItems" :key="item.id" @click="item.available && openDetail(item)">
+        <div class="popular-scroll">
+          <div class="popular-card" v-for="item in popularItems" :key="item.id" @click="openDetail(item)">
             <div class="pop-img" v-if="item.image">
               <img :src="imageUrl(item.image)" :alt="item.name" loading="lazy" />
             </div>
@@ -161,31 +198,98 @@ const todaySchedule = computed(() => {
                 <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/>
               </svg>
             </div>
-            <div class="pop-stopped-badge" v-if="!item.available">Нет в наличии</div>
             <div class="pop-info">
               <div class="pop-name">{{ item.name }}</div>
               <div class="pop-price">{{ formatPrice(item.price) }}</div>
             </div>
-            <template v-if="item.available">
-              <div class="pop-qty" v-if="getQty(item.id)" @click.stop>
-                <button class="pop-qty-btn" @click="decrement(item.id)">-</button>
-                <span>{{ getQty(item.id) }}</span>
-                <button class="pop-qty-btn" @click="increment(item)">+</button>
-              </div>
-              <button v-else class="pop-add" @click.stop="increment(item)">+</button>
-            </template>
+            <div class="pop-qty" v-if="getQty(item.id)" @click.stop>
+              <button class="pop-qty-btn" @click="decrement(item.id)">-</button>
+              <span>{{ getQty(item.id) }}</span>
+              <button class="pop-qty-btn" @click="increment(item)">+</button>
+            </div>
+            <button v-else class="pop-add" @click.stop="increment(item)">+</button>
           </div>
         </div>
       </div>
 
-      <!-- Кнопки -->
-      <div class="actions">
-        <button class="btn-primary" @click="goToMenu">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M4 6h16M4 12h16M4 18h16"/>
-          </svg>
-          Полное меню
-        </button>
+      <!-- Category tabs (scroll-to-section) -->
+      <div class="tabs-wrap" v-if="categories.length > 1">
+        <div class="tabs">
+          <button
+            v-for="cat in categories"
+            :key="cat.id"
+            class="tab"
+            :class="{ active: activeCategory === cat.id }"
+            @click="scrollToCategory(cat.id)"
+          >{{ cat.name }}</button>
+        </div>
+      </div>
+
+      <!-- Combos -->
+      <div class="menu-content" v-if="combos.length || categories.length">
+        <div class="combos-section" v-if="combos.length">
+          <div class="category-name">Комбо-наборы</div>
+          <div class="combos-list">
+            <div class="combo-card" v-for="combo in combos" :key="combo.id">
+              <div class="combo-img" v-if="combo.image">
+                <img :src="imageUrl(combo.image)" :alt="combo.name" loading="lazy" />
+              </div>
+              <div class="combo-body">
+                <div class="combo-name">{{ combo.name }}</div>
+                <div class="combo-desc" v-if="combo.description">{{ combo.description }}</div>
+                <div class="combo-contents" v-if="combo.items?.length">
+                  <span v-for="ci in combo.items" :key="ci.name" class="combo-chip">{{ ci.name }}<template v-if="ci.quantity > 1"> ×{{ ci.quantity }}</template></span>
+                </div>
+                <div class="combo-footer">
+                  <span class="combo-price">{{ formatPrice(combo.price) }}</span>
+                  <button class="add-btn" @click="addComboToCart(combo)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Categories with items -->
+        <div v-for="cat in categories" :key="cat.id" :id="'cat-' + cat.id" class="category-section">
+          <div class="category-name">{{ cat.name }}</div>
+          <div class="items-grid" v-if="cat.items?.length">
+            <div class="item-card" :class="{ 'item-stopped': !item.available }" v-for="item in cat.items" :key="item.id" @click="item.available && openDetail(item)">
+              <div class="item-img" v-if="item.image">
+                <img :src="imageUrl(item.image)" :alt="item.name" loading="lazy" />
+              </div>
+              <div class="item-img item-img-placeholder" v-else>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round">
+                  <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/>
+                </svg>
+              </div>
+              <div class="stopped-badge" v-if="!item.available">Нет в наличии</div>
+              <div class="item-body">
+                <div class="item-name">{{ item.name }}</div>
+                <div class="item-desc" v-if="item.description">{{ item.description }}</div>
+                <div class="item-footer">
+                  <span class="item-price">{{ formatPrice(item.price) }}</span>
+                  <template v-if="item.available">
+                    <div class="qty-inline" v-if="getQty(item.id)" @click.stop>
+                      <button class="qty-btn-sm" @click="decrement(item.id)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>
+                      </button>
+                      <span class="qty-val">{{ getQty(item.id) }}</span>
+                      <button class="qty-btn-sm" @click="increment(item)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                      </button>
+                    </div>
+                    <button v-else class="add-btn" @click.stop="increment(item)">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                    </button>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="empty-cat" v-else><p>Пока пусто</p></div>
+        </div>
       </div>
 
       <!-- Часы работы -->
@@ -520,14 +624,29 @@ const todaySchedule = computed(() => {
   color: var(--text);
 }
 
-/* ===== Popular Grid ===== */
-.popular-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+/* ===== Popular horizontal scroll ===== */
+.section-popular .section-header {
+  padding: 0 16px;
+  margin-bottom: 12px;
+}
+
+.popular-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 2px 16px 10px;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.popular-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 .popular-card {
+  flex: 0 0 160px;
+  scroll-snap-align: start;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -535,6 +654,10 @@ const todaySchedule = computed(() => {
   cursor: pointer;
   position: relative;
   transition: transform 0.15s ease;
+}
+
+.section-popular {
+  padding: 20px 0 0;
 }
 
 .popular-card:active {
@@ -658,7 +781,297 @@ const todaySchedule = computed(() => {
   color: var(--primary-foreground);
 }
 
-/* ===== Actions ===== */
+/* ===== Category tabs (sticky) ===== */
+.tabs-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 19;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  margin-top: 16px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  padding: 8px 18px;
+  background: var(--bg-secondary);
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition: all var(--ease);
+  flex-shrink: 0;
+}
+
+.tab.active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-weight: 600;
+}
+
+/* ===== Menu content ===== */
+.menu-content {
+  padding: 16px;
+}
+
+.category-section {
+  margin-bottom: 24px;
+}
+
+.category-section:last-child {
+  margin-bottom: 0;
+}
+
+.category-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  padding: 4px 0 14px;
+}
+
+/* Combos */
+.combos-section {
+  margin-bottom: 24px;
+}
+
+.combos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.combo-card {
+  background: var(--bg);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  display: flex;
+}
+
+.combo-img {
+  width: 100px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.combo-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.combo-body {
+  flex: 1;
+  padding: 12px;
+  min-width: 0;
+}
+
+.combo-name {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.combo-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.combo-contents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.combo-chip {
+  padding: 2px 8px;
+  background: var(--bg-secondary);
+  border-radius: 100px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.combo-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.combo-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Item grid */
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.item-card {
+  background: var(--bg);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+}
+
+.item-card:active { transform: scale(0.97); }
+
+.item-stopped {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.item-stopped .add-btn,
+.item-stopped .qty-inline {
+  display: none;
+}
+
+.stopped-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 3px 10px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 100px;
+  z-index: 2;
+}
+
+.item-img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+.item-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.item-img-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item-body { padding: 12px; }
+
+.item-name {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.item-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.item-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.item-price {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.add-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity var(--ease);
+  flex-shrink: 0;
+}
+
+.add-btn:active { opacity: 0.8; }
+
+.qty-inline {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  padding: 2px;
+}
+
+.qty-btn-sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  transition: background var(--ease);
+}
+
+.qty-btn-sm:active { background: var(--border); }
+
+.qty-val {
+  min-width: 20px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.empty-cat {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* Legacy: old .actions/.btn-primary styles kept in case they are referenced elsewhere */
 .actions {
   padding: 24px 16px 0;
   display: flex;
