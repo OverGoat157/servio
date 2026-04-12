@@ -12,6 +12,7 @@ const slug = route.params.slug
 const customerName = ref('')
 const customerPhone = ref('')
 const customerAddress = ref('')
+const deliveryMode = ref('delivery') // 'delivery' | 'pickup'
 const selectedMessenger = ref('')
 const timeMode = ref('asap') // 'asap' | 'scheduled'
 const scheduledTime = ref('')
@@ -43,11 +44,20 @@ function goBack() {
   router.push({ name: 'menu', params: { slug } })
 }
 
-const contactsValid = computed(() =>
-  customerName.value.trim().length >= 2 &&
-  customerPhone.value.trim().length >= 5 &&
-  customerAddress.value.trim().length >= 3
-)
+const contactsValid = computed(() => {
+  if (customerName.value.trim().length < 2) return false
+  if (customerPhone.value.trim().length < 5) return false
+  if (deliveryMode.value === 'delivery' && customerAddress.value.trim().length < 3) return false
+  return true
+})
+
+function finalAddress() {
+  if (deliveryMode.value === 'pickup') {
+    const restAddr = (restaurant.address || '').trim()
+    return restAddr ? `Самовывоз: ${restAddr}` : 'Самовывоз'
+  }
+  return customerAddress.value.trim()
+}
 
 async function submitOrder() {
   if (!selectedMessenger.value || cart.length === 0) return
@@ -71,7 +81,7 @@ async function submitOrder() {
       messenger: selectedMessenger.value,
       customer_name: customerName.value.trim(),
       customer_phone: customerPhone.value.trim(),
-      customer_address: customerAddress.value.trim(),
+      customer_address: finalAddress(),
       comment: orderComment.value || undefined,
       menu_url: window.location.origin + '/' + slug,
       desired_time: timeMode.value === 'scheduled' ? scheduledTime.value : 'asap',
@@ -194,13 +204,46 @@ function goHome() {
             placeholder="Телефон"
             required
           />
-          <input
-            v-model="customerAddress"
-            class="field-input"
-            placeholder="Адрес доставки"
-            required
-          />
         </div>
+      </div>
+
+      <!-- Delivery mode -->
+      <div class="form-section">
+        <div class="section-label">Способ получения <span class="required">*</span></div>
+        <div class="time-options">
+          <button
+            class="time-option"
+            :class="{ active: deliveryMode === 'delivery' }"
+            @click="deliveryMode = 'delivery'"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            <span>Доставка</span>
+          </button>
+          <button
+            class="time-option"
+            :class="{ active: deliveryMode === 'pickup' }"
+            @click="deliveryMode = 'pickup'"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0116 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>Самовывоз</span>
+          </button>
+        </div>
+
+        <div class="pickup-info" v-if="deliveryMode === 'pickup'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0116 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div>
+            <div class="pickup-label">Забрать по адресу:</div>
+            <div class="pickup-address">{{ restaurant.address || 'Адрес будет уточнён' }}</div>
+          </div>
+        </div>
+
+        <input
+          v-else
+          v-model="customerAddress"
+          class="field-input"
+          placeholder="Адрес доставки"
+          required
+        />
       </div>
 
       <!-- Order comment -->
@@ -640,6 +683,40 @@ function goHome() {
   border-color: var(--primary);
   color: var(--text);
   background: var(--bg-secondary);
+}
+
+.pickup-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+}
+
+.pickup-info svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--primary);
+}
+
+.pickup-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.pickup-address {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.time-options + .field-input {
+  margin-top: 12px;
 }
 
 .time-picker-row {
