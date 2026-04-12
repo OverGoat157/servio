@@ -243,29 +243,38 @@ const todaySchedule = computed(() => {
 
       <!-- Menu (popular + combos + categories) -->
       <div class="menu-content" v-if="popularItems.length || combos.length || categories.length">
-        <!-- Популярное (горизонтальный скролл) -->
+        <!-- Популярное (горизонтальный скролл, карточки как у основного меню) -->
         <div id="cat-popular" class="category-section popular-section" v-if="popularItems.length">
           <div class="category-name">Популярное</div>
           <div class="popular-scroll">
-            <div class="popular-card" v-for="item in popularItems" :key="item.id" @click="openDetail(item)">
-              <div class="pop-img" v-if="item.image">
+            <div class="item-card" v-for="item in popularItems" :key="item.id" @click="openDetail(item)">
+              <div class="item-img" v-if="item.image">
                 <img :src="imageUrl(item.image)" :alt="item.name" loading="lazy" />
               </div>
-              <div class="pop-img pop-img-empty" v-else>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round">
+              <div class="item-img item-img-placeholder" v-else>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round">
                   <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/>
                 </svg>
               </div>
-              <div class="pop-info">
-                <div class="pop-name">{{ item.name }}</div>
-                <div class="pop-price">{{ formatPrice(item.price) }}</div>
+              <div class="item-body">
+                <div class="item-name">{{ item.name }}</div>
+                <div class="item-desc" v-if="item.description">{{ item.description }}</div>
+                <div class="item-footer">
+                  <span class="item-price">{{ formatPrice(item.price) }}</span>
+                  <div class="qty-inline" v-if="getQty(item.id)" @click.stop>
+                    <button class="qty-btn-sm" @click="decrement(item.id)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>
+                    </button>
+                    <span class="qty-val">{{ getQty(item.id) }}</span>
+                    <button class="qty-btn-sm" @click="increment(item)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                    </button>
+                  </div>
+                  <button v-else class="add-btn" @click.stop="increment(item)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                  </button>
+                </div>
               </div>
-              <div class="pop-qty" v-if="getQty(item.id)" @click.stop>
-                <button class="pop-qty-btn" @click="decrement(item.id)">-</button>
-                <span>{{ getQty(item.id) }}</span>
-                <button class="pop-qty-btn" @click="increment(item)">+</button>
-              </div>
-              <button v-else class="pop-add" @click.stop="increment(item)">+</button>
             </div>
           </div>
         </div>
@@ -621,147 +630,35 @@ const todaySchedule = computed(() => {
   display: flex;
   gap: 12px;
   overflow-x: auto;
-  padding: 2px 16px 10px;
+  padding: 2px 16px 12px;
   scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
 .popular-scroll::-webkit-scrollbar {
-  display: none;
+  height: 6px;
 }
 
-.popular-card {
-  flex: 0 0 160px;
+.popular-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 0 16px;
+}
+
+.popular-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.popular-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Items inside horizontal scroll use the same card style as the grid but fixed width */
+.popular-scroll .item-card {
+  flex: 0 0 170px;
   scroll-snap-align: start;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  cursor: pointer;
-  position: relative;
-  transition: transform 0.15s ease;
-}
-
-.popular-card:active {
-  transform: scale(0.97);
-}
-
-.pop-img {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  background: var(--bg-secondary);
-}
-
-.pop-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.pop-img-empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.pop-info {
-  padding: 10px 12px;
-}
-
-.pop-name {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.pop-price {
-  font-size: 15px;
-  font-weight: 700;
-  margin-top: 4px;
-  font-variant-numeric: tabular-nums;
-}
-
-.pop-add {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: var(--primary);
-  color: var(--primary-foreground);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: 500;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-.pop-add:active {
-  opacity: 0.8;
-}
-
-.pop-stopped {
-  opacity: 0.5;
-  pointer-events: none;
-  position: relative;
-}
-
-.pop-stopped-badge {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  padding: 3px 10px;
-  background: rgba(0,0,0,0.6);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 100px;
-  z-index: 2;
-}
-
-.pop-qty {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  background: var(--primary);
-  border-radius: 8px;
-  padding: 2px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-.pop-qty-btn {
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--primary-foreground);
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.pop-qty-btn:active {
-  opacity: 0.7;
-}
-
-.pop-qty span {
-  min-width: 18px;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--primary-foreground);
 }
 
 /* ===== Category tabs (sticky) ===== */
