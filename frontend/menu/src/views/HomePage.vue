@@ -29,13 +29,16 @@ function scrollToCategory(id) {
 let observer = null
 function setupObserver() {
   if (observer) observer.disconnect()
-  const els = categories.value.map(c => document.getElementById('cat-' + c.id)).filter(Boolean)
+  const ids = []
+  if (popularItems.value.length) ids.push('popular')
+  ids.push(...categories.value.map(c => c.id))
+  const els = ids.map(id => document.getElementById('cat-' + id)).filter(Boolean)
   if (!els.length) return
   observer = new IntersectionObserver((entries) => {
     const visible = entries.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
     if (visible.length) {
-      const id = Number(visible[0].target.id.replace('cat-', ''))
-      activeCategory.value = id
+      const raw = visible[0].target.id.replace('cat-', '')
+      activeCategory.value = raw === 'popular' ? 'popular' : Number(raw)
     }
   }, { rootMargin: '-120px 0px -60% 0px', threshold: 0 })
   els.forEach(el => observer.observe(el))
@@ -204,35 +207,6 @@ const todaySchedule = computed(() => {
         </div>
       </div>
 
-      <!-- Часы работы -->
-      <div class="section" v-if="parsedSchedule?.length">
-        <div class="section-header">
-          <h2>Режим работы</h2>
-        </div>
-        <div class="schedule-card">
-          <template v-if="parsedSchedule[0]?.legacy">
-            <div class="hours-row" v-for="item in parsedSchedule" :key="item.day">
-              <span class="sday">{{ item.day }}</span>
-              <span class="sdots"></span>
-              <span class="stime">{{ item.time }}</span>
-            </div>
-          </template>
-          <template v-else>
-            <div class="hours-row" v-for="s in parsedSchedule" :key="s.day" :class="{ 'hours-today': s.day === todayDayName, 'hours-off': s.day_off }">
-              <span class="sday">{{ s.day }}</span>
-              <span class="sdots"></span>
-              <template v-if="s.day_off">
-                <span class="stime stime-off">Выходной</span>
-              </template>
-              <template v-else>
-                <span class="stime">{{ s.open }} — {{ s.close }}</span>
-                <span class="sbreak" v-if="s.break_start">(обед {{ s.break_start }} — {{ s.break_end }})</span>
-              </template>
-            </div>
-          </template>
-        </div>
-      </div>
-
       <!-- Адрес -->
       <div class="section" v-if="restaurant.address">
         <div class="info-card">
@@ -248,38 +222,15 @@ const todaySchedule = computed(() => {
         </div>
       </div>
 
-      <!-- Популярные блюда (горизонтальный скролл) -->
-      <div class="section section-popular" v-if="popularItems.length">
-        <div class="section-header">
-          <h2>Популярные блюда</h2>
-        </div>
-        <div class="popular-scroll">
-          <div class="popular-card" v-for="item in popularItems" :key="item.id" @click="openDetail(item)">
-            <div class="pop-img" v-if="item.image">
-              <img :src="imageUrl(item.image)" :alt="item.name" loading="lazy" />
-            </div>
-            <div class="pop-img pop-img-empty" v-else>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round">
-                <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/>
-              </svg>
-            </div>
-            <div class="pop-info">
-              <div class="pop-name">{{ item.name }}</div>
-              <div class="pop-price">{{ formatPrice(item.price) }}</div>
-            </div>
-            <div class="pop-qty" v-if="getQty(item.id)" @click.stop>
-              <button class="pop-qty-btn" @click="decrement(item.id)">-</button>
-              <span>{{ getQty(item.id) }}</span>
-              <button class="pop-qty-btn" @click="increment(item)">+</button>
-            </div>
-            <button v-else class="pop-add" @click.stop="increment(item)">+</button>
-          </div>
-        </div>
-      </div>
-
       <!-- Category tabs (scroll-to-section) -->
-      <div class="tabs-wrap" v-if="categories.length > 1">
+      <div class="tabs-wrap" v-if="popularItems.length || categories.length > 1">
         <div class="tabs">
+          <button
+            v-if="popularItems.length"
+            class="tab"
+            :class="{ active: activeCategory === 'popular' }"
+            @click="scrollToCategory('popular')"
+          >Популярное</button>
           <button
             v-for="cat in categories"
             :key="cat.id"
@@ -290,8 +241,35 @@ const todaySchedule = computed(() => {
         </div>
       </div>
 
-      <!-- Combos -->
-      <div class="menu-content" v-if="combos.length || categories.length">
+      <!-- Menu (popular + combos + categories) -->
+      <div class="menu-content" v-if="popularItems.length || combos.length || categories.length">
+        <!-- Популярное (горизонтальный скролл) -->
+        <div id="cat-popular" class="category-section popular-section" v-if="popularItems.length">
+          <div class="category-name">Популярное</div>
+          <div class="popular-scroll">
+            <div class="popular-card" v-for="item in popularItems" :key="item.id" @click="openDetail(item)">
+              <div class="pop-img" v-if="item.image">
+                <img :src="imageUrl(item.image)" :alt="item.name" loading="lazy" />
+              </div>
+              <div class="pop-img pop-img-empty" v-else>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round">
+                  <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/>
+                </svg>
+              </div>
+              <div class="pop-info">
+                <div class="pop-name">{{ item.name }}</div>
+                <div class="pop-price">{{ formatPrice(item.price) }}</div>
+              </div>
+              <div class="pop-qty" v-if="getQty(item.id)" @click.stop>
+                <button class="pop-qty-btn" @click="decrement(item.id)">-</button>
+                <span>{{ getQty(item.id) }}</span>
+                <button class="pop-qty-btn" @click="increment(item)">+</button>
+              </div>
+              <button v-else class="pop-add" @click.stop="increment(item)">+</button>
+            </div>
+          </div>
+        </div>
+
         <div class="combos-section" v-if="combos.length">
           <div class="category-name">Комбо-наборы</div>
           <div class="combos-list">
@@ -627,10 +605,16 @@ const todaySchedule = computed(() => {
   color: var(--text);
 }
 
-/* ===== Popular horizontal scroll ===== */
-.section-popular .section-header {
-  padding: 0 16px;
-  margin-bottom: 12px;
+/* ===== Popular horizontal scroll (inside menu-content) ===== */
+.popular-section {
+  /* break out of .menu-content's 16px padding so the scroll reaches screen edges */
+  margin-left: -16px;
+  margin-right: -16px;
+}
+
+.popular-section .category-name {
+  padding-left: 16px;
+  padding-right: 16px;
 }
 
 .popular-scroll {
@@ -657,10 +641,6 @@ const todaySchedule = computed(() => {
   cursor: pointer;
   position: relative;
   transition: transform 0.15s ease;
-}
-
-.section-popular {
-  padding: 20px 0 0;
 }
 
 .popular-card:active {
