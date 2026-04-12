@@ -171,6 +171,12 @@ const todaySchedule = computed(() => {
         <div class="info-body">
           <h1 class="info-name">{{ restaurant.name }}</h1>
           <p class="info-desc" v-if="restaurant.description">{{ restaurant.description }}</p>
+          <div class="info-address" v-if="restaurant.address">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            {{ restaurant.address }}
+          </div>
           <div class="info-hours" v-if="todaySchedule" :class="{ 'info-hours-off': todaySchedule.off }">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
             {{ todaySchedule.label }}
@@ -206,21 +212,6 @@ const todaySchedule = computed(() => {
             <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
             {{ link.type === 'instagram' ? 'Instagram' : link.type === 'vk' ? 'VK' : link.type === 'telegram' ? 'Telegram' : link.type === 'youtube' ? 'YouTube' : link.type === 'tiktok' ? 'TikTok' : link.type === 'facebook' ? 'Facebook' : 'Сайт' }}
           </a>
-        </div>
-      </div>
-
-      <!-- Адрес -->
-      <div class="section" v-if="restaurant.address">
-        <div class="info-card">
-          <div class="info-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
-            </svg>
-          </div>
-          <div class="info-body">
-            <div class="info-label">Адрес</div>
-            <div class="info-value">{{ restaurant.address }}</div>
-          </div>
         </div>
       </div>
 
@@ -554,6 +545,21 @@ const todaySchedule = computed(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.info-address {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-top: 6px;
+}
+
+.info-address svg {
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .info-hours {
