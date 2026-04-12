@@ -31,6 +31,7 @@ function setupObserver() {
   if (observer) observer.disconnect()
   const ids = []
   if (popularItems.value.length) ids.push('popular')
+  if (combos.value.length) ids.push('combos')
   ids.push(...categories.value.map(c => c.id))
   const els = ids.map(id => document.getElementById('cat-' + id)).filter(Boolean)
   if (!els.length) return
@@ -38,15 +39,16 @@ function setupObserver() {
     const visible = entries.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
     if (visible.length) {
       const raw = visible[0].target.id.replace('cat-', '')
-      activeCategory.value = raw === 'popular' ? 'popular' : Number(raw)
+      activeCategory.value = (raw === 'popular' || raw === 'combos') ? raw : Number(raw)
     }
-  }, { rootMargin: '-120px 0px -60% 0px', threshold: 0 })
+  }, { rootMargin: '-60px 0px -60% 0px', threshold: 0 })
   els.forEach(el => observer.observe(el))
 }
 
 onMounted(() => { nextTick(setupObserver) })
 onBeforeUnmount(() => observer?.disconnect())
 watch(categories, () => nextTick(setupObserver))
+watch(combos, () => nextTick(setupObserver))
 watch(activeCategory, () => {
   nextTick(() => {
     const tab = document.querySelector('.tab.active')
@@ -223,7 +225,7 @@ const todaySchedule = computed(() => {
       </div>
 
       <!-- Category tabs (scroll-to-section) -->
-      <div class="tabs-wrap" v-if="popularItems.length || categories.length > 1">
+      <div class="tabs-wrap" v-if="popularItems.length || combos.length || categories.length > 1">
         <div class="tabs">
           <button
             v-if="popularItems.length"
@@ -231,6 +233,12 @@ const todaySchedule = computed(() => {
             :class="{ active: activeCategory === 'popular' }"
             @click="scrollToCategory('popular')"
           >Популярное</button>
+          <button
+            v-if="combos.length"
+            class="tab"
+            :class="{ active: activeCategory === 'combos' }"
+            @click="scrollToCategory('combos')"
+          >Комбо</button>
           <button
             v-for="cat in categories"
             :key="cat.id"
@@ -279,7 +287,7 @@ const todaySchedule = computed(() => {
           </div>
         </div>
 
-        <div class="combos-section" v-if="combos.length">
+        <div id="cat-combos" class="category-section combos-section" v-if="combos.length">
           <div class="category-name">Комбо-наборы</div>
           <div class="combos-list">
             <div class="combo-card" v-for="combo in combos" :key="combo.id">
