@@ -11,6 +11,7 @@ const slug = route.params.slug
 
 const customerName = ref('')
 const customerPhone = ref('')
+const customerAddress = ref('')
 const selectedMessenger = ref('')
 const timeMode = ref('asap') // 'asap' | 'scheduled'
 const scheduledTime = ref('')
@@ -42,8 +43,15 @@ function goBack() {
   router.push({ name: 'menu', params: { slug } })
 }
 
+const contactsValid = computed(() =>
+  customerName.value.trim().length >= 2 &&
+  customerPhone.value.trim().length >= 5 &&
+  customerAddress.value.trim().length >= 3
+)
+
 async function submitOrder() {
   if (!selectedMessenger.value || cart.length === 0) return
+  if (!contactsValid.value) return
   if (timeMode.value === 'scheduled' && (!scheduledTime.value || timeError.value)) return
 
   sending.value = true
@@ -61,8 +69,9 @@ async function submitOrder() {
         }
       }),
       messenger: selectedMessenger.value,
-      customer_name: customerName.value || undefined,
-      customer_phone: customerPhone.value || undefined,
+      customer_name: customerName.value.trim(),
+      customer_phone: customerPhone.value.trim(),
+      customer_address: customerAddress.value.trim(),
       comment: orderComment.value || undefined,
       menu_url: window.location.origin + '/' + slug,
       desired_time: timeMode.value === 'scheduled' ? scheduledTime.value : 'asap',
@@ -170,18 +179,26 @@ function goHome() {
 
       <!-- Customer info -->
       <div class="form-section">
-        <div class="section-label">Ваши данные (необязательно)</div>
+        <div class="section-label">Ваши данные <span class="required">*</span></div>
         <div class="form-fields">
           <input
             v-model="customerName"
             class="field-input"
             placeholder="Имя"
+            required
           />
           <input
             v-model="customerPhone"
             class="field-input"
             type="tel"
             placeholder="Телефон"
+            required
+          />
+          <input
+            v-model="customerAddress"
+            class="field-input"
+            placeholder="Адрес доставки"
+            required
           />
         </div>
       </div>
@@ -252,10 +269,10 @@ function goHome() {
       <!-- Submit -->
       <button
         class="submit-btn"
-        :disabled="!selectedMessenger || sending || !restaurant.is_open || restaurant.closing_soon || (timeMode === 'scheduled' && (!scheduledTime || timeError))"
+        :disabled="!selectedMessenger || sending || !restaurant.is_open || restaurant.closing_soon || !contactsValid || (timeMode === 'scheduled' && (!scheduledTime || timeError))"
         @click="submitOrder"
       >
-        {{ sending ? 'Отправка...' : 'Отправить заказ' }}
+        {{ sending ? 'Отправка...' : !contactsValid ? 'Заполните имя, телефон и адрес' : 'Отправить заказ' }}
       </button>
     </div>
   </div>
@@ -556,6 +573,11 @@ function goHome() {
   letter-spacing: 0.8px;
   color: var(--text-muted);
   margin-bottom: 12px;
+}
+
+.section-label .required {
+  color: var(--danger, #DC2626);
+  margin-left: 2px;
 }
 
 .form-fields {

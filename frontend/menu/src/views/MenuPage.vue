@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { restaurant, loading } from '../stores/restaurant'
 import { cart, addToCart, cartCount, updateQuantity, updateComment } from '../stores/cart'
@@ -9,31 +9,56 @@ const route = useRoute()
 const router = useRouter()
 const slug = route.params.slug
 
-const activeCategory = ref(null)
 const searchQuery = ref('')
 const categories = computed(() => restaurant.categories || [])
 const combos = computed(() => (restaurant.combos || []).filter(c => c.available))
 const selectedItem = ref(null)
+const activeCategory = ref(null)
 
 const displayCategories = computed(() => {
-  let cats = categories.value
-  if (activeCategory.value) {
-    const cat = cats.find(c => c.id === activeCategory.value)
-    cats = cat ? [cat] : []
-  }
   const q = searchQuery.value.trim().toLowerCase()
-  if (q) {
-    cats = cats.map(cat => ({
-      ...cat,
-      items: (cat.items || []).filter(item => item.name.toLowerCase().includes(q))
-    })).filter(cat => cat.items.length > 0)
-  }
-  return cats
+  if (!q) return categories.value
+  return categories.value.map(cat => ({
+    ...cat,
+    items: (cat.items || []).filter(item => item.name.toLowerCase().includes(q))
+  })).filter(cat => cat.items.length > 0)
 })
 
-function selectCategory(id) {
-  activeCategory.value = activeCategory.value === id ? null : id
+function scrollToCategory(id) {
+  const el = document.getElementById('cat-' + id)
+  if (!el) return
+  const y = el.getBoundingClientRect().top + window.scrollY - 120
+  window.scrollTo({ top: y, behavior: 'smooth' })
 }
+
+let observer = null
+
+function setupObserver() {
+  if (observer) observer.disconnect()
+  const els = categories.value.map(c => document.getElementById('cat-' + c.id)).filter(Boolean)
+  if (!els.length) return
+  observer = new IntersectionObserver((entries) => {
+    const visible = entries.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+    if (visible.length) {
+      const id = Number(visible[0].target.id.replace('cat-', ''))
+      activeCategory.value = id
+    }
+  }, { rootMargin: '-130px 0px -60% 0px', threshold: 0 })
+  els.forEach(el => observer.observe(el))
+}
+
+onMounted(() => {
+  nextTick(setupObserver)
+})
+onBeforeUnmount(() => observer?.disconnect())
+watch(categories, () => nextTick(setupObserver))
+watch(activeCategory, (id) => {
+  if (!id) return
+  const tab = document.querySelector('.tab.active')
+  if (tab && tab.scrollIntoView) {
+    tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+  }
+})
 
 function formatPrice(kopecks) {
   return Math.floor(kopecks / 100).toLocaleString('ru-RU') + ' \u20BD'
@@ -102,20 +127,15 @@ function goBack() {
       <div class="spacer" v-else></div>
     </div>
 
-    <!-- Category tabs -->
-    <div class="tabs-wrap" v-if="categories.length > 1">
+    <!-- Category tabs (scroll-to-section) -->
+    <div class="tabs-wrap" v-if="categories.length > 1 && !searchQuery">
       <div class="tabs">
-        <button
-          class="tab"
-          :class="{ active: !activeCategory }"
-          @click="activeCategory = null"
-        >Все</button>
         <button
           class="tab"
           v-for="cat in categories"
           :key="cat.id"
           :class="{ active: activeCategory === cat.id }"
-          @click="selectCategory(cat.id)"
+          @click="scrollToCategory(cat.id)"
         >{{ cat.name }}</button>
       </div>
     </div>
@@ -170,8 +190,8 @@ function goBack() {
         </div>
       </div>
 
-      <div v-for="cat in displayCategories" :key="cat.id" class="category-section">
-        <div class="category-name" v-if="!activeCategory && categories.length > 1">{{ cat.name }}</div>
+      <div v-for="cat in displayCategories" :key="cat.id" :id="'cat-' + cat.id" class="category-section">
+        <div class="category-name" v-if="categories.length > 1">{{ cat.name }}</div>
 
         <div class="items-grid" v-if="cat.items?.length">
           <div class="item-card" :class="{ 'item-stopped': !item.available }" v-for="item in cat.items" :key="item.id" @click="item.available && openDetail(item)">

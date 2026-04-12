@@ -29,16 +29,17 @@ type WhatsAppConfig struct {
 
 // OrderMessage — форматированное сообщение о заказе
 type OrderMessage struct {
-	RestaurantName string
-	OrderID        int64
-	Items          []model.OrderItem
-	Total          int
-	CustomerName   string
-	CustomerPhone  string
-	Comment        string
-	MenuURL        string
-	DesiredTime    string // "asap" или "HH:MM"
-	EstCookMin     int    // примерное время готовки в минутах
+	RestaurantName  string
+	OrderID         int64
+	Items           []model.OrderItem
+	Total           int
+	CustomerName    string
+	CustomerPhone   string
+	CustomerAddress string
+	Comment         string
+	MenuURL         string
+	DesiredTime     string // "asap" или "HH:MM"
+	EstCookMin      int    // примерное время готовки в минутах
 }
 
 // FormatOrderText создаёт текстовое представление заказа
@@ -81,13 +82,16 @@ func FormatOrderText(msg *OrderMessage) string {
 		b.WriteString("\n⚡ КАК МОЖНО БЫСТРЕЕ\n")
 	}
 
-	if msg.CustomerName != "" || msg.CustomerPhone != "" {
+	if msg.CustomerName != "" || msg.CustomerPhone != "" || msg.CustomerAddress != "" {
 		b.WriteString("\n👤 КЛИЕНТ:\n")
 		if msg.CustomerName != "" {
 			b.WriteString(fmt.Sprintf("   Имя: %s\n", msg.CustomerName))
 		}
 		if msg.CustomerPhone != "" {
 			b.WriteString(fmt.Sprintf("   Тел: %s\n", msg.CustomerPhone))
+		}
+		if msg.CustomerAddress != "" {
+			b.WriteString(fmt.Sprintf("   📍 Адрес: %s\n", msg.CustomerAddress))
 		}
 	}
 
@@ -167,13 +171,16 @@ func FormatOrderTextPlain(msg *OrderMessage) string {
 		b.WriteString("\nКАК МОЖНО БЫСТРЕЕ\n")
 	}
 
-	if msg.CustomerName != "" || msg.CustomerPhone != "" {
+	if msg.CustomerName != "" || msg.CustomerPhone != "" || msg.CustomerAddress != "" {
 		b.WriteString("\nКЛИЕНТ:\n")
 		if msg.CustomerName != "" {
 			b.WriteString(fmt.Sprintf("  Имя: %s\n", msg.CustomerName))
 		}
 		if msg.CustomerPhone != "" {
 			b.WriteString(fmt.Sprintf("  Тел: %s\n", msg.CustomerPhone))
+		}
+		if msg.CustomerAddress != "" {
+			b.WriteString(fmt.Sprintf("  Адрес: %s\n", msg.CustomerAddress))
 		}
 	}
 

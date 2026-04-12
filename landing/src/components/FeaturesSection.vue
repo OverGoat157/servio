@@ -1,9 +1,9 @@
 <script setup>
 const features = [
   {
-    icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',
-    title: 'Готовые шаблоны',
-    desc: 'Выберите шаблон, загрузите меню и логотип — мини-приложение готово. Никакого кода.',
+    icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>',
+    title: 'Удобная CRM и статистика',
+    desc: 'Видите заказы, клиентов, выручку и популярные блюда. Удобная админка для управления меню и ценами.',
   },
   {
     icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>',
@@ -16,14 +16,14 @@ const features = [
     desc: 'Адаптивный дизайн для любого устройства. Клиент открывает ссылку и видит меню.',
   },
   {
-    icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
-    title: 'Без лишних расходов',
-    desc: 'Никаких комиссий с заказов, дорогого оборудования или подписок на кассовые системы.',
+    icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+    title: 'Поддержка 24/7',
+    desc: 'Мы всегда на связи. Помогаем с настройкой, регулярно выпускаем обновления и новые возможности.',
   },
   {
     icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>',
-    title: 'Запуск за 15 минут',
-    desc: 'Зарегистрируйтесь, заполните меню, получите ссылку. Всё.',
+    title: 'Запуск за 1-2 дня',
+    desc: 'Мы сами делаем первоначальный сайт, загружаем меню и подключаем мессенджер. Вы сразу принимаете заказы.',
   },
   {
     icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
@@ -39,7 +39,7 @@ const features = [
       <div class="text-center">
         <h2 class="section-title">Всё что нужно вашему ресторану</h2>
         <p class="section-subtitle">
-          Шаблонное мини-приложение, которое начнёт приносить заказы с&nbsp;первого дня.
+          Готовое цифровое меню с&nbsp;поддержкой и&nbsp;обновлениями. Заказы с&nbsp;первого дня.
         </p>
       </div>
 

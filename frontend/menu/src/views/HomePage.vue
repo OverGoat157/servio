@@ -82,6 +82,16 @@ const todayDayName = computed(() => {
   const days = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
   return days[new Date().getDay()]
 })
+
+const todaySchedule = computed(() => {
+  const sched = parsedSchedule.value
+  if (!sched?.length) return null
+  if (sched[0]?.legacy) return null
+  const today = sched.find(s => s.day === todayDayName.value)
+  if (!today) return null
+  if (today.day_off) return { label: 'Сегодня выходной', off: true }
+  return { label: `Сегодня ${today.open} — ${today.close}`, off: false }
+})
 </script>
 
 <template>
@@ -99,22 +109,33 @@ const todayDayName = computed(() => {
 
     <!-- Content -->
     <template v-else>
-      <!-- Hero с фото фоном -->
-      <div class="hero" :class="{ 'hero-with-image': restaurant.cover_image }">
-        <div class="hero-bg">
-          <img v-if="restaurant.cover_image" :src="imageUrl(restaurant.cover_image)" alt="" class="hero-img" />
+      <!-- Cover banner -->
+      <div class="cover-banner" v-if="restaurant.cover_image">
+        <img :src="imageUrl(restaurant.cover_image)" :alt="restaurant.name" />
+      </div>
+
+      <!-- Compact info card -->
+      <div class="info-card" :class="{ 'info-card-overlap': restaurant.cover_image }">
+        <div class="info-logo" v-if="restaurant.logo">
+          <img :src="imageUrl(restaurant.logo)" :alt="restaurant.name" />
         </div>
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-          <div class="logo-circle" v-if="restaurant.logo">
-            <img :src="imageUrl(restaurant.logo)" :alt="restaurant.name" />
-          </div>
-          <div class="logo-circle logo-placeholder" v-else>
-            {{ restaurant.name.charAt(0) }}
-          </div>
-          <h1>{{ restaurant.name }}</h1>
-          <p class="subtitle" v-if="restaurant.description">{{ restaurant.description }}</p>
+        <div class="info-logo info-logo-placeholder" v-else>
+          {{ restaurant.name.charAt(0) }}
         </div>
+        <div class="info-body">
+          <h1 class="info-name">{{ restaurant.name }}</h1>
+          <p class="info-desc" v-if="restaurant.description">{{ restaurant.description }}</p>
+          <div class="info-hours" v-if="todaySchedule" :class="{ 'info-hours-off': todaySchedule.off }">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            {{ todaySchedule.label }}
+          </div>
+        </div>
+        <a v-if="restaurant.phone" :href="'tel:' + restaurant.phone" class="info-contact">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+          </svg>
+          Связаться
+        </a>
       </div>
 
       <!-- Closed / Closing soon -->
@@ -165,13 +186,6 @@ const todayDayName = computed(() => {
           </svg>
           Полное меню
         </button>
-
-        <a v-if="restaurant.phone" :href="'tel:' + restaurant.phone" class="btn-outline">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
-          </svg>
-          Связаться с нами
-        </a>
       </div>
 
       <!-- Часы работы -->
@@ -354,89 +368,121 @@ const todayDayName = computed(() => {
   font-weight: 700;
 }
 
-/* ===== Hero ===== */
-.hero {
-  position: relative;
-  padding: 72px 24px 40px;
-  text-align: center;
+/* ===== Cover banner ===== */
+.cover-banner {
+  width: 100%;
+  height: 180px;
   overflow: hidden;
-  min-height: 280px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: var(--bg-secondary);
 }
 
-.hero-bg {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, #1F2937 0%, #374151 100%);
-  z-index: 0;
-}
-
-.hero-with-image .hero-bg {
-  background: #000;
-}
-
-.hero-bg .hero-img {
+.cover-banner img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.55;
+  display: block;
 }
 
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.5) 100%);
-  z-index: 1;
+/* ===== Compact info card ===== */
+.info-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 16px;
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
 }
 
-.hero-content {
+.info-card-overlap {
+  margin-top: -40px;
   position: relative;
   z-index: 2;
 }
 
-.logo-circle {
-  width: 80px;
-  height: 80px;
+.info-logo {
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  margin: 0 auto 16px;
   overflow: hidden;
-  border: 3px solid rgba(255,255,255,0.25);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+  border: 2px solid var(--bg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.logo-circle img {
+.info-logo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.logo-placeholder {
+.info-logo-placeholder {
   background: var(--primary);
-  color: #fff;
+  color: var(--primary-foreground);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
+  font-size: 22px;
   font-weight: 700;
 }
 
-.hero h1 {
-  font-size: 28px;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 8px;
-  letter-spacing: 0.5px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+.info-body {
+  flex: 1;
+  min-width: 0;
 }
 
-.subtitle {
-  color: rgba(255,255,255,0.75);
-  font-size: 14px;
-  line-height: 1.5;
-  max-width: 320px;
-  margin: 0 auto;
+.info-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.info-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.info-hours {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+
+.info-hours-off {
+  color: #DC2626;
+}
+
+.info-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.info-contact:active {
+  opacity: 0.85;
 }
 
 /* ===== Status banner ===== */

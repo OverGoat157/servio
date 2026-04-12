@@ -1,11 +1,18 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { restaurants as api } from '../api/client'
+import { user } from '../stores/auth'
 
 const router = useRouter()
 const list = ref([])
 const loading = ref(true)
+
+const limitReached = computed(() => {
+  if (!user.value) return false
+  if (user.value.role === 'admin') return false
+  return list.value.length >= (user.value.max_restaurants ?? 0)
+})
 const showCreate = ref(false)
 const form = ref({ name: '', slug: '', description: '', phone: '' })
 const creating = ref(false)
@@ -60,9 +67,9 @@ async function deleteRestaurant(id) {
   <div class="page">
     <div class="page-header">
       <h1>Мои рестораны</h1>
-      <button class="btn btn-primary" @click="showCreate = true">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        Добавить ресторан
+      <button class="btn btn-primary" :disabled="limitReached" @click="!limitReached && (showCreate = true)">
+        <svg v-if="!limitReached" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        {{ limitReached ? 'Мест больше нет' : 'Добавить ресторан' }}
       </button>
     </div>
 

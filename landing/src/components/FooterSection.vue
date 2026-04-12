@@ -4,10 +4,14 @@
       <div class="footer-top">
         <div class="footer-brand">
           <a href="#" class="logo">
-            <span class="logo-icon">AB</span>
+            <svg class="logo-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 8l6 8-6 8"/>
+              <path d="M13 8l6 8-6 8"/>
+              <path d="M21 8l6 8-6 8"/>
+            </svg>
             <span>AB Team</span>
           </a>
-          <p>Шаблонные мини-приложения с&nbsp;меню для ресторанов. Заказы прямо в мессенджер.</p>
+          <p>Сайт-приложения с&nbsp;меню для ресторанов. Заказы прямо в мессенджер.</p>
         </div>
 
         <div class="footer-links">
@@ -79,14 +83,8 @@
 .logo-icon {
   width: 36px;
   height: 36px;
-  background: var(--primary);
-  color: #fff;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: 700;
+  color: var(--primary);
+  flex-shrink: 0;
 }
 
 .footer-brand p {

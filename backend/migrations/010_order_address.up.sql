@@ -1,0 +1,1 @@
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_address TEXT NOT NULL DEFAULT '';

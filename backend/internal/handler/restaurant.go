@@ -23,20 +23,22 @@ func NewRestaurantHandler(restaurants *repository.RestaurantRepo, users *reposit
 func (h *RestaurantHandler) Create(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 
-	// Check max restaurants limit
+	// Check max restaurants limit (admin bypasses)
 	user, err := h.users.GetByID(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user"})
 		return
 	}
-	count, err := h.users.CountRestaurants(userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to count restaurants"})
-		return
-	}
-	if count >= user.MaxRestaurants {
-		c.JSON(http.StatusForbidden, gin.H{"error": "достигнут лимит ресторанов"})
-		return
+	if user.Role != "admin" {
+		count, err := h.users.CountRestaurants(userID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to count restaurants"})
+			return
+		}
+		if count >= user.MaxRestaurants {
+			c.JSON(http.StatusForbidden, gin.H{"error": "достигнут лимит ресторанов"})
+			return
+		}
 	}
 
 	var req model.CreateRestaurantRequest

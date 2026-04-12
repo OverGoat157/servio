@@ -380,7 +380,7 @@ func (h *PublicHandler) CreateOrder(c *gin.Context) {
 
 	itemsJSON, _ := json.Marshal(enrichedItems)
 
-	order, err := h.orders.Create(rest.ID, string(itemsJSON), total, req.Messenger, req.CustomerName, req.CustomerPhone, req.Comment)
+	order, err := h.orders.Create(rest.ID, string(itemsJSON), total, req.Messenger, req.CustomerName, req.CustomerPhone, req.CustomerAddress, req.Comment)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create order"})
 		return
@@ -388,16 +388,17 @@ func (h *PublicHandler) CreateOrder(c *gin.Context) {
 
 	// Формируем сообщение о заказе
 	msg := &service.OrderMessage{
-		RestaurantName: rest.Name,
-		OrderID:        order.ID,
-		Items:          enrichedItems,
-		Total:          total,
-		CustomerName:   req.CustomerName,
-		CustomerPhone:  req.CustomerPhone,
-		Comment:        req.Comment,
-		MenuURL:        req.MenuURL,
-		DesiredTime:    req.DesiredTime,
-		EstCookMin:     maxCookMin,
+		RestaurantName:  rest.Name,
+		OrderID:         order.ID,
+		Items:           enrichedItems,
+		Total:           total,
+		CustomerName:    req.CustomerName,
+		CustomerPhone:   req.CustomerPhone,
+		CustomerAddress: req.CustomerAddress,
+		Comment:         req.Comment,
+		MenuURL:         req.MenuURL,
+		DesiredTime:     req.DesiredTime,
+		EstCookMin:      maxCookMin,
 	}
 	orderText := service.FormatOrderText(msg)
 

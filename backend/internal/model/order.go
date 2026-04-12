@@ -12,24 +12,26 @@ type OrderItem struct {
 }
 
 type Order struct {
-	ID            int64     `json:"id" db:"id"`
-	RestaurantID  int64     `json:"restaurant_id" db:"restaurant_id"`
-	Items         string    `json:"items" db:"items"` // JSON
-	Total         int       `json:"total" db:"total"` // в копейках
-	Messenger     string    `json:"messenger" db:"messenger"`
-	CustomerName  string    `json:"customer_name" db:"customer_name"`
-	CustomerPhone string    `json:"customer_phone" db:"customer_phone"`
-	Comment       *string   `json:"comment" db:"comment"`
-	Status        string    `json:"status" db:"status"`
-	CreatedAt     time.Time `json:"created_at" db:"created_at"`
+	ID              int64     `json:"id" db:"id"`
+	RestaurantID    int64     `json:"restaurant_id" db:"restaurant_id"`
+	Items           string    `json:"items" db:"items"` // JSON
+	Total           int       `json:"total" db:"total"` // в копейках
+	Messenger       string    `json:"messenger" db:"messenger"`
+	CustomerName    string    `json:"customer_name" db:"customer_name"`
+	CustomerPhone   string    `json:"customer_phone" db:"customer_phone"`
+	CustomerAddress string    `json:"customer_address" db:"customer_address"`
+	Comment         *string   `json:"comment" db:"comment"`
+	Status          string    `json:"status" db:"status"`
+	CreatedAt       time.Time `json:"created_at" db:"created_at"`
 }
 
 type CreateOrderRequest struct {
-	Items         []OrderItem `json:"items" binding:"required,min=1"`
-	Messenger     string      `json:"messenger" binding:"required"`
-	CustomerName  string      `json:"customer_name"`
-	CustomerPhone string      `json:"customer_phone"`
-	Comment       string      `json:"comment"`
-	MenuURL       string      `json:"menu_url"`
-	DesiredTime   string      `json:"desired_time"`
+	Items           []OrderItem `json:"items" binding:"required,min=1"`
+	Messenger       string      `json:"messenger" binding:"required"`
+	CustomerName    string      `json:"customer_name" binding:"required"`
+	CustomerPhone   string      `json:"customer_phone" binding:"required"`
+	CustomerAddress string      `json:"customer_address" binding:"required"`
+	Comment         string      `json:"comment"`
+	MenuURL         string      `json:"menu_url"`
+	DesiredTime     string      `json:"desired_time"`
 }

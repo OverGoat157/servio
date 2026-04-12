@@ -1,9 +1,4 @@
 <script setup>
-const menu = [
-  { name: 'Том Ям с креветками', desc: '350 мл', price: '890 ₽' },
-  { name: 'Стейк Рибай', desc: '300 г, medium rare', price: '1 490 ₽' },
-  { name: 'Тирамису', desc: '150 г', price: '490 ₽' },
-]
 </script>
 
 <template>
@@ -15,63 +10,51 @@ const menu = [
           Новый способ принимать заказы
         </div>
 
-        <h1>Мини-приложение с&nbsp;меню для вашего <span class="accent">ресторана</span></h1>
+        <h1>Сайт-приложение с&nbsp;меню для вашего <span class="accent">ресторана</span></h1>
 
         <p class="lead">
-          Создайте цифровое меню за&nbsp;15&nbsp;минут. Клиенты делают заказ прямо
+          Мы создадим для вас цифровое меню за&nbsp;1-2&nbsp;дня. Клиенты делают заказ прямо
           со&nbsp;смартфона, а&nbsp;вы получаете его в&nbsp;WhatsApp, Telegram
           или любой другой мессенджер.
         </p>
 
         <div class="hero-btns">
           <a href="#contact" class="btn btn-primary">
-            Создать меню бесплатно
+            Оставить заявку
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12m0 0l-4-4m4 4l-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
           <a href="#demo" class="btn btn-outline">Посмотреть демо</a>
         </div>
 
         <div class="stats">
-          <div class="stat"><strong>500+</strong><span>Ресторанов</span></div>
+          <div class="stat"><strong>1-2 дня</strong><span>На запуск</span></div>
           <div class="stat-line" />
-          <div class="stat"><strong>50K+</strong><span>Заказов / мес</span></div>
+          <div class="stat"><strong>24/7</strong><span>Поддержка</span></div>
           <div class="stat-line" />
-          <div class="stat"><strong>15 мин</strong><span>На настройку</span></div>
+          <div class="stat"><strong>0%</strong><span>Комиссий</span></div>
         </div>
       </div>
 
-      <!-- phone mockup -->
+      <!-- video placeholder (TODO: заменить на реальное видео ресторана) -->
       <div class="hero-visual">
-        <div class="phone">
-          <div class="phone-notch" />
-          <div class="screen">
-            <div class="screen-head">
-              <div class="rest-name">AB Team</div>
-              <div class="rest-sub">Автоматизация вашего бизнеса</div>
-            </div>
-            <div class="screen-body">
-              <div class="cat">Популярное</div>
-              <div class="item" v-for="m in menu" :key="m.name">
-                <div>
-                  <div class="item-name">{{ m.name }}</div>
-                  <div class="item-desc">{{ m.desc }}</div>
-                </div>
-                <div class="item-right">
-                  <span class="item-price">{{ m.price }}</span>
-                  <span class="item-add">+</span>
-                </div>
-              </div>
-            </div>
-            <div class="screen-cart">
-              <div><small>3 позиции</small><strong>2 870 ₽</strong></div>
-              <div class="cart-btn">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M14 2L7.5 14L5.5 8.5L2 6.5L14 2Z" fill="currentColor"/></svg>
-                Отправить
-              </div>
-            </div>
+        <div class="video-wrap">
+          <video
+            class="hero-video"
+            src=""
+            autoplay
+            muted
+            loop
+            playsinline
+            poster=""
+          />
+          <div class="video-placeholder">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="23 7 16 12 23 17 23 7"/>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+            <span>Видео ресторана</span>
           </div>
         </div>
-
       </div>
     </div>
   </section>
@@ -165,154 +148,46 @@ h1 {
   background: var(--light-gray);
 }
 
-/* phone */
+/* video */
 .hero-visual {
   position: relative;
   display: flex;
   justify-content: center;
 }
 
-.phone {
-  width: 300px;
-  background: #1F2937;
-  border-radius: 40px;
-  padding: 12px;
-  box-shadow: var(--shadow-lg);
+.video-wrap {
   position: relative;
-}
-
-.phone-notch {
-  width: 120px;
-  height: 28px;
-  background: #1F2937;
-  border-radius: 0 0 20px 20px;
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
-}
-
-.screen {
-  background: #fff;
-  border-radius: 30px;
+  width: 100%;
+  max-width: 540px;
+  aspect-ratio: 4 / 5;
+  border-radius: 24px;
   overflow: hidden;
-  min-height: 520px;
+  background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
+  box-shadow: var(--shadow-lg);
+}
+
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.video-placeholder {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-}
-
-.screen-head {
-  background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
-  color: #fff;
-  padding: 48px 20px 20px;
-  text-align: center;
-}
-
-.rest-name {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: 2px;
-}
-
-.rest-sub {
-  font-size: 12px;
-  opacity: 0.8;
-  margin-top: 4px;
-}
-
-.screen-body {
-  flex: 1;
-  padding: 16px;
-}
-
-.cat {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--gray);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 12px;
-}
-
-.item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--light-gray);
-}
-
-.item:last-child {
-  border-bottom: none;
-}
-
-.item-name {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.item-desc {
-  font-size: 12px;
-  color: var(--gray);
-}
-
-.item-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.item-price {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.item-add {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: var(--primary);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 600;
-  display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.screen-cart {
-  background: var(--primary);
-  margin: 8px 12px 12px;
-  border-radius: 16px;
-  padding: 14px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #fff;
-}
-
-.screen-cart small {
-  display: block;
-  font-size: 12px;
-  opacity: 0.8;
-}
-
-.screen-cart strong {
-  font-size: 16px;
-}
-
-.cart-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 8px 12px;
-  border-radius: 10px;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 15px;
+  font-weight: 500;
+  text-align: center;
+  z-index: 0;
 }
 
 
@@ -336,12 +211,9 @@ h1 {
   .stats { justify-content: center; }
   .hero-visual { order: -1; }
 
-  .phone {
-    width: 260px;
-  }
-
-  .screen {
-    min-height: 440px;
+  .video-wrap {
+    max-width: 420px;
+    aspect-ratio: 16 / 10;
   }
 }
 
