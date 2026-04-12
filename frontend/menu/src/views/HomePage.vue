@@ -187,6 +187,67 @@ const todaySchedule = computed(() => {
         Закрываемся в {{ restaurant.close_time }}. Заказы больше не принимаются.
       </div>
 
+      <!-- Соцсети -->
+      <div class="section" v-if="restaurant.social_links?.length">
+        <div class="section-header">
+          <h2>Мы в соцсетях</h2>
+        </div>
+        <div class="social-list">
+          <a v-for="link in restaurant.social_links" :key="link.type + link.url" :href="link.url" target="_blank" rel="noopener" class="social-chip">
+            <svg v-if="link.type === 'instagram'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><path d="M17.5 6.5h.01"/></svg>
+            <svg v-else-if="link.type === 'telegram'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>
+            <svg v-else-if="link.type === 'vk'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16v16H4z"/><path d="M7 12c1 4 3 5 5 5s3-1 3-3c0-1-1-2-2-2"/></svg>
+            <svg v-else-if="link.type === 'youtube'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="4"/><path d="M10 9l5 3-5 3V9z"/></svg>
+            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+            {{ link.type === 'instagram' ? 'Instagram' : link.type === 'vk' ? 'VK' : link.type === 'telegram' ? 'Telegram' : link.type === 'youtube' ? 'YouTube' : link.type === 'tiktok' ? 'TikTok' : link.type === 'facebook' ? 'Facebook' : 'Сайт' }}
+          </a>
+        </div>
+      </div>
+
+      <!-- Часы работы -->
+      <div class="section" v-if="parsedSchedule?.length">
+        <div class="section-header">
+          <h2>Режим работы</h2>
+        </div>
+        <div class="schedule-card">
+          <template v-if="parsedSchedule[0]?.legacy">
+            <div class="hours-row" v-for="item in parsedSchedule" :key="item.day">
+              <span class="sday">{{ item.day }}</span>
+              <span class="sdots"></span>
+              <span class="stime">{{ item.time }}</span>
+            </div>
+          </template>
+          <template v-else>
+            <div class="hours-row" v-for="s in parsedSchedule" :key="s.day" :class="{ 'hours-today': s.day === todayDayName, 'hours-off': s.day_off }">
+              <span class="sday">{{ s.day }}</span>
+              <span class="sdots"></span>
+              <template v-if="s.day_off">
+                <span class="stime stime-off">Выходной</span>
+              </template>
+              <template v-else>
+                <span class="stime">{{ s.open }} — {{ s.close }}</span>
+                <span class="sbreak" v-if="s.break_start">(обед {{ s.break_start }} — {{ s.break_end }})</span>
+              </template>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Адрес -->
+      <div class="section" v-if="restaurant.address">
+        <div class="info-card">
+          <div class="info-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+          </div>
+          <div class="info-body">
+            <div class="info-label">Адрес</div>
+            <div class="info-value">{{ restaurant.address }}</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Популярные блюда (горизонтальный скролл) -->
       <div class="section section-popular" v-if="popularItems.length">
         <div class="section-header">
@@ -295,68 +356,6 @@ const todaySchedule = computed(() => {
           <div class="empty-cat" v-else><p>Пока пусто</p></div>
         </div>
       </div>
-
-      <!-- Часы работы -->
-      <div class="section" v-if="parsedSchedule?.length">
-        <div class="section-header">
-          <h2>Режим работы</h2>
-        </div>
-        <div class="schedule-card">
-          <template v-if="parsedSchedule[0]?.legacy">
-            <div class="hours-row" v-for="item in parsedSchedule" :key="item.day">
-              <span class="sday">{{ item.day }}</span>
-              <span class="sdots"></span>
-              <span class="stime">{{ item.time }}</span>
-            </div>
-          </template>
-          <template v-else>
-            <div class="hours-row" v-for="s in parsedSchedule" :key="s.day" :class="{ 'hours-today': s.day === todayDayName, 'hours-off': s.day_off }">
-              <span class="sday">{{ s.day }}</span>
-              <span class="sdots"></span>
-              <template v-if="s.day_off">
-                <span class="stime stime-off">Выходной</span>
-              </template>
-              <template v-else>
-                <span class="stime">{{ s.open }} — {{ s.close }}</span>
-                <span class="sbreak" v-if="s.break_start">(обед {{ s.break_start }} — {{ s.break_end }})</span>
-              </template>
-            </div>
-          </template>
-        </div>
-      </div>
-
-      <!-- Адрес -->
-      <div class="section" v-if="restaurant.address">
-        <div class="info-card">
-          <div class="info-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
-            </svg>
-          </div>
-          <div class="info-body">
-            <div class="info-label">Адрес</div>
-            <div class="info-value">{{ restaurant.address }}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Соцсети -->
-      <div class="section" v-if="restaurant.social_links?.length">
-        <div class="section-header">
-          <h2>Мы в соцсетях</h2>
-        </div>
-        <div class="social-list">
-          <a v-for="link in restaurant.social_links" :key="link.type + link.url" :href="link.url" target="_blank" rel="noopener" class="social-chip">
-            <svg v-if="link.type === 'instagram'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><path d="M17.5 6.5h.01"/></svg>
-            <svg v-else-if="link.type === 'telegram'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>
-            <svg v-else-if="link.type === 'vk'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16v16H4z"/><path d="M7 12c1 4 3 5 5 5s3-1 3-3c0-1-1-2-2-2"/></svg>
-            <svg v-else-if="link.type === 'youtube'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="4"/><path d="M10 9l5 3-5 3V9z"/></svg>
-            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-            {{ link.type === 'instagram' ? 'Instagram' : link.type === 'vk' ? 'VK' : link.type === 'telegram' ? 'Telegram' : link.type === 'youtube' ? 'YouTube' : link.type === 'tiktok' ? 'TikTok' : link.type === 'facebook' ? 'Facebook' : 'Сайт' }}
-          </a>
-        </div>
-      </div>
-
 
       <!-- Footer -->
       <footer class="footer">
