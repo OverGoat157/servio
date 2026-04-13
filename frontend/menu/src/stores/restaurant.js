@@ -13,6 +13,9 @@ export const restaurant = reactive({
   theme: 'default',
   categories: [],
   messengers: [],
+  is_open: true,
+  closing_soon: false,
+  close_time: '',
 })
 
 export const loading = ref(true)

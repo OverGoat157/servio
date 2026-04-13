@@ -12,7 +12,7 @@ const slug = route.params.slug
 const customerName = ref('')
 const customerPhone = ref('')
 const customerAddress = ref('')
-const deliveryMode = ref('delivery') // 'delivery' | 'pickup'
+const deliveryMode = ref(null) // 'delivery' | 'pickup'
 const selectedMessenger = ref('')
 const timeMode = ref('asap') // 'asap' | 'scheduled'
 const scheduledTime = ref('')
@@ -49,6 +49,21 @@ const contactsValid = computed(() => {
   if (customerPhone.value.trim().length < 5) return false
   if (deliveryMode.value === 'delivery' && customerAddress.value.trim().length < 3) return false
   return true
+})
+
+const disabledReason = computed(() => {
+  if (sending.value) return 'Отправка...'
+  if (cart.length === 0) return 'Корзина пуста'
+  if (!restaurant.is_open) return 'Ресторан закрыт'
+  if (restaurant.closing_soon) return 'Ресторан скоро закрывается'
+  if (customerName.value.trim().length < 2) return 'Введите имя'
+  if (customerPhone.value.trim().length < 5) return 'Введите телефон'
+  if (!deliveryMode.value) return 'Выберите способ получения'
+  if (deliveryMode.value === 'delivery' && customerAddress.value.trim().length < 3) return 'Введите адрес доставки'
+  if (timeMode.value === 'scheduled' && !scheduledTime.value) return 'Выберите время'
+  if (timeMode.value === 'scheduled' && timeError.value) return 'Неверное время'
+  if (!selectedMessenger.value) return 'Выберите мессенджер'
+  return null
 })
 
 function finalAddress() {
@@ -238,7 +253,7 @@ function goHome() {
         </div>
 
         <input
-          v-else
+          v-else-if="deliveryMode === 'delivery'"
           v-model="customerAddress"
           class="field-input"
           placeholder="Адрес доставки"
@@ -312,10 +327,10 @@ function goHome() {
       <!-- Submit -->
       <button
         class="submit-btn"
-        :disabled="!selectedMessenger || sending || !restaurant.is_open || restaurant.closing_soon || !contactsValid || (timeMode === 'scheduled' && (!scheduledTime || timeError))"
+        :disabled="disabledReason !== null"
         @click="submitOrder"
       >
-        {{ sending ? 'Отправка...' : !contactsValid ? 'Заполните имя, телефон и адрес' : 'Отправить заказ' }}
+        {{ disabledReason || 'Отправить заказ' }}
       </button>
     </div>
   </div>
