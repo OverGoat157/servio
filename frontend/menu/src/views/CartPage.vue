@@ -115,9 +115,15 @@ async function submitOrder() {
       const ua = navigator.userAgent || ''
       const isMobile = /iphone|ipad|ipod|android|mobile/i.test(ua)
       const waUrl = isMobile
-        ? `https://wa.me/${phone}?text=${text}`
+        ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}`
         : `https://web.whatsapp.com/send?phone=${phone}&text=${text}`
-      window.open(waUrl, '_blank')
+      const a = document.createElement('a')
+      a.href = waUrl
+      a.target = '_blank'
+      a.rel = 'noopener'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
       sent.value = true
       clearCart()
     } else if (result.whatsapp_url) {

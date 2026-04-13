@@ -134,41 +134,42 @@ func SendTelegram(cfg TelegramConfig, text string) error {
 }
 
 // FormatOrderTextPlain создаёт текст заказа для WhatsApp.
-// Использует WhatsApp markdown: *жирный*, _курсив_.
+// Без markdown и спецсимволов — на некоторых мобильных версиях
+// WhatsApp такие символы в deep-link ломают prefill.
 func FormatOrderTextPlain(msg *OrderMessage) string {
 	var b strings.Builder
 
 	now := time.Now().Format("02.01.2006 15:04")
 
-	fmt.Fprintf(&b, "*Новый заказ #%d*\n", msg.OrderID)
-	fmt.Fprintf(&b, "%s · %s\n\n", msg.RestaurantName, now)
+	fmt.Fprintf(&b, "Новый заказ N%d\n", msg.OrderID)
+	fmt.Fprintf(&b, "%s, %s\n\n", msg.RestaurantName, now)
 
-	b.WriteString("*Состав заказа:*\n")
+	b.WriteString("Состав заказа:\n")
 	var totalQty int
 	for i, item := range msg.Items {
-		price := float64(item.Price*item.Quantity) / 100
-		fmt.Fprintf(&b, "%d. %s × %d — %.0f ₽\n", i+1, item.Name, item.Quantity, price)
+		price := item.Price * item.Quantity / 100
+		fmt.Fprintf(&b, "%d) %s x%d - %d руб\n", i+1, item.Name, item.Quantity, price)
 		if item.Comment != "" {
-			fmt.Fprintf(&b, "    _%s_\n", item.Comment)
+			fmt.Fprintf(&b, "   (%s)\n", item.Comment)
 		}
 		totalQty += item.Quantity
 	}
 
-	total := float64(msg.Total) / 100
-	fmt.Fprintf(&b, "\n*Итого:* %.0f ₽  ·  позиций: %d / блюд: %d\n", total, len(msg.Items), totalQty)
+	total := msg.Total / 100
+	fmt.Fprintf(&b, "\nИтого: %d руб (позиций: %d, блюд: %d)\n", total, len(msg.Items), totalQty)
 
 	if msg.EstCookMin > 0 {
-		fmt.Fprintf(&b, "Время готовки: ~%d мин\n", msg.EstCookMin)
+		fmt.Fprintf(&b, "Время готовки: около %d мин\n", msg.EstCookMin)
 	}
 
 	if msg.DesiredTime != "" && msg.DesiredTime != "asap" {
-		fmt.Fprintf(&b, "Приготовить к: *%s*\n", msg.DesiredTime)
+		fmt.Fprintf(&b, "Приготовить к: %s\n", msg.DesiredTime)
 	} else {
-		b.WriteString("Приготовить: *как можно быстрее*\n")
+		b.WriteString("Приготовить: как можно быстрее\n")
 	}
 
 	if msg.CustomerName != "" || msg.CustomerPhone != "" || msg.CustomerAddress != "" {
-		b.WriteString("\n*Клиент:*\n")
+		b.WriteString("\nКлиент:\n")
 		if msg.CustomerName != "" {
 			fmt.Fprintf(&b, "Имя: %s\n", msg.CustomerName)
 		}
@@ -181,7 +182,7 @@ func FormatOrderTextPlain(msg *OrderMessage) string {
 	}
 
 	if msg.Comment != "" {
-		fmt.Fprintf(&b, "\n*Комментарий:*\n%s\n", msg.Comment)
+		fmt.Fprintf(&b, "\nКомментарий: %s\n", msg.Comment)
 	}
 
 	if msg.MenuURL != "" {
