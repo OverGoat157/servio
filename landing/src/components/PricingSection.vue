@@ -1,13 +1,50 @@
 <script setup>
 const plans = [
   {
-    name: 'Бизнес',
+    name: 'Минимальный',
     price: '10 000 ₽',
-    period: '',
-    desc: 'Полная настройка сайта-приложения под ваш бизнес',
-    features: ['Сайт-приложение с меню', 'Безлимитное меню', 'Все мессенджеры', 'Индивидуальный дизайн', 'QR-код для печати', 'Поддержка 24/7'],
+    period: '/ мес',
+    desc: 'Все базовые функции сайта-приложения',
+    features: [
+      'Сайт-приложение с меню',
+      'Безлимитное меню',
+      'Все мессенджеры',
+      'QR-код для печати',
+      'Поддержка 24/7',
+    ],
     cta: 'Оставить заявку',
+  },
+  {
+    name: 'Бизнес',
+    price: '7 500 ₽',
+    period: '/ мес',
+    priceHint: '3 месяца — 22 500 ₽',
+    desc: 'Приоритетное развитие и ранний доступ к новым фичам',
+    features: [
+      'Всё из «Минимального»',
+      'Индивидуальный дизайн',
+      'Планируется расширенный функционал',
+      'Новые фичи раньше остальных',
+      'Приоритетная поддержка',
+    ],
+    cta: 'Оставить заявку',
+    badge: 'Популярный',
     featured: true,
+  },
+  {
+    name: 'Бизнес Макс',
+    price: '5 000 ₽',
+    period: '/ мес',
+    priceHint: '12 месяцев — 60 000 ₽',
+    desc: 'Максимальная выгода при годовой подписке',
+    features: [
+      'Всё из тарифа «Бизнес»',
+      'Планируется расширенный функционал',
+      'Новые фичи раньше остальных',
+      'Персональный менеджер',
+      'Экономия 50% при оплате за год',
+    ],
+    cta: 'Оставить заявку',
   },
 ]
 </script>
@@ -28,6 +65,7 @@ const plans = [
             <span class="price-val">{{ p.price }}</span>
             <span class="price-per" v-if="p.period">{{ p.period }}</span>
           </div>
+          <div class="price-hint" v-if="p.priceHint">{{ p.priceHint }}</div>
           <p class="plan-desc">{{ p.desc }}</p>
           <ul>
             <li v-for="f in p.features" :key="f">
@@ -52,9 +90,11 @@ const plans = [
 }
 
 .plans {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
+  align-items: stretch;
+  margin-top: 48px;
 }
 
 .plan {
@@ -65,6 +105,8 @@ const plans = [
   text-align: center;
   position: relative;
   transition: all var(--ease);
+  display: flex;
+  flex-direction: column;
 }
 
 .plan:hover {
@@ -112,10 +154,17 @@ const plans = [
   color: var(--gray);
 }
 
+.price-hint {
+  font-size: 13px;
+  color: var(--gray);
+  margin-top: 6px;
+}
+
 .plan-desc {
   font-size: 14px;
   color: var(--gray);
-  margin: 8px 0 24px;
+  margin: 12px 0 24px;
+  min-height: 40px;
 }
 
 .plan ul {
@@ -124,6 +173,7 @@ const plans = [
   display: flex;
   flex-direction: column;
   gap: 12px;
+  flex: 1;
 }
 
 .plan li {
@@ -139,11 +189,24 @@ const plans = [
 
 .plan .btn {
   width: 100%;
+  margin-top: auto;
 }
 
-.plan {
-  max-width: 400px;
-  width: 100%;
+@media (max-width: 960px) {
+  .plans {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .plan.featured {
+    transform: none;
+  }
+
+  .plan.featured:hover {
+    transform: translateY(-4px);
+  }
 }
 
 @media (max-width: 768px) {
