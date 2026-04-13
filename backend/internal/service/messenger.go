@@ -133,63 +133,59 @@ func SendTelegram(cfg TelegramConfig, text string) error {
 	return nil
 }
 
-// FormatOrderTextPlain создаёт текст заказа без эмодзи (для WhatsApp)
+// FormatOrderTextPlain создаёт текст заказа для WhatsApp.
+// Использует WhatsApp markdown: *жирный*, _курсив_.
 func FormatOrderTextPlain(msg *OrderMessage) string {
 	var b strings.Builder
 
 	now := time.Now().Format("02.01.2006 15:04")
 
-	b.WriteString("*** НОВЫЙ ЗАКАЗ ***\n")
-	b.WriteString("--------------------\n")
-	b.WriteString(fmt.Sprintf("Заказ #%d\n", msg.OrderID))
-	b.WriteString(fmt.Sprintf("Ресторан: %s\n", msg.RestaurantName))
-	b.WriteString(fmt.Sprintf("Время: %s\n", now))
-	b.WriteString("--------------------\n\n")
+	fmt.Fprintf(&b, "*Новый заказ #%d*\n", msg.OrderID)
+	fmt.Fprintf(&b, "%s · %s\n\n", msg.RestaurantName, now)
 
-	b.WriteString("СОСТАВ ЗАКАЗА:\n")
+	b.WriteString("*Состав заказа:*\n")
 	var totalQty int
 	for i, item := range msg.Items {
 		price := float64(item.Price*item.Quantity) / 100
-		b.WriteString(fmt.Sprintf("%d. %s x%d — %.0f руб.\n", i+1, item.Name, item.Quantity, price))
+		fmt.Fprintf(&b, "%d. %s × %d — %.0f ₽\n", i+1, item.Name, item.Quantity, price)
 		if item.Comment != "" {
-			b.WriteString(fmt.Sprintf("   > %s\n", item.Comment))
+			fmt.Fprintf(&b, "    _%s_\n", item.Comment)
 		}
 		totalQty += item.Quantity
 	}
 
 	total := float64(msg.Total) / 100
-	b.WriteString(fmt.Sprintf("\nПозиций: %d (блюд: %d)\n", len(msg.Items), totalQty))
-	b.WriteString(fmt.Sprintf("ИТОГО: %.0f руб.\n", total))
+	fmt.Fprintf(&b, "\n*Итого:* %.0f ₽  ·  позиций: %d / блюд: %d\n", total, len(msg.Items), totalQty)
 
 	if msg.EstCookMin > 0 {
-		b.WriteString(fmt.Sprintf("Время готовки: ~%d мин\n", msg.EstCookMin))
+		fmt.Fprintf(&b, "Время готовки: ~%d мин\n", msg.EstCookMin)
 	}
 
 	if msg.DesiredTime != "" && msg.DesiredTime != "asap" {
-		b.WriteString(fmt.Sprintf("\nПРИГОТОВИТЬ К: %s\n", msg.DesiredTime))
+		fmt.Fprintf(&b, "Приготовить к: *%s*\n", msg.DesiredTime)
 	} else {
-		b.WriteString("\nКАК МОЖНО БЫСТРЕЕ\n")
+		b.WriteString("Приготовить: *как можно быстрее*\n")
 	}
 
 	if msg.CustomerName != "" || msg.CustomerPhone != "" || msg.CustomerAddress != "" {
-		b.WriteString("\nКЛИЕНТ:\n")
+		b.WriteString("\n*Клиент:*\n")
 		if msg.CustomerName != "" {
-			b.WriteString(fmt.Sprintf("  Имя: %s\n", msg.CustomerName))
+			fmt.Fprintf(&b, "Имя: %s\n", msg.CustomerName)
 		}
 		if msg.CustomerPhone != "" {
-			b.WriteString(fmt.Sprintf("  Тел: %s\n", msg.CustomerPhone))
+			fmt.Fprintf(&b, "Телефон: %s\n", msg.CustomerPhone)
 		}
 		if msg.CustomerAddress != "" {
-			b.WriteString(fmt.Sprintf("  Адрес: %s\n", msg.CustomerAddress))
+			fmt.Fprintf(&b, "Адрес: %s\n", msg.CustomerAddress)
 		}
 	}
 
 	if msg.Comment != "" {
-		b.WriteString(fmt.Sprintf("\nКОММЕНТАРИЙ:\n  %s\n", msg.Comment))
+		fmt.Fprintf(&b, "\n*Комментарий:*\n%s\n", msg.Comment)
 	}
 
 	if msg.MenuURL != "" {
-		b.WriteString(fmt.Sprintf("\nМеню: %s\n", msg.MenuURL))
+		fmt.Fprintf(&b, "\nМеню: %s", msg.MenuURL)
 	}
 
 	return b.String()
