@@ -109,7 +109,18 @@ async function submitOrder() {
       clearCart()
     }
 
-    if (result.whatsapp_url) {
+    if (result.whatsapp_phone && result.whatsapp_text) {
+      const phone = result.whatsapp_phone
+      const text = encodeURIComponent(result.whatsapp_text)
+      const ua = navigator.userAgent || ''
+      const isMobile = /iphone|ipad|ipod|android|mobile/i.test(ua)
+      const waUrl = isMobile
+        ? `https://wa.me/${phone}?text=${text}`
+        : `https://web.whatsapp.com/send?phone=${phone}&text=${text}`
+      window.open(waUrl, '_blank')
+      sent.value = true
+      clearCart()
+    } else if (result.whatsapp_url) {
       window.open(result.whatsapp_url, '_blank')
       sent.value = true
       clearCart()

@@ -195,17 +195,21 @@ func FormatOrderTextPlain(msg *OrderMessage) string {
 	return b.String()
 }
 
-// BuildWhatsAppURL создаёт ссылку web.whatsapp.com с текстом заказа,
-// минуя промежуточный лендинг wa.me/api.whatsapp.com, который на десктопе
-// пытается открыть нативное приложение через whatsapp:// протокол.
-func BuildWhatsAppURL(cfg WhatsAppConfig, text string) string {
-	phone := strings.ReplaceAll(cfg.Phone, "+", "")
+// NormalizeWhatsAppPhone приводит номер к формату без +, пробелов и скобок.
+func NormalizeWhatsAppPhone(raw string) string {
+	phone := strings.ReplaceAll(raw, "+", "")
 	phone = strings.ReplaceAll(phone, " ", "")
 	phone = strings.ReplaceAll(phone, "(", "")
 	phone = strings.ReplaceAll(phone, ")", "")
 	phone = strings.ReplaceAll(phone, "-", "")
+	return phone
+}
 
-	return fmt.Sprintf("https://web.whatsapp.com/send?phone=%s&text=%s", phone, url.QueryEscape(text))
+// BuildWhatsAppURL создаёт fallback-ссылку wa.me с текстом заказа.
+// Клиент может сам выбрать web.whatsapp.com для десктопа, используя
+// поля whatsapp_phone и whatsapp_text из ответа.
+func BuildWhatsAppURL(cfg WhatsAppConfig, text string) string {
+	return fmt.Sprintf("https://wa.me/%s?text=%s", NormalizeWhatsAppPhone(cfg.Phone), url.QueryEscape(text))
 }
 
 // ParseCookTimeMinutes извлекает число минут из строки вроде "15 мин", "30", "1 час"

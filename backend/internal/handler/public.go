@@ -439,6 +439,8 @@ func (h *PublicHandler) CreateOrder(c *gin.Context) {
 			if err == nil {
 				waText := service.FormatOrderTextPlain(msg)
 				response["whatsapp_url"] = service.BuildWhatsAppURL(waCfg, waText)
+				response["whatsapp_phone"] = service.NormalizeWhatsAppPhone(waCfg.Phone)
+				response["whatsapp_text"] = waText
 			}
 		}
 	}
