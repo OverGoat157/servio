@@ -21,6 +21,7 @@ export function addToCart(menuItem, comment = '') {
       id: menuItem.id,
       name: menuItem.name,
       price: menuItem.price,
+      image: menuItem.image || null,
       quantity: 1,
       comment: comment || '',
       cook_time: menuItem.cook_time || null,

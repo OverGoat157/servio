@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { restaurant } from '../stores/restaurant'
 import { cart, cartTotal, orderComment, estCookMin, updateQuantity, updateComment, removeFromCart, clearCart } from '../stores/cart'
-import { createOrder } from '../api/client'
+import { createOrder, imageUrl } from '../api/client'
 
 const route = useRoute()
 const router = useRouter()
@@ -187,25 +187,37 @@ function goHome() {
       <!-- Items -->
       <div class="items-section">
         <div class="cart-item" v-for="item in cart" :key="item.id">
-          <div class="ci-top">
-            <div class="ci-name">{{ item.name }}</div>
-            <button class="ci-remove" @click="removeFromCart(item.id)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                <path d="M18 6L6 18M6 6l12 12"/>
-              </svg>
-            </button>
-          </div>
-          <div class="ci-bottom">
-            <div class="qty-controls">
-              <button class="qty-btn" @click="updateQuantity(item.id, item.quantity - 1)">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>
-              </button>
-              <span class="qty">{{ item.quantity }}</span>
-              <button class="qty-btn" @click="updateQuantity(item.id, item.quantity + 1)">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-              </button>
+          <div class="ci-main">
+            <div class="ci-img" v-if="item.image">
+              <img :src="imageUrl(item.image)" :alt="item.name" loading="lazy" />
             </div>
-            <div class="ci-price">{{ formatPrice(item.price * item.quantity) }}</div>
+            <div class="ci-img ci-img-placeholder" v-else>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/>
+              </svg>
+            </div>
+            <div class="ci-body">
+              <div class="ci-top">
+                <div class="ci-name">{{ item.name }}</div>
+                <button class="ci-remove" @click="removeFromCart(item.id)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="ci-bottom">
+                <div class="qty-controls">
+                  <button class="qty-btn" @click="updateQuantity(item.id, item.quantity - 1)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>
+                  </button>
+                  <span class="qty">{{ item.quantity }}</span>
+                  <button class="qty-btn" @click="updateQuantity(item.id, item.quantity + 1)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                  </button>
+                </div>
+                <div class="ci-price">{{ formatPrice(item.price * item.quantity) }}</div>
+              </div>
+            </div>
           </div>
           <div class="ci-comment">
             <input :value="item.comment" @input="updateComment(item.id, $event.target.value)" class="ci-comment-input" placeholder="Комментарий к блюду..." />
@@ -507,12 +519,48 @@ function goHome() {
   background: var(--bg);
 }
 
+.ci-main {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.ci-img {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+}
+
+.ci-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ci-img-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ci-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .ci-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 10px;
 }
 
 .ci-name {
