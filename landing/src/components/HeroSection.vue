@@ -140,22 +140,19 @@ h1 {
 }
 
 .video-wrap {
-  position: relative;
   width: 100%;
-  max-width: 540px;
-  aspect-ratio: 4 / 5;
+  max-width: 420px;
   border-radius: 24px;
   overflow: hidden;
   background: var(--off-white);
   box-shadow: var(--shadow-lg);
+  display: flex;
 }
 
 .hero-image {
-  position: absolute;
-  inset: 0;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  object-fit: contain;
   display: block;
 }
 
@@ -181,8 +178,7 @@ h1 {
   .hero-visual { order: -1; }
 
   .video-wrap {
-    max-width: 420px;
-    aspect-ratio: 16 / 10;
+    max-width: 320px;
   }
 }
 
