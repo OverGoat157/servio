@@ -2,7 +2,7 @@
 const screens = [
   { src: '/demo/home.png', label: 'Главная ресторана' },
   { src: '/demo/menu.png', label: 'Меню с категориями' },
-  { src: '/demo/cart.png', label: 'Оформление заказа' },
+  { src: '/demo/cart.png', label: 'Корзина с заказом' },
 ]
 </script>
 
