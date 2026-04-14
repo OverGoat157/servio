@@ -27,7 +27,11 @@ async function handleSubmit() {
   <div class="auth-page">
     <div class="auth-card card">
       <div class="auth-header">
-        <div class="auth-logo">AB</div>
+        <svg class="auth-logo" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 10l5 6-5 6"/>
+          <path d="M13 10l5 6-5 6"/>
+          <path d="M19 10l5 6-5 6"/>
+        </svg>
         <h1>Вход в AB Team</h1>
         <p>Управляйте ресторанами и меню</p>
       </div>
@@ -74,16 +78,10 @@ async function handleSubmit() {
 }
 
 .auth-logo {
-  width: 48px;
-  height: 48px;
-  background: var(--primary);
-  color: #fff;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  font-weight: 700;
+  display: block;
+  width: 56px;
+  height: 56px;
+  color: var(--primary);
   margin: 0 auto 16px;
 }
 

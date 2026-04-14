@@ -22,7 +22,11 @@ function handleLogout() {
   <nav class="navbar" v-if="isAuthenticated">
     <div class="nav-inner">
       <router-link to="/" class="nav-brand">
-        <span class="nav-logo">AB</span>
+        <svg class="nav-logo" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 10l5 6-5 6"/>
+          <path d="M13 10l5 6-5 6"/>
+          <path d="M19 10l5 6-5 6"/>
+        </svg>
         <span>AB Team</span>
       </router-link>
       <div class="nav-right">
@@ -72,14 +76,8 @@ function handleLogout() {
 .nav-logo {
   width: 32px;
   height: 32px;
-  background: var(--primary);
-  color: #fff;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  font-weight: 700;
+  color: var(--primary);
+  display: block;
 }
 
 .nav-right {
