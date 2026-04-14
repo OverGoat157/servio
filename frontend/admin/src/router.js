@@ -11,6 +11,7 @@ import CombosPage from './views/CombosPage.vue'
 import AnalyticsPage from './views/AnalyticsPage.vue'
 import AdminAnalyticsPage from './views/AdminAnalyticsPage.vue'
 import AdminUsersPage from './views/AdminUsersPage.vue'
+import HelpTelegramPage from './views/HelpTelegramPage.vue'
 
 const routes = [
   { path: '/login', name: 'login', component: LoginPage, meta: { guest: true } },
@@ -21,6 +22,7 @@ const routes = [
   { path: '/restaurant/:id/combos', name: 'combos', component: CombosPage, meta: { auth: true } },
   { path: '/restaurant/:id/messengers', name: 'messengers', component: MessengersPage, meta: { auth: true } },
   { path: '/restaurant/:id/analytics', name: 'analytics', component: AnalyticsPage, meta: { auth: true } },
+  { path: '/help/telegram', name: 'help-telegram', component: HelpTelegramPage, meta: { auth: true } },
   // Admin
   { path: '/admin/analytics', name: 'admin-analytics', component: AdminAnalyticsPage, meta: { auth: true, admin: true } },
   { path: '/admin/users', name: 'admin-users', component: AdminUsersPage, meta: { auth: true, admin: true } },
