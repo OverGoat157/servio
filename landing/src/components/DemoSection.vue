@@ -1,9 +1,8 @@
 <script setup>
-// TODO: положить реальные скриншоты в landing/public/demo/
 const screens = [
-  { src: '/demo/home.png', label: 'Главная страница' },
-  { src: '/demo/menu.png', label: 'Меню ресторана' },
-  { src: '/demo/cart.png', label: 'Отправка заказа' },
+  { src: '/demo/home.png', label: 'Главная ресторана' },
+  { src: '/demo/menu.png', label: 'Меню с категориями' },
+  { src: '/demo/cart.png', label: 'Оформление заказа' },
 ]
 </script>
 
