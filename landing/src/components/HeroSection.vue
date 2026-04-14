@@ -35,25 +35,9 @@
         </div>
       </div>
 
-      <!-- video placeholder (TODO: заменить на реальное видео ресторана) -->
       <div class="hero-visual">
         <div class="video-wrap">
-          <video
-            class="hero-video"
-            src=""
-            autoplay
-            muted
-            loop
-            playsinline
-            poster=""
-          />
-          <div class="video-placeholder">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="23 7 16 12 23 17 23 7"/>
-              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-            </svg>
-            <span>Видео ресторана</span>
-          </div>
+          <img class="hero-image" src="/demo/hero.png" alt="Пример сайт-приложения" />
         </div>
       </div>
     </div>
@@ -148,7 +132,6 @@ h1 {
   background: var(--light-gray);
 }
 
-/* video */
 .hero-visual {
   position: relative;
   display: flex;
@@ -162,32 +145,17 @@ h1 {
   aspect-ratio: 4 / 5;
   border-radius: 24px;
   overflow: hidden;
-  background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
+  background: var(--off-white);
   box-shadow: var(--shadow-lg);
 }
 
-.hero-video {
+.hero-image {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  z-index: 1;
-}
-
-.video-placeholder {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 15px;
-  font-weight: 500;
-  text-align: center;
-  z-index: 0;
+  display: block;
 }
 
 
