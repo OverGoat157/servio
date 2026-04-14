@@ -1,8 +1,12 @@
 <script setup>
+import homeImg from '../assets/demo/home.png'
+import menuImg from '../assets/demo/menu.png'
+import cartImg from '../assets/demo/cart.png'
+
 const screens = [
-  { src: '/demo/home.png', label: 'Главная ресторана' },
-  { src: '/demo/menu.png', label: 'Меню с категориями' },
-  { src: '/demo/cart.png', label: 'Корзина с заказом' },
+  { src: homeImg, label: 'Главная ресторана' },
+  { src: menuImg, label: 'Меню с категориями' },
+  { src: cartImg, label: 'Корзина с заказом' },
 ]
 </script>
 

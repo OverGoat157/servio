@@ -1,4 +1,5 @@
 <script setup>
+import heroImg from '../assets/demo/hero.png'
 </script>
 
 <template>
@@ -37,7 +38,7 @@
 
       <div class="hero-visual">
         <div class="video-wrap">
-          <img class="hero-image" src="/demo/hero.png" alt="Пример сайт-приложения" />
+          <img class="hero-image" :src="heroImg" alt="Пример сайт-приложения" />
         </div>
       </div>
     </div>
