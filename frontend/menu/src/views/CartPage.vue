@@ -12,6 +12,35 @@ const slug = route.params.slug
 const customerName = ref('')
 const customerPhone = ref('')
 const customerAddress = ref('')
+
+const phoneDigits = computed(() => {
+  let d = customerPhone.value.replace(/\D/g, '')
+  if (d.startsWith('8')) d = '7' + d.slice(1)
+  if (d.length && !d.startsWith('7')) d = '7' + d
+  return d.slice(0, 11)
+})
+
+const phoneValid = computed(() => phoneDigits.value.length === 11)
+
+function formatPhone(digits) {
+  const d = digits.slice(0, 11)
+  if (!d) return ''
+  let out = '+7'
+  if (d.length > 1) out += ' (' + d.slice(1, 4)
+  if (d.length >= 4) out += ')'
+  if (d.length >= 5) out += ' ' + d.slice(4, 7)
+  if (d.length >= 8) out += '-' + d.slice(7, 9)
+  if (d.length >= 10) out += '-' + d.slice(9, 11)
+  return out
+}
+
+function onPhoneInput(e) {
+  let d = e.target.value.replace(/\D/g, '')
+  if (d.startsWith('8')) d = '7' + d.slice(1)
+  if (d.length && !d.startsWith('7')) d = '7' + d
+  d = d.slice(0, 11)
+  customerPhone.value = formatPhone(d)
+}
 const deliveryMode = ref(null) // 'delivery' | 'pickup'
 const selectedMessenger = ref('')
 const timeMode = ref('asap') // 'asap' | 'scheduled'
@@ -46,7 +75,7 @@ function goBack() {
 
 const contactsValid = computed(() => {
   if (customerName.value.trim().length < 2) return false
-  if (customerPhone.value.trim().length < 5) return false
+  if (!phoneValid.value) return false
   if (deliveryMode.value === 'delivery' && customerAddress.value.trim().length < 3) return false
   return true
 })
@@ -57,7 +86,8 @@ const disabledReason = computed(() => {
   if (!restaurant.is_open) return 'Ресторан закрыт'
   if (restaurant.closing_soon) return 'Ресторан скоро закрывается'
   if (customerName.value.trim().length < 2) return 'Введите имя'
-  if (customerPhone.value.trim().length < 5) return 'Введите телефон'
+  if (phoneDigits.value.length === 0) return 'Введите телефон'
+  if (!phoneValid.value) return `Телефон: ${phoneDigits.value.length}/11 цифр`
   if (!deliveryMode.value) return 'Выберите способ получения'
   if (deliveryMode.value === 'delivery' && customerAddress.value.trim().length < 3) return 'Введите адрес доставки'
   if (timeMode.value === 'scheduled' && !scheduledTime.value) return 'Выберите время'
@@ -95,7 +125,7 @@ async function submitOrder() {
       }),
       messenger: selectedMessenger.value,
       customer_name: customerName.value.trim(),
-      customer_phone: customerPhone.value.trim(),
+      customer_phone: '+' + phoneDigits.value,
       customer_address: finalAddress(),
       comment: orderComment.value || undefined,
       menu_url: window.location.origin + '/' + slug,
@@ -235,19 +265,32 @@ function goHome() {
       <div class="form-section">
         <div class="section-label">Ваши данные <span class="required">*</span></div>
         <div class="form-fields">
-          <input
-            v-model="customerName"
-            class="field-input"
-            placeholder="Имя"
-            required
-          />
-          <input
-            v-model="customerPhone"
-            class="field-input"
-            type="tel"
-            placeholder="Телефон"
-            required
-          />
+          <div class="field-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input
+              v-model="customerName"
+              class="field-input"
+              placeholder="Ваше имя"
+              required
+            />
+          </div>
+          <div class="field-icon" :class="{ 'field-valid': phoneValid, 'field-error': customerPhone && !phoneValid }">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            <input
+              :value="customerPhone"
+              @input="onPhoneInput"
+              class="field-input"
+              type="tel"
+              inputmode="tel"
+              autocomplete="tel"
+              placeholder="+7 (___) ___-__-__"
+              required
+            />
+            <svg v-if="phoneValid" class="field-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <div class="field-hint" v-if="customerPhone && !phoneValid">
+            Введено {{ phoneDigits.length }} из 11 цифр
+          </div>
         </div>
       </div>
 
@@ -717,7 +760,7 @@ function goHome() {
   font-size: 15px;
   color: var(--text);
   background: var(--bg);
-  transition: border-color var(--ease);
+  transition: border-color var(--ease), background var(--ease);
   outline: none;
 }
 
@@ -727,6 +770,56 @@ function goHome() {
 
 .field-input::placeholder {
   color: var(--text-muted);
+}
+
+.field-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field-icon > svg {
+  position: absolute;
+  left: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: color var(--ease);
+}
+
+.field-icon .field-input {
+  padding-left: 42px;
+  padding-right: 42px;
+}
+
+.field-icon:focus-within > svg {
+  color: var(--primary);
+}
+
+.field-icon.field-valid > svg:first-child {
+  color: var(--success, #16A34A);
+}
+
+.field-icon.field-valid .field-input {
+  border-color: var(--success, #16A34A);
+}
+
+.field-icon.field-error .field-input {
+  border-color: var(--danger, #DC2626);
+  background: #fef2f2;
+}
+
+.field-check {
+  position: absolute;
+  right: 14px;
+  color: var(--success, #16A34A);
+  pointer-events: none;
+}
+
+.field-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding-left: 4px;
+  margin-top: -2px;
 }
 
 /* Time selection */
