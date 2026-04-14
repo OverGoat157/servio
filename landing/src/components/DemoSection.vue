@@ -23,13 +23,7 @@ const screens = [
       <div class="phones">
         <div class="phone-col" v-for="s in screens" :key="s.label">
           <div class="screenshot">
-            <img :src="s.src" :alt="s.label" @error="$event.target.classList.add('missing')" />
-            <div class="screenshot-placeholder">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
-              </svg>
-              <span>Скриншот</span>
-            </div>
+            <img :src="s.src" :alt="s.label" />
           </div>
           <div class="phone-label">{{ s.label }}</div>
         </div>
@@ -63,41 +57,21 @@ const screens = [
 }
 
 .screenshot {
-  position: relative;
-  width: 260px;
-  aspect-ratio: 9 / 18;
+  width: 320px;
+  max-width: 100%;
   border-radius: 24px;
   overflow: hidden;
   background: var(--off-white);
   border: 1px solid var(--light-gray);
   box-shadow: var(--shadow-lg);
+  display: flex;
 }
 
 .screenshot img {
-  position: absolute;
-  inset: 0;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 1;
-}
-
-.screenshot img.missing {
-  display: none;
-}
-
-.screenshot-placeholder {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: var(--gray);
-  font-size: 13px;
-  font-weight: 500;
-  z-index: 0;
+  height: auto;
+  display: block;
+  object-fit: contain;
 }
 
 .phone-label {
@@ -116,7 +90,7 @@ const screens = [
   }
 
   .screenshot {
-    width: 220px;
+    width: min(320px, 100%);
   }
 }
 </style>
