@@ -64,12 +64,19 @@ func (h *AdminHandler) CreateUser(c *gin.Context) {
 	if role == "" {
 		role = "user"
 	}
+	tier := req.Tier
+	if tier == "" {
+		tier = model.TierBasic
+	} else if !model.IsValidTier(tier) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid tier"})
+		return
+	}
 	maxRest := 3
 	if req.MaxRestaurants != nil {
 		maxRest = *req.MaxRestaurants
 	}
 
-	user, err := h.users.Create(req.Email, string(hash), req.Name, role, maxRest)
+	user, err := h.users.Create(req.Email, string(hash), req.Name, role, tier, maxRest)
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "email already exists"})
 		return
@@ -109,7 +116,12 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 		passwordHash = &h
 	}
 
-	user, err := h.users.Update(id, req.Email, passwordHash, req.Name, req.Role, req.MaxRestaurants)
+	if req.Tier != nil && !model.IsValidTier(*req.Tier) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid tier"})
+		return
+	}
+
+	user, err := h.users.Update(id, req.Email, passwordHash, req.Name, req.Role, req.Tier, req.MaxRestaurants)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user"})
 		return

@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { isAuthenticated, fetchUser, logout, user } from './stores/auth'
+import { isAuthenticated, fetchUser, logout, user, tierLabel } from './stores/auth'
 
 const router = useRouter()
 
@@ -32,7 +32,10 @@ function handleLogout() {
       <div class="nav-right">
         <router-link v-if="user?.role === 'admin'" to="/admin/analytics" class="nav-link">Аналитика</router-link>
         <router-link v-if="user?.role === 'admin'" to="/admin/users" class="nav-link">Пользователи</router-link>
-        <span class="nav-user" v-if="user">{{ user.name }}</span>
+        <span class="nav-user" v-if="user">
+          {{ user.name }}
+          <span v-if="user.role !== 'admin'" class="tier-chip" :class="user.tier || 'basic'">{{ tierLabel(user.tier) }}</span>
+        </span>
         <button class="nav-logout" @click="handleLogout">Выйти</button>
       </div>
     </div>
@@ -102,6 +105,33 @@ function handleLogout() {
 .nav-user {
   font-size: 14px;
   color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tier-chip {
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.tier-chip.basic {
+  background: #F1F5F9;
+  color: #475569;
+}
+
+.tier-chip.business {
+  background: #DBEAFE;
+  color: #1D4ED8;
+}
+
+.tier-chip.business_max {
+  background: #FEF3C7;
+  color: #B45309;
 }
 
 .nav-logout {

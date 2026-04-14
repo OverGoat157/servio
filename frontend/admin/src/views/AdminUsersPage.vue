@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { admin as api } from '../api/client'
+import { TIER_LABELS, tierLabel } from '../stores/auth'
 
 const router = useRouter()
 
@@ -10,7 +11,7 @@ const loading = ref(true)
 
 const showForm = ref(false)
 const editingId = ref(null)
-const form = ref({ email: '', password: '', name: '', role: 'user', max_restaurants: 3 })
+const form = ref({ email: '', password: '', name: '', role: 'user', tier: 'basic', max_restaurants: 3 })
 const saving = ref(false)
 const error = ref('')
 
@@ -28,7 +29,7 @@ async function loadUsers() {
 
 function openCreate() {
   editingId.value = null
-  form.value = { email: '', password: '', name: '', role: 'user', max_restaurants: 3 }
+  form.value = { email: '', password: '', name: '', role: 'user', tier: 'basic', max_restaurants: 3 }
   error.value = ''
   showForm.value = true
 }
@@ -40,6 +41,7 @@ function openEdit(u) {
     password: '',
     name: u.name,
     role: u.role,
+    tier: u.tier || 'basic',
     max_restaurants: u.max_restaurants,
   }
   error.value = ''
@@ -104,6 +106,7 @@ function formatDate(d) {
             <th>Имя</th>
             <th>Email</th>
             <th>Роль</th>
+            <th>Тариф</th>
             <th>Лимит</th>
             <th>Дата</th>
             <th></th>
@@ -115,6 +118,10 @@ function formatDate(d) {
             <td class="td-name">{{ u.name }}</td>
             <td>{{ u.email }}</td>
             <td><span class="role-badge" :class="u.role">{{ u.role }}</span></td>
+            <td>
+              <span v-if="u.role !== 'admin'" class="tier-badge" :class="u.tier || 'basic'">{{ tierLabel(u.tier) }}</span>
+              <span v-else class="muted">—</span>
+            </td>
             <td>{{ u.max_restaurants }}</td>
             <td class="td-date">{{ formatDate(u.created_at) }}</td>
             <td class="td-actions">
@@ -160,6 +167,13 @@ function formatDate(d) {
               <label class="label">Макс. ресторанов</label>
               <input v-model.number="form.max_restaurants" type="number" min="0" class="input" />
             </div>
+          </div>
+          <div class="field" v-if="form.role !== 'admin'">
+            <label class="label">Тариф</label>
+            <select v-model="form.tier" class="input">
+              <option v-for="(label, key) in TIER_LABELS" :key="key" :value="key">{{ label }}</option>
+            </select>
+            <div class="hint">Определяет, какие фичи доступны пользователю</div>
           </div>
           <div class="error-msg" v-if="error">{{ error }}</div>
           <div class="modal-actions">
@@ -270,6 +284,40 @@ function formatDate(d) {
 .role-badge.user {
   background: var(--primary-light);
   color: var(--primary);
+}
+
+.tier-badge {
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tier-badge.basic {
+  background: #F1F5F9;
+  color: #475569;
+}
+
+.tier-badge.business {
+  background: #DBEAFE;
+  color: #1D4ED8;
+}
+
+.tier-badge.business_max {
+  background: #FEF3C7;
+  color: #B45309;
+}
+
+.muted {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
 }
 
 .icon-btn {

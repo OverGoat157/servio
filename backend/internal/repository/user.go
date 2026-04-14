@@ -13,18 +13,21 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 	return &UserRepo{db: db}
 }
 
-func (r *UserRepo) Create(email, passwordHash, name, role string, maxRestaurants int) (*model.User, error) {
+func (r *UserRepo) Create(email, passwordHash, name, role, tier string, maxRestaurants int) (*model.User, error) {
 	if role == "" {
 		role = "user"
+	}
+	if tier == "" {
+		tier = model.TierBasic
 	}
 	if maxRestaurants == 0 {
 		maxRestaurants = 3
 	}
 	user := &model.User{}
 	err := r.db.QueryRowx(
-		`INSERT INTO users (email, password_hash, name, role, max_restaurants)
-		 VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-		email, passwordHash, name, role, maxRestaurants,
+		`INSERT INTO users (email, password_hash, name, role, tier, max_restaurants)
+		 VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+		email, passwordHash, name, role, tier, maxRestaurants,
 	).StructScan(user)
 	return user, err
 }
@@ -47,7 +50,7 @@ func (r *UserRepo) ListAll() ([]model.User, error) {
 	return list, err
 }
 
-func (r *UserRepo) Update(id int64, email, passwordHash, name, role *string, maxRestaurants *int) (*model.User, error) {
+func (r *UserRepo) Update(id int64, email, passwordHash, name, role, tier *string, maxRestaurants *int) (*model.User, error) {
 	user := &model.User{}
 	err := r.db.QueryRowx(
 		`UPDATE users SET
@@ -55,9 +58,10 @@ func (r *UserRepo) Update(id int64, email, passwordHash, name, role *string, max
 			password_hash = COALESCE($3, password_hash),
 			name = COALESCE($4, name),
 			role = COALESCE($5, role),
-			max_restaurants = COALESCE($6, max_restaurants)
+			tier = COALESCE($6, tier),
+			max_restaurants = COALESCE($7, max_restaurants)
 		 WHERE id = $1 RETURNING *`,
-		id, email, passwordHash, name, role, maxRestaurants,
+		id, email, passwordHash, name, role, tier, maxRestaurants,
 	).StructScan(user)
 	return user, err
 }
