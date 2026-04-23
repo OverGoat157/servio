@@ -1,22 +1,22 @@
 <script setup>
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import homeImg from '../assets/demo/home.png'
 import menuImg from '../assets/demo/menu.png'
 import cartImg from '../assets/demo/cart.png'
 
-const screens = [
-  { src: homeImg, label: 'Главная ресторана' },
-  { src: menuImg, label: 'Меню с категориями' },
-  { src: cartImg, label: 'Корзина с заказом' },
-]
+const { tm } = useI18n()
+const images = [homeImg, menuImg, cartImg]
+const screens = computed(() => tm('demo.screens').map((label, i) => ({ src: images[i], label })))
 </script>
 
 <template>
   <section id="demo" class="demo">
     <div class="container">
       <div class="text-center">
-        <h2 class="section-title">Посмотрите как это выглядит</h2>
+        <h2 class="section-title">{{ $t('demo.title') }}</h2>
         <p class="section-subtitle">
-          Так видит ваше меню клиент. Минималистичный дизайн и заказ в пару нажатий.
+          {{ $t('demo.subtitle') }}
         </p>
       </div>
 

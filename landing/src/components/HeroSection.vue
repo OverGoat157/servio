@@ -8,37 +8,35 @@ import heroImg from '../assets/demo/hero.png'
       <div class="hero-text">
         <div class="badge">
           <span class="badge-dot" />
-          Новый способ принимать заказы
+          {{ $t('hero.badge') }}
         </div>
 
-        <h1>Сайт-приложение с&nbsp;меню для вашего <span class="accent">ресторана</span></h1>
+        <h1>{{ $t('hero.titleLead') }}&nbsp;<span class="accent">{{ $t('hero.titleAccent') }}</span></h1>
 
         <p class="lead">
-          Мы создадим для вас цифровое меню за&nbsp;1-2&nbsp;дня. Клиенты делают заказ прямо
-          со&nbsp;смартфона, а&nbsp;вы получаете его в&nbsp;WhatsApp, Telegram
-          или любой другой мессенджер.
+          {{ $t('hero.lead') }}
         </p>
 
         <div class="hero-btns">
           <a href="#contact" class="btn btn-primary">
-            Оставить заявку
+            {{ $t('hero.ctaPrimary') }}
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12m0 0l-4-4m4 4l-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
-          <a href="#demo" class="btn btn-outline">Посмотреть демо</a>
+          <a href="#demo" class="btn btn-outline">{{ $t('hero.ctaSecondary') }}</a>
         </div>
 
         <div class="stats">
-          <div class="stat"><strong>1-2 дня</strong><span>На запуск</span></div>
+          <div class="stat"><strong>{{ $t('hero.stat1Value') }}</strong><span>{{ $t('hero.stat1Label') }}</span></div>
           <div class="stat-line" />
-          <div class="stat"><strong>24/7</strong><span>Поддержка</span></div>
+          <div class="stat"><strong>{{ $t('hero.stat2Value') }}</strong><span>{{ $t('hero.stat2Label') }}</span></div>
           <div class="stat-line" />
-          <div class="stat"><strong>0%</strong><span>Комиссий</span></div>
+          <div class="stat"><strong>{{ $t('hero.stat3Value') }}</strong><span>{{ $t('hero.stat3Label') }}</span></div>
         </div>
       </div>
 
       <div class="hero-visual">
         <div class="video-wrap">
-          <img class="hero-image" :src="heroImg" alt="Пример сайт-приложения" />
+          <img class="hero-image" :src="heroImg" :alt="$t('hero.imageAlt')" />
         </div>
       </div>
     </div>

@@ -1,26 +1,17 @@
 <script setup>
-const steps = [
-  {
-    title: 'Оставьте заявку',
-    desc: 'Заполните короткую форму — мы свяжемся с вами в течение дня и обсудим детали.',
-  },
-  {
-    title: 'Мы настраиваем всё за вас',
-    desc: 'Делаем сайт, загружаем ваше меню с фотографиями и описаниями, оформляем обложку и карточку ресторана, подключаем Telegram или WhatsApp для заказов. Обычно за 1-2 дня.',
-  },
-  {
-    title: 'Принимайте заказы',
-    desc: 'Распечатайте QR-код на столики или добавьте ссылку в соцсети. Заказы приходят прямо в мессенджер, меню и цены редактируете сами в удобной админке.',
-  },
-]
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { tm } = useI18n()
+const steps = computed(() => tm('how.steps'))
 </script>
 
 <template>
   <section id="how" class="how">
     <div class="container">
       <div class="text-center">
-        <h2 class="section-title">Как это работает</h2>
-        <p class="section-subtitle">Мы всё делаем за вас. Вам остаётся только принимать заказы.</p>
+        <h2 class="section-title">{{ $t('how.title') }}</h2>
+        <p class="section-subtitle">{{ $t('how.subtitle') }}</p>
       </div>
 
       <div class="steps">

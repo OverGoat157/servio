@@ -18,26 +18,26 @@ function submit() {
     <div class="container">
       <div class="cta-card">
         <div class="cta-text">
-          <h2>Готовы запустить цифровое меню?</h2>
-          <p>Оставьте заявку и мы сами настроим сайт-приложение для вашего ресторана за 1-2 дня.</p>
+          <h2>{{ $t('cta.title') }}</h2>
+          <p>{{ $t('cta.subtitle') }}</p>
         </div>
         <form class="form" @submit.prevent="submit">
           <div class="form-row">
-            <input v-model="form.name" type="text" placeholder="Ваше имя" required />
-            <input v-model="form.phone" type="tel" placeholder="+7 (___) ___-__-__" required />
+            <input v-model="form.name" type="text" :placeholder="$t('cta.name')" required />
+            <input v-model="form.phone" type="tel" :placeholder="$t('cta.phone')" required />
           </div>
           <div class="form-row">
-            <input v-model="form.restaurant" type="text" placeholder="Название ресторана" />
+            <input v-model="form.restaurant" type="text" :placeholder="$t('cta.restaurant')" />
             <select v-model="form.messenger">
-              <option value="" disabled>Предпочитаемый мессенджер</option>
+              <option value="" disabled>{{ $t('cta.messengerPlaceholder') }}</option>
               <option value="whatsapp">WhatsApp</option>
               <option value="telegram">Telegram</option>
               <option value="viber">Viber</option>
-              <option value="other">Другой</option>
+              <option value="other">{{ $t('cta.otherMessenger') }}</option>
             </select>
           </div>
           <button type="submit" class="btn btn-white" :disabled="sent">
-            {{ sent ? 'Заявка отправлена!' : 'Оставить заявку' }}
+            {{ sent ? $t('cta.sent') : $t('cta.submit') }}
             <svg v-if="!sent" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12m0 0l-4-4m4 4l-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
         </form>

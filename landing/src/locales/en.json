@@ -1,0 +1,157 @@
+{
+  "common": {
+    "language": "Language"
+  },
+  "nav": {
+    "features": "Features",
+    "how": "How it works",
+    "demo": "Demo",
+    "pricing": "Pricing",
+    "cta": "Get started",
+    "menuAria": "Menu"
+  },
+  "hero": {
+    "badge": "A new way to take orders",
+    "titleLead": "A web app with a menu for your",
+    "titleAccent": "restaurant",
+    "lead": "We build a digital menu for you in 1-2 days. Customers order straight from their phones, and you receive the orders in WhatsApp, Telegram or any other messenger.",
+    "ctaPrimary": "Send a request",
+    "ctaSecondary": "See the demo",
+    "stat1Value": "1-2 days",
+    "stat1Label": "To launch",
+    "stat2Value": "24/7",
+    "stat2Label": "Support",
+    "stat3Value": "0%",
+    "stat3Label": "Commission",
+    "imageAlt": "Web app preview"
+  },
+  "features": {
+    "title": "Everything your restaurant needs",
+    "subtitle": "A ready-made digital menu with support and updates. Start taking orders from day one.",
+    "items": [
+      {
+        "title": "Handy CRM and analytics",
+        "desc": "See orders, customers, revenue and your most popular dishes. A simple admin panel for menu and prices."
+      },
+      {
+        "title": "Orders in your messenger",
+        "desc": "Orders arrive straight to WhatsApp, Telegram or Viber. No POS terminal required."
+      },
+      {
+        "title": "Works on mobile",
+        "desc": "Responsive design for any device. The customer opens the link and sees your menu."
+      },
+      {
+        "title": "24/7 support",
+        "desc": "We're always in touch. We help with setup, regularly ship updates and new features."
+      },
+      {
+        "title": "Launch in 1-2 days",
+        "desc": "We build the initial site, upload your menu and connect a messenger. You start taking orders immediately."
+      },
+      {
+        "title": "Your brand",
+        "desc": "Logo, colors, background — everything is customizable. Customers see your restaurant."
+      }
+    ]
+  },
+  "how": {
+    "title": "How it works",
+    "subtitle": "We take care of everything. All you have to do is take the orders.",
+    "steps": [
+      {
+        "title": "Send a request",
+        "desc": "Fill in a short form — we'll get in touch within a day and walk through the details."
+      },
+      {
+        "title": "We set everything up for you",
+        "desc": "We build the site, upload your menu with photos and descriptions, design the cover and restaurant card, and connect Telegram or WhatsApp for orders. Usually in 1-2 days."
+      },
+      {
+        "title": "Start taking orders",
+        "desc": "Print the QR code for tables or share the link on social media. Orders arrive straight to your messenger, and you edit the menu and prices in a convenient admin panel."
+      }
+    ]
+  },
+  "demo": {
+    "title": "Here's what it looks like",
+    "subtitle": "This is how your customer sees the menu. Minimalist design and a few taps to place an order.",
+    "screens": [
+      "Restaurant home",
+      "Menu with categories",
+      "Cart with an order"
+    ]
+  },
+  "pricing": {
+    "title": "Simple, transparent pricing",
+    "subtitle": "No hidden fees and no percentage per order",
+    "popular": "Popular",
+    "cta": "Send a request",
+    "plans": [
+      {
+        "name": "Starter",
+        "price": "10,000 ₽",
+        "period": "/ mo",
+        "desc": "All the basic features of the web app",
+        "features": [
+          "Web app with menu",
+          "Unlimited menu items",
+          "All messengers",
+          "QR code to print",
+          "24/7 support"
+        ]
+      },
+      {
+        "name": "Business",
+        "price": "7,500 ₽",
+        "period": "/ mo",
+        "priceHint": "3 months — 22,500 ₽",
+        "desc": "Priority development and early access to new features",
+        "features": [
+          "Everything in Starter",
+          "Custom design",
+          "Extended features planned",
+          "New features first",
+          "Priority support"
+        ]
+      },
+      {
+        "name": "Business Max",
+        "price": "5,000 ₽",
+        "period": "/ mo",
+        "priceHint": "12 months — 60,000 ₽",
+        "desc": "The best value for a yearly subscription",
+        "features": [
+          "Everything in Business",
+          "Extended features planned",
+          "New features first",
+          "Personal manager",
+          "Save 50% when paid yearly"
+        ]
+      }
+    ]
+  },
+  "cta": {
+    "title": "Ready to launch your digital menu?",
+    "subtitle": "Send a request and we'll set up the web app for your restaurant within 1-2 days.",
+    "name": "Your name",
+    "phone": "+1 (___) ___-____",
+    "restaurant": "Restaurant name",
+    "messengerPlaceholder": "Preferred messenger",
+    "otherMessenger": "Other",
+    "submit": "Send a request",
+    "sent": "Request sent!"
+  },
+  "footer": {
+    "brandDesc": "Web apps with menus for restaurants. Orders delivered straight to your messenger.",
+    "productCol": "Product",
+    "companyCol": "Company",
+    "contactCol": "Contact",
+    "about": "About",
+    "blog": "Blog",
+    "contacts": "Contacts",
+    "copyright": "© 2025 AB Team. All rights reserved.",
+    "privacy": "Privacy policy",
+    "offer": "Terms of service"
+  }
+}

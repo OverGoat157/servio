@@ -1,60 +1,26 @@
 <script setup>
-const plans = [
-  {
-    name: 'Минимальный',
-    price: '10 000 ₽',
-    period: '/ мес',
-    desc: 'Все базовые функции сайта-приложения',
-    features: [
-      'Сайт-приложение с меню',
-      'Безлимитное меню',
-      'Все мессенджеры',
-      'QR-код для печати',
-      'Поддержка 24/7',
-    ],
-    cta: 'Оставить заявку',
-  },
-  {
-    name: 'Бизнес',
-    price: '7 500 ₽',
-    period: '/ мес',
-    priceHint: '3 месяца — 22 500 ₽',
-    desc: 'Приоритетное развитие и ранний доступ к новым фичам',
-    features: [
-      'Всё из «Минимального»',
-      'Индивидуальный дизайн',
-      'Планируется расширенный функционал',
-      'Новые фичи раньше остальных',
-      'Приоритетная поддержка',
-    ],
-    cta: 'Оставить заявку',
-    badge: 'Популярный',
-    featured: true,
-  },
-  {
-    name: 'Бизнес Макс',
-    price: '5 000 ₽',
-    period: '/ мес',
-    priceHint: '12 месяцев — 60 000 ₽',
-    desc: 'Максимальная выгода при годовой подписке',
-    features: [
-      'Всё из тарифа «Бизнес»',
-      'Планируется расширенный функционал',
-      'Новые фичи раньше остальных',
-      'Персональный менеджер',
-      'Экономия 50% при оплате за год',
-    ],
-    cta: 'Оставить заявку',
-  },
-]
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t, tm } = useI18n()
+
+const plans = computed(() => {
+  const items = tm('pricing.plans')
+  return items.map((plan, i) => ({
+    ...plan,
+    featured: i === 1,
+    badge: i === 1 ? t('pricing.popular') : null,
+    cta: t('pricing.cta'),
+  }))
+})
 </script>
 
 <template>
   <section id="pricing" class="pricing">
     <div class="container">
       <div class="text-center">
-        <h2 class="section-title">Простые и понятные тарифы</h2>
-        <p class="section-subtitle">Без скрытых комиссий и процентов с заказов</p>
+        <h2 class="section-title">{{ $t('pricing.title') }}</h2>
+        <p class="section-subtitle">{{ $t('pricing.subtitle') }}</p>
       </div>
 
       <div class="plans">

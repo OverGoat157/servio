@@ -1,12 +1,15 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { restaurant, loading, error } from '../stores/restaurant'
 import { cart, addToCart, cartCount, updateQuantity, updateComment } from '../stores/cart'
 import { imageUrl } from '../api/client'
+import { localized } from '../i18n-fields'
 
 const route = useRoute()
 const router = useRouter()
+const { t, locale } = useI18n()
 const slug = route.params.slug
 
 const categories = computed(() => restaurant.categories || [])
@@ -66,17 +69,25 @@ function goToCart() {
 }
 
 function addComboToCart(combo) {
-  addToCart({ id: 'combo-' + combo.id, name: combo.name, price: combo.price, image: combo.image })
+  addToCart({ id: 'combo-' + combo.id, name: localized(combo, 'name'), price: combo.price, image: combo.image })
 }
 
 function formatPrice(kopecks) {
-  return Math.floor(kopecks / 100).toLocaleString('ru-RU') + ' \u20BD'
+  return Math.floor(kopecks / 100).toLocaleString(locale.value === 'en' ? 'en-US' : 'ru-RU') + ' ₽'
 }
 
 const selectedItem = ref(null)
 
+function localizedItem(item) {
+  return {
+    ...item,
+    name: localized(item, 'name'),
+    description: localized(item, 'description'),
+  }
+}
+
 function handleAdd(item) {
-  addToCart(item)
+  addToCart(localizedItem(item))
 }
 
 function getQty(itemId) {
@@ -85,7 +96,7 @@ function getQty(itemId) {
 }
 
 function increment(item) {
-  addToCart(item)
+  addToCart(localizedItem(item))
 }
 
 function decrement(itemId) {
@@ -105,7 +116,7 @@ function addWithComment() {
   if (getQty(selectedItem.value.id)) {
     updateComment(selectedItem.value.id, detailComment.value)
   } else {
-    addToCart(selectedItem.value, detailComment.value)
+    addToCart(localizedItem(selectedItem.value), detailComment.value)
   }
 }
 
@@ -124,19 +135,24 @@ const parsedSchedule = computed(() => {
   return null
 })
 
+// Stored schedule day field uses either new keys ('mon'..'sun') or legacy
+// Russian abbreviations ('Пн'..'Вс'). Match both to stay compatible.
+const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
+const LEGACY_DAYS = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+
 const todayDayName = computed(() => {
-  const days = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
-  return days[new Date().getDay()]
+  const idx = new Date().getDay()
+  return { key: DAY_KEYS[idx], legacy: LEGACY_DAYS[idx] }
 })
 
 const todaySchedule = computed(() => {
   const sched = parsedSchedule.value
   if (!sched?.length) return null
   if (sched[0]?.legacy) return null
-  const today = sched.find(s => s.day === todayDayName.value)
+  const today = sched.find(s => s.day === todayDayName.value.key || s.day === todayDayName.value.legacy)
   if (!today) return null
-  if (today.day_off) return { label: 'Сегодня выходной', off: true }
-  return { label: `Сегодня ${today.open} — ${today.close}`, off: false }
+  if (today.day_off) return { label: t('home.todayOff'), off: true }
+  return { label: t('home.todayHours', { open: today.open, close: today.close }), off: false }
 })
 </script>
 
@@ -150,27 +166,27 @@ const todaySchedule = computed(() => {
     <!-- Error -->
     <div v-else-if="error" class="error-screen">
       <div class="error-icon">!</div>
-      <p>Ресторан не найден</p>
+      <p>{{ $t('home.notFound') }}</p>
     </div>
 
     <!-- Content -->
     <template v-else>
       <!-- Cover banner -->
       <div class="cover-banner" v-if="restaurant.cover_image">
-        <img :src="imageUrl(restaurant.cover_image)" :alt="restaurant.name" />
+        <img :src="imageUrl(restaurant.cover_image)" :alt="localized(restaurant, 'name')" />
       </div>
 
       <!-- Compact info card -->
       <div class="info-card" :class="{ 'info-card-overlap': restaurant.cover_image }">
         <div class="info-logo" v-if="restaurant.logo">
-          <img :src="imageUrl(restaurant.logo)" :alt="restaurant.name" />
+          <img :src="imageUrl(restaurant.logo)" :alt="localized(restaurant, 'name')" />
         </div>
         <div class="info-logo info-logo-placeholder" v-else>
-          {{ restaurant.name.charAt(0) }}
+          {{ localized(restaurant, 'name').charAt(0) }}
         </div>
         <div class="info-body">
-          <h1 class="info-name">{{ restaurant.name }}</h1>
-          <p class="info-desc" v-if="restaurant.description">{{ restaurant.description }}</p>
+          <h1 class="info-name">{{ localized(restaurant, 'name') }}</h1>
+          <p class="info-desc" v-if="localized(restaurant, 'description')">{{ localized(restaurant, 'description') }}</p>
           <div class="info-address" v-if="restaurant.address">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
@@ -188,21 +204,21 @@ const todaySchedule = computed(() => {
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
         </svg>
-        Связаться с нами
+        {{ $t('home.contactUs') }}
       </a>
 
       <!-- Closed / Closing soon -->
       <div class="status-banner closed" v-if="!restaurant.is_open">
-        Сейчас закрыто. Заказы не принимаются.
+        {{ $t('home.closed') }}
       </div>
       <div class="status-banner closing" v-else-if="restaurant.closing_soon">
-        Закрываемся в {{ restaurant.close_time }}. Заказы больше не принимаются.
+        {{ $t('home.closingSoon', { time: restaurant.close_time }) }}
       </div>
 
       <!-- Соцсети -->
       <div class="section" v-if="restaurant.social_links?.length">
         <div class="section-header">
-          <h2>Мы в соцсетях</h2>
+          <h2>{{ $t('home.socialTitle') }}</h2>
         </div>
         <div class="social-list">
           <a v-for="link in restaurant.social_links" :key="link.type + link.url" :href="link.url" target="_blank" rel="noopener" class="social-chip">
@@ -211,7 +227,7 @@ const todaySchedule = computed(() => {
             <svg v-else-if="link.type === 'vk'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16v16H4z"/><path d="M7 12c1 4 3 5 5 5s3-1 3-3c0-1-1-2-2-2"/></svg>
             <svg v-else-if="link.type === 'youtube'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="4"/><path d="M10 9l5 3-5 3V9z"/></svg>
             <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-            {{ link.type === 'instagram' ? 'Instagram' : link.type === 'vk' ? 'VK' : link.type === 'telegram' ? 'Telegram' : link.type === 'youtube' ? 'YouTube' : link.type === 'tiktok' ? 'TikTok' : link.type === 'facebook' ? 'Facebook' : 'Сайт' }}
+            {{ link.type === 'instagram' ? 'Instagram' : link.type === 'vk' ? 'VK' : link.type === 'telegram' ? 'Telegram' : link.type === 'youtube' ? 'YouTube' : link.type === 'tiktok' ? 'TikTok' : link.type === 'facebook' ? 'Facebook' : $t('home.socialWebsite') }}
           </a>
         </div>
       </div>
@@ -224,20 +240,20 @@ const todaySchedule = computed(() => {
             class="tab"
             :class="{ active: activeCategory === 'popular' }"
             @click="scrollToCategory('popular')"
-          >Популярное</button>
+          >{{ $t('home.popular') }}</button>
           <button
             v-if="combos.length"
             class="tab"
             :class="{ active: activeCategory === 'combos' }"
             @click="scrollToCategory('combos')"
-          >Комбо</button>
+          >{{ $t('home.combosTitle') }}</button>
           <button
             v-for="cat in categories"
             :key="cat.id"
             class="tab"
             :class="{ active: activeCategory === cat.id }"
             @click="scrollToCategory(cat.id)"
-          >{{ cat.name }}</button>
+          >{{ localized(cat, 'name') }}</button>
         </div>
       </div>
 
@@ -245,11 +261,11 @@ const todaySchedule = computed(() => {
       <div class="menu-content" v-if="popularItems.length || combos.length || categories.length">
         <!-- Популярное (горизонтальный скролл, карточки как у основного меню) -->
         <div id="cat-popular" class="category-section popular-section" v-if="popularItems.length">
-          <div class="category-name">Популярное</div>
+          <div class="category-name">{{ $t('home.popular') }}</div>
           <div class="popular-scroll">
             <div class="item-card" v-for="item in popularItems" :key="item.id" @click="openDetail(item)">
               <div class="item-img" v-if="item.image">
-                <img :src="imageUrl(item.image)" :alt="item.name" loading="lazy" />
+                <img :src="imageUrl(item.image)" :alt="localized(item, 'name')" loading="lazy" />
               </div>
               <div class="item-img item-img-placeholder" v-else>
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round">
@@ -257,8 +273,8 @@ const todaySchedule = computed(() => {
                 </svg>
               </div>
               <div class="item-body">
-                <div class="item-name">{{ item.name }}</div>
-                <div class="item-desc" v-if="item.description">{{ item.description }}</div>
+                <div class="item-name">{{ localized(item, 'name') }}</div>
+                <div class="item-desc" v-if="localized(item, 'description')">{{ localized(item, 'description') }}</div>
                 <div class="item-footer">
                   <span class="item-price">{{ formatPrice(item.price) }}</span>
                   <div class="qty-inline" v-if="getQty(item.id)" @click.stop>
@@ -280,17 +296,17 @@ const todaySchedule = computed(() => {
         </div>
 
         <div id="cat-combos" class="category-section combos-section" v-if="combos.length">
-          <div class="category-name">Комбо-наборы</div>
+          <div class="category-name">{{ $t('home.combosTitle') }}</div>
           <div class="combos-list">
             <div class="combo-card" v-for="combo in combos" :key="combo.id">
               <div class="combo-img" v-if="combo.image">
-                <img :src="imageUrl(combo.image)" :alt="combo.name" loading="lazy" />
+                <img :src="imageUrl(combo.image)" :alt="localized(combo, 'name')" loading="lazy" />
               </div>
               <div class="combo-body">
-                <div class="combo-name">{{ combo.name }}</div>
-                <div class="combo-desc" v-if="combo.description">{{ combo.description }}</div>
+                <div class="combo-name">{{ localized(combo, 'name') }}</div>
+                <div class="combo-desc" v-if="localized(combo, 'description')">{{ localized(combo, 'description') }}</div>
                 <div class="combo-contents" v-if="combo.items?.length">
-                  <span v-for="ci in combo.items" :key="ci.name" class="combo-chip">{{ ci.name }}<template v-if="ci.quantity > 1"> ×{{ ci.quantity }}</template></span>
+                  <span v-for="ci in combo.items" :key="ci.id" class="combo-chip">{{ localized(ci, 'name') }}<template v-if="ci.quantity > 1"> ×{{ ci.quantity }}</template></span>
                 </div>
                 <div class="combo-footer">
                   <span class="combo-price">{{ formatPrice(combo.price) }}</span>
@@ -305,21 +321,21 @@ const todaySchedule = computed(() => {
 
         <!-- Categories with items -->
         <div v-for="cat in categories" :key="cat.id" :id="'cat-' + cat.id" class="category-section">
-          <div class="category-name">{{ cat.name }}</div>
+          <div class="category-name">{{ localized(cat, 'name') }}</div>
           <div class="items-grid" v-if="cat.items?.length">
             <div class="item-card" :class="{ 'item-stopped': !item.available }" v-for="item in cat.items" :key="item.id" @click="item.available && openDetail(item)">
               <div class="item-img" v-if="item.image">
-                <img :src="imageUrl(item.image)" :alt="item.name" loading="lazy" />
+                <img :src="imageUrl(item.image)" :alt="localized(item, 'name')" loading="lazy" />
               </div>
               <div class="item-img item-img-placeholder" v-else>
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round">
                   <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/>
                 </svg>
               </div>
-              <div class="stopped-badge" v-if="!item.available">Нет в наличии</div>
+              <div class="stopped-badge" v-if="!item.available">{{ $t('home.notAvailable') }}</div>
               <div class="item-body">
-                <div class="item-name">{{ item.name }}</div>
-                <div class="item-desc" v-if="item.description">{{ item.description }}</div>
+                <div class="item-name">{{ localized(item, 'name') }}</div>
+                <div class="item-desc" v-if="localized(item, 'description')">{{ localized(item, 'description') }}</div>
                 <div class="item-footer">
                   <span class="item-price">{{ formatPrice(item.price) }}</span>
                   <template v-if="item.available">
@@ -340,13 +356,13 @@ const todaySchedule = computed(() => {
               </div>
             </div>
           </div>
-          <div class="empty-cat" v-else><p>Пока пусто</p></div>
+          <div class="empty-cat" v-else><p>{{ $t('home.emptyCategory') }}</p></div>
         </div>
       </div>
 
       <!-- Footer -->
       <footer class="footer">
-        <p>Сделано на <a href="https://ab-team.ru" target="_blank">AB Team</a></p>
+        <p>{{ $t('home.poweredBy') }} <a href="https://ab-team.ru" target="_blank">AB Team</a></p>
       </footer>
 
       <!-- Item detail modal -->
@@ -357,31 +373,31 @@ const todaySchedule = computed(() => {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
             <div class="detail-img" v-if="selectedItem.image">
-              <img :src="imageUrl(selectedItem.image)" :alt="selectedItem.name" />
+              <img :src="imageUrl(selectedItem.image)" :alt="localized(selectedItem, 'name')" />
             </div>
             <div class="detail-body">
-              <h3 class="detail-name">{{ selectedItem.name }}</h3>
+              <h3 class="detail-name">{{ localized(selectedItem, 'name') }}</h3>
               <div class="detail-price">{{ formatPrice(selectedItem.price) }}</div>
-              <p class="detail-desc" v-if="selectedItem.description">{{ selectedItem.description }}</p>
+              <p class="detail-desc" v-if="localized(selectedItem, 'description')">{{ localized(selectedItem, 'description') }}</p>
               <div class="detail-meta" v-if="selectedItem.weight || selectedItem.cook_time">
                 <div class="meta-chip" v-if="selectedItem.weight">{{ selectedItem.weight }}</div>
                 <div class="meta-chip" v-if="selectedItem.cook_time">{{ selectedItem.cook_time }}</div>
               </div>
               <div class="kbzhu" v-if="selectedItem.calories || selectedItem.proteins || selectedItem.fats || selectedItem.carbs">
-                <div class="kbzhu-label">Пищевая ценность</div>
+                <div class="kbzhu-label">{{ $t('home.nutrition') }}</div>
                 <div class="kbzhu-grid">
-                  <div class="kbzhu-item" v-if="selectedItem.calories"><span class="kbzhu-val">{{ selectedItem.calories }}</span><span class="kbzhu-unit">ккал</span></div>
-                  <div class="kbzhu-item" v-if="selectedItem.proteins"><span class="kbzhu-val">{{ selectedItem.proteins }}</span><span class="kbzhu-unit">белки</span></div>
-                  <div class="kbzhu-item" v-if="selectedItem.fats"><span class="kbzhu-val">{{ selectedItem.fats }}</span><span class="kbzhu-unit">жиры</span></div>
-                  <div class="kbzhu-item" v-if="selectedItem.carbs"><span class="kbzhu-val">{{ selectedItem.carbs }}</span><span class="kbzhu-unit">углев.</span></div>
+                  <div class="kbzhu-item" v-if="selectedItem.calories"><span class="kbzhu-val">{{ selectedItem.calories }}</span><span class="kbzhu-unit">{{ $t('home.nutritionKcal') }}</span></div>
+                  <div class="kbzhu-item" v-if="selectedItem.proteins"><span class="kbzhu-val">{{ selectedItem.proteins }}</span><span class="kbzhu-unit">{{ $t('home.nutritionProtein') }}</span></div>
+                  <div class="kbzhu-item" v-if="selectedItem.fats"><span class="kbzhu-val">{{ selectedItem.fats }}</span><span class="kbzhu-unit">{{ $t('home.nutritionFat') }}</span></div>
+                  <div class="kbzhu-item" v-if="selectedItem.carbs"><span class="kbzhu-val">{{ selectedItem.carbs }}</span><span class="kbzhu-unit">{{ $t('home.nutritionCarbs') }}</span></div>
                 </div>
               </div>
-              <div class="detail-section" v-if="selectedItem.ingredients">
-                <div class="detail-section-label">Состав</div>
-                <p class="detail-section-text">{{ selectedItem.ingredients }}</p>
+              <div class="detail-section" v-if="localized(selectedItem, 'ingredients')">
+                <div class="detail-section-label">{{ $t('home.ingredientsTitle') }}</div>
+                <p class="detail-section-text">{{ localized(selectedItem, 'ingredients') }}</p>
               </div>
               <div class="detail-comment">
-                <input v-model="detailComment" class="detail-comment-input" placeholder="Комментарий к блюду..." @change="getQty(selectedItem.id) && updateComment(selectedItem.id, detailComment)" />
+                <input v-model="detailComment" class="detail-comment-input" :placeholder="$t('home.itemCommentPlaceholder')" @change="getQty(selectedItem.id) && updateComment(selectedItem.id, detailComment)" />
               </div>
               <div class="detail-actions">
                 <div class="detail-qty" v-if="getQty(selectedItem.id)">
@@ -393,7 +409,7 @@ const todaySchedule = computed(() => {
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
                   </button>
                 </div>
-                <button v-else class="detail-add-btn" @click="addWithComment()">Добавить в корзину</button>
+                <button v-else class="detail-add-btn" @click="addWithComment()">{{ $t('home.addToCart') }}</button>
               </div>
             </div>
           </div>
@@ -407,7 +423,7 @@ const todaySchedule = computed(() => {
             <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
             <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>
           </svg>
-          <span>Корзина</span>
+          <span>{{ $t('home.cartFab') }}</span>
           <span class="fab-badge">{{ cartCount }}</span>
         </button>
       </Transition>

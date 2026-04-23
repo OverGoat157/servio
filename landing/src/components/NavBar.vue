@@ -1,17 +1,25 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { setLocale } from '../i18n'
+
+const { t, locale } = useI18n()
 
 const menuOpen = ref(false)
 
-const links = [
-  { label: 'Возможности', href: '#features' },
-  { label: 'Как это работает', href: '#how' },
-  { label: 'Демо', href: '#demo' },
-  { label: 'Тарифы', href: '#pricing' },
-]
+const links = computed(() => [
+  { label: t('nav.features'), href: '#features' },
+  { label: t('nav.how'), href: '#how' },
+  { label: t('nav.demo'), href: '#demo' },
+  { label: t('nav.pricing'), href: '#pricing' },
+])
 
 function close() {
   menuOpen.value = false
+}
+
+function switchLocale(lang) {
+  setLocale(lang)
 }
 </script>
 
@@ -31,9 +39,15 @@ function close() {
         <a v-for="l in links" :key="l.href" :href="l.href">{{ l.label }}</a>
       </nav>
 
-      <a href="#contact" class="btn btn-primary nav-cta">Попробовать</a>
+      <div class="nav-right">
+        <div class="lang-switch" :title="$t('common.language')">
+          <button :class="{ active: locale === 'ru' }" @click="switchLocale('ru')">RU</button>
+          <button :class="{ active: locale === 'en' }" @click="switchLocale('en')">EN</button>
+        </div>
+        <a href="#contact" class="btn btn-primary nav-cta">{{ $t('nav.cta') }}</a>
+      </div>
 
-      <button class="burger" :class="{ active: menuOpen }" @click="menuOpen = !menuOpen" aria-label="Меню">
+      <button class="burger" :class="{ active: menuOpen }" @click="menuOpen = !menuOpen" :aria-label="$t('nav.menuAria')">
         <span /><span /><span />
       </button>
     </div>
@@ -42,7 +56,11 @@ function close() {
     <div class="overlay" :class="{ open: menuOpen }" @click="close" />
     <nav class="mobile-menu" :class="{ open: menuOpen }">
       <a v-for="l in links" :key="l.href" :href="l.href" @click="close">{{ l.label }}</a>
-      <a href="#contact" class="btn btn-primary" @click="close">Попробовать</a>
+      <div class="lang-switch mobile-lang" :title="$t('common.language')">
+        <button :class="{ active: locale === 'ru' }" @click="switchLocale('ru')">RU</button>
+        <button :class="{ active: locale === 'en' }" @click="switchLocale('en')">EN</button>
+      </div>
+      <a href="#contact" class="btn btn-primary" @click="close">{{ $t('nav.cta') }}</a>
     </nav>
   </header>
 </template>
@@ -99,6 +117,37 @@ function close() {
   color: var(--primary);
 }
 
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lang-switch {
+  display: inline-flex;
+  background: var(--off-white, #f3f4f6);
+  border-radius: 100px;
+  padding: 3px;
+}
+
+.lang-switch button {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 100px;
+  color: var(--gray);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+}
+
+.lang-switch button.active {
+  background: #fff;
+  color: var(--black);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+
 .nav-cta {
   padding: 10px 24px;
   font-size: 14px;
@@ -146,7 +195,7 @@ function close() {
 
 @media (max-width: 768px) {
   .nav-links,
-  .nav-cta {
+  .nav-right {
     display: none;
   }
 
@@ -205,6 +254,11 @@ function close() {
 
   .mobile-menu .btn {
     margin-top: 16px;
+  }
+
+  .mobile-lang {
+    align-self: flex-start;
+    margin: 8px 16px;
   }
 }
 </style>

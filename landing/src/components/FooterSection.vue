@@ -11,25 +11,25 @@
             </svg>
             <span>AB Team</span>
           </a>
-          <p>Сайт-приложения с&nbsp;меню для ресторанов. Заказы прямо в мессенджер.</p>
+          <p>{{ $t('footer.brandDesc') }}</p>
         </div>
 
         <div class="footer-links">
           <div class="col">
-            <h4>Продукт</h4>
-            <a href="#features">Возможности</a>
-            <a href="#how">Как это работает</a>
-            <a href="#pricing">Тарифы</a>
-            <a href="#demo">Демо</a>
+            <h4>{{ $t('footer.productCol') }}</h4>
+            <a href="#features">{{ $t('nav.features') }}</a>
+            <a href="#how">{{ $t('nav.how') }}</a>
+            <a href="#pricing">{{ $t('nav.pricing') }}</a>
+            <a href="#demo">{{ $t('nav.demo') }}</a>
           </div>
           <div class="col">
-            <h4>Компания</h4>
-            <a href="#">О нас</a>
-            <a href="#">Блог</a>
-            <a href="#">Контакты</a>
+            <h4>{{ $t('footer.companyCol') }}</h4>
+            <a href="#">{{ $t('footer.about') }}</a>
+            <a href="#">{{ $t('footer.blog') }}</a>
+            <a href="#">{{ $t('footer.contacts') }}</a>
           </div>
           <div class="col">
-            <h4>Связаться</h4>
+            <h4>{{ $t('footer.contactCol') }}</h4>
             <a href="#">hello@ab-team.ru</a>
             <a href="#">+7 (800) 123-45-67</a>
             <div class="socials">
@@ -45,10 +45,10 @@
       </div>
 
       <div class="footer-bottom">
-        <span>&copy; 2025 AB Team. Все права защищены.</span>
+        <span>{{ $t('footer.copyright') }}</span>
         <div class="legal">
-          <a href="#">Политика конфиденциальности</a>
-          <a href="#">Оферта</a>
+          <a href="#">{{ $t('footer.privacy') }}</a>
+          <a href="#">{{ $t('footer.offer') }}</a>
         </div>
       </div>
     </div>

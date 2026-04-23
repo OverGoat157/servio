@@ -1,12 +1,14 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { restaurant } from '../stores/restaurant'
 import { cart, cartTotal, orderComment, estCookMin, updateQuantity, updateComment, removeFromCart, clearCart } from '../stores/cart'
 import { createOrder, imageUrl } from '../api/client'
 
 const route = useRoute()
 const router = useRouter()
+const { t, locale } = useI18n()
 const slug = route.params.slug
 
 const customerName = ref('')
@@ -60,13 +62,13 @@ const minScheduledTime = computed(() => {
 const timeError = computed(() => {
   if (timeMode.value !== 'scheduled' || !scheduledTime.value) return ''
   if (scheduledTime.value < minScheduledTime.value) {
-    return `Минимальное время — ${minScheduledTime.value} (нужно ~${estCookMin.value || 15} мин на готовку)`
+    return t('cart.timeErrorMin', { time: minScheduledTime.value, n: estCookMin.value || 15 })
   }
   return ''
 })
 
 function formatPrice(kopecks) {
-  return Math.floor(kopecks / 100).toLocaleString('ru-RU') + ' \u20BD'
+  return Math.floor(kopecks / 100).toLocaleString(locale.value === 'en' ? 'en-US' : 'ru-RU') + ' ₽'
 }
 
 function goBack() {
@@ -81,25 +83,25 @@ const contactsValid = computed(() => {
 })
 
 const disabledReason = computed(() => {
-  if (sending.value) return 'Отправка...'
-  if (cart.length === 0) return 'Корзина пуста'
-  if (!restaurant.is_open) return 'Ресторан закрыт'
-  if (restaurant.closing_soon) return 'Ресторан скоро закрывается'
-  if (customerName.value.trim().length < 2) return 'Введите имя'
-  if (phoneDigits.value.length === 0) return 'Введите телефон'
-  if (!phoneValid.value) return `Телефон: ${phoneDigits.value.length}/11 цифр`
-  if (!deliveryMode.value) return 'Выберите способ получения'
-  if (deliveryMode.value === 'delivery' && customerAddress.value.trim().length < 3) return 'Введите адрес доставки'
-  if (timeMode.value === 'scheduled' && !scheduledTime.value) return 'Выберите время'
-  if (timeMode.value === 'scheduled' && timeError.value) return 'Неверное время'
-  if (!selectedMessenger.value) return 'Выберите мессенджер'
+  if (sending.value) return t('cart.sending')
+  if (cart.length === 0) return t('cart.disabledEmpty')
+  if (!restaurant.is_open) return t('cart.disabledClosed')
+  if (restaurant.closing_soon) return t('cart.disabledClosingSoon')
+  if (customerName.value.trim().length < 2) return t('cart.disabledEnterName')
+  if (phoneDigits.value.length === 0) return t('cart.disabledEnterPhone')
+  if (!phoneValid.value) return t('cart.disabledPhoneLen', { n: phoneDigits.value.length })
+  if (!deliveryMode.value) return t('cart.disabledChooseDelivery')
+  if (deliveryMode.value === 'delivery' && customerAddress.value.trim().length < 3) return t('cart.disabledEnterAddress')
+  if (timeMode.value === 'scheduled' && !scheduledTime.value) return t('cart.disabledChooseTime')
+  if (timeMode.value === 'scheduled' && timeError.value) return t('cart.disabledWrongTime')
+  if (!selectedMessenger.value) return t('cart.disabledChooseMessenger')
   return null
 })
 
 function finalAddress() {
   if (deliveryMode.value === 'pickup') {
     const restAddr = (restaurant.address || '').trim()
-    return restAddr ? `Самовывоз: ${restAddr}` : 'Самовывоз'
+    return restAddr ? `${t('cart.pickupPrefix')} ${restAddr}` : t('cart.pickup')
   }
   return customerAddress.value.trim()
 }
@@ -162,7 +164,7 @@ async function submitOrder() {
       clearCart()
     }
   } catch {
-    orderError.value = 'Не удалось отправить заказ. Попробуйте ещё раз.'
+    orderError.value = t('cart.submitError')
   } finally {
     sending.value = false
   }
@@ -182,7 +184,7 @@ function goHome() {
           <path d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>
       </button>
-      <h2>Ваш заказ</h2>
+      <h2>{{ $t('cart.title') }}</h2>
       <div class="spacer"></div>
     </div>
 
@@ -193,11 +195,11 @@ function goHome() {
           <path d="M20 6L9 17l-5-5"/>
         </svg>
       </div>
-      <h3>Заказ оформлен!</h3>
-      <p v-if="selectedMessenger === 'telegram'">Заказ отправлен в Telegram ресторана</p>
-      <p v-else-if="selectedMessenger === 'whatsapp'">Отправьте сообщение в открывшемся WhatsApp</p>
-      <p v-else>Ресторан получил ваш заказ</p>
-      <button class="btn-primary" @click="goHome">На главную</button>
+      <h3>{{ $t('cart.successTitle') }}</h3>
+      <p v-if="selectedMessenger === 'telegram'">{{ $t('cart.successTg') }}</p>
+      <p v-else-if="selectedMessenger === 'whatsapp'">{{ $t('cart.successWa') }}</p>
+      <p v-else>{{ $t('cart.successGeneric') }}</p>
+      <button class="btn-primary" @click="goHome">{{ $t('cart.goHome') }}</button>
     </div>
 
     <!-- Empty cart -->
@@ -208,8 +210,8 @@ function goHome() {
           <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>
         </svg>
       </div>
-      <p class="empty-title">Корзина пуста</p>
-      <button class="btn-outline" @click="goBack">Перейти в меню</button>
+      <p class="empty-title">{{ $t('cart.empty') }}</p>
+      <button class="btn-outline" @click="goBack">{{ $t('cart.goMenu') }}</button>
     </div>
 
     <!-- Cart items -->
@@ -250,27 +252,27 @@ function goHome() {
             </div>
           </div>
           <div class="ci-comment">
-            <input :value="item.comment" @input="updateComment(item.id, $event.target.value)" class="ci-comment-input" placeholder="Комментарий к блюду..." />
+            <input :value="item.comment" @input="updateComment(item.id, $event.target.value)" class="ci-comment-input" :placeholder="$t('home.itemCommentPlaceholder')" />
           </div>
         </div>
       </div>
 
       <!-- Total -->
       <div class="total-row">
-        <span>Итого</span>
+        <span>{{ $t('cart.total') }}</span>
         <strong>{{ formatPrice(cartTotal) }}</strong>
       </div>
 
       <!-- Customer info -->
       <div class="form-section">
-        <div class="section-label">Ваши данные <span class="required">*</span></div>
+        <div class="section-label">{{ $t('cart.customerSection') }} <span class="required">*</span></div>
         <div class="form-fields">
           <div class="field-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             <input
               v-model="customerName"
               class="field-input"
-              placeholder="Ваше имя"
+              :placeholder="$t('cart.namePlaceholder')"
               required
             />
           </div>
@@ -289,14 +291,14 @@ function goHome() {
             <svg v-if="phoneValid" class="field-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
           </div>
           <div class="field-hint" v-if="customerPhone && !phoneValid">
-            Введено {{ phoneDigits.length }} из 11 цифр
+            {{ $t('cart.phoneInvalid', { n: phoneDigits.length }) }}
           </div>
         </div>
       </div>
 
       <!-- Delivery mode -->
       <div class="form-section">
-        <div class="section-label">Способ получения <span class="required">*</span></div>
+        <div class="section-label">{{ $t('cart.deliverySection') }} <span class="required">*</span></div>
         <div class="time-options">
           <button
             class="time-option"
@@ -304,7 +306,7 @@ function goHome() {
             @click="deliveryMode = 'delivery'"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-            <span>Доставка</span>
+            <span>{{ $t('cart.delivery') }}</span>
           </button>
           <button
             class="time-option"
@@ -312,15 +314,15 @@ function goHome() {
             @click="deliveryMode = 'pickup'"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0116 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span>Самовывоз</span>
+            <span>{{ $t('cart.pickup') }}</span>
           </button>
         </div>
 
         <div class="pickup-info" v-if="deliveryMode === 'pickup'">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0116 0z"/><circle cx="12" cy="10" r="3"/></svg>
           <div>
-            <div class="pickup-label">Забрать по адресу:</div>
-            <div class="pickup-address">{{ restaurant.address || 'Адрес будет уточнён' }}</div>
+            <div class="pickup-label">{{ $t('cart.pickupLabel') }}</div>
+            <div class="pickup-address">{{ restaurant.address || $t('cart.pickupAddressUnknown') }}</div>
           </div>
         </div>
 
@@ -328,21 +330,21 @@ function goHome() {
           v-else-if="deliveryMode === 'delivery'"
           v-model="customerAddress"
           class="field-input"
-          placeholder="Адрес доставки"
+          :placeholder="$t('cart.deliveryPlaceholder')"
           required
         />
       </div>
 
       <!-- Order comment -->
       <div class="form-section">
-        <div class="section-label">Комментарий к заказу</div>
-        <textarea v-model="orderComment" class="field-input order-comment" placeholder="Пожелания к заказу, аллергии, время доставки..." rows="2"></textarea>
+        <div class="section-label">{{ $t('cart.orderCommentSection') }}</div>
+        <textarea v-model="orderComment" class="field-input order-comment" :placeholder="$t('cart.orderCommentPlaceholder')" rows="2"></textarea>
       </div>
 
       <!-- Time selection -->
       <div class="form-section">
-        <div class="section-label">Когда приготовить?</div>
-        <div class="time-hint" v-if="estCookMin">Примерное время готовки: ~{{ estCookMin }} мин</div>
+        <div class="section-label">{{ $t('cart.timeSection') }}</div>
+        <div class="time-hint" v-if="estCookMin">{{ $t('cart.estCookHint', { n: estCookMin }) }}</div>
         <div class="time-options">
           <button
             class="time-option"
@@ -350,7 +352,7 @@ function goHome() {
             @click="timeMode = 'asap'"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            <span>Как можно быстрее</span>
+            <span>{{ $t('cart.timeAsap') }}</span>
           </button>
           <button
             class="time-option"
@@ -358,7 +360,7 @@ function goHome() {
             @click="timeMode = 'scheduled'"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            <span>Ко времени</span>
+            <span>{{ $t('cart.timeScheduled') }}</span>
           </button>
         </div>
         <div class="time-picker-row" v-if="timeMode === 'scheduled'">
@@ -369,7 +371,7 @@ function goHome() {
 
       <!-- Messenger selection -->
       <div class="form-section">
-        <div class="section-label">Куда отправить заказ?</div>
+        <div class="section-label">{{ $t('cart.messengerSection') }}</div>
         <div class="msg-options">
           <button
             v-for="m in (restaurant.messengers?.length ? restaurant.messengers : ['whatsapp', 'telegram'])"
@@ -387,10 +389,10 @@ function goHome() {
 
       <!-- Closed / Closing soon banner -->
       <div class="closed-banner" v-if="!restaurant.is_open">
-        Ресторан сейчас закрыт. Заказы не принимаются.
+        {{ $t('cart.closedBanner') }}
       </div>
       <div class="closing-banner" v-else-if="restaurant.closing_soon">
-        Ресторан скоро закрывается (в {{ restaurant.close_time }}). Заказы больше не принимаются.
+        {{ $t('cart.closingBanner', { time: restaurant.close_time }) }}
       </div>
 
       <!-- Error -->
@@ -402,7 +404,7 @@ function goHome() {
         :disabled="disabledReason !== null"
         @click="submitOrder"
       >
-        {{ disabledReason || 'Отправить заказ' }}
+        {{ disabledReason || $t('cart.submit') }}
       </button>
     </div>
   </div>
