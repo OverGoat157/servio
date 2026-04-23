@@ -1,10 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { restaurants as restApi, messengers as msgApi } from '../api/client'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 const id = route.params.id
 
 const rest = ref(null)
@@ -78,7 +80,7 @@ async function saveTelegram() {
     tgSuccess.value = true
     setTimeout(() => tgSuccess.value = false, 2000)
   } catch (e) {
-    tgError.value = e.message || 'Ошибка сохранения'
+    tgError.value = e.message || t('common.saveError')
   }
   tgSaving.value = false
 }
@@ -96,13 +98,13 @@ async function saveWhatsApp() {
     waSuccess.value = true
     setTimeout(() => waSuccess.value = false, 2000)
   } catch (e) {
-    waError.value = e.message || 'Ошибка сохранения'
+    waError.value = e.message || t('common.saveError')
   }
   waSaving.value = false
 }
 
 async function deleteConfig(type) {
-  if (!confirm(`Удалить настройки ${type}?`)) return
+  if (!confirm(t('messengers.confirmDelete', { type }))) return
   try {
     await msgApi.delete(id, type)
     if (type === 'telegram') {
@@ -122,13 +124,13 @@ async function deleteConfig(type) {
       <div>
         <button class="back-link" @click="router.push({ name: 'dashboard' })">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Назад
+          {{ $t('common.back') }}
         </button>
-        <h1 v-if="rest">Мессенджеры: {{ rest.name }}</h1>
+        <h1 v-if="rest">{{ $t('messengers.title', { name: rest.name }) }}</h1>
       </div>
     </div>
 
-    <div v-if="loading" class="loading">Загрузка...</div>
+    <div v-if="loading" class="loading">{{ $t('common.loading') }}</div>
 
     <div class="sections" v-else>
       <!-- Telegram -->
@@ -138,39 +140,39 @@ async function deleteConfig(type) {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.46-1.9-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.492-1.302.484-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635.099-.002.321.023.465.141a.506.506 0 01.171.325c.016.093.036.306.02.472z"/></svg>
           </div>
           <div class="section-heading">
-            <h3>Telegram</h3>
-            <p>Заказы приходят сообщением от бота в чат</p>
+            <h3>{{ $t('messengers.tgHeading') }}</h3>
+            <p>{{ $t('messengers.tgDesc') }}</p>
           </div>
-          <router-link :to="{ name: 'help-telegram' }" class="help-link" title="Как подключить Telegram">
+          <router-link :to="{ name: 'help-telegram' }" class="help-link" :title="$t('messengers.tgHelpTitle')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            Как подключить?
+            {{ $t('messengers.tgHelpLink') }}
           </router-link>
         </div>
 
         <form @submit.prevent="saveTelegram">
           <div class="field">
-            <label class="label">Bot Token</label>
+            <label class="label">{{ $t('messengers.tokenLabel') }}</label>
             <input v-model="tgForm.bot_token" class="input" placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11" />
-            <div class="hint">Получите у @BotFather в Telegram</div>
+            <div class="hint">{{ $t('messengers.tokenHint') }}</div>
           </div>
           <div class="field">
-            <label class="label">Chat ID</label>
+            <label class="label">{{ $t('messengers.chatIdLabel') }}</label>
             <input v-model="tgForm.chat_id" class="input" placeholder="-1001234567890" />
-            <div class="hint">ID чата или группы, куда бот будет отправлять заказы</div>
+            <div class="hint">{{ $t('messengers.chatIdHint') }}</div>
           </div>
           <div class="toggle-row" @click.prevent="toggleTelegram">
             <label class="toggle">
               <input type="checkbox" :checked="tgEnabled" />
               <span class="toggle-slider"></span>
             </label>
-            <span>{{ tgEnabled ? 'Включено' : 'Выключено' }}</span>
+            <span>{{ tgEnabled ? $t('messengers.on') : $t('messengers.off') }}</span>
           </div>
           <div class="error-msg" v-if="tgError">{{ tgError }}</div>
           <div class="section-actions">
-            <div class="success-msg" v-if="tgSuccess">Сохранено!</div>
-            <button type="button" class="btn btn-sm" style="color: var(--danger)" @click="deleteConfig('telegram')" v-if="tgForm.bot_token">Удалить</button>
+            <div class="success-msg" v-if="tgSuccess">{{ $t('common.saved') }}</div>
+            <button type="button" class="btn btn-sm" style="color: var(--danger)" @click="deleteConfig('telegram')" v-if="tgForm.bot_token">{{ $t('common.delete') }}</button>
             <button type="submit" class="btn btn-primary btn-sm" :disabled="tgSaving">
-              {{ tgSaving ? 'Сохранение...' : 'Сохранить' }}
+              {{ tgSaving ? $t('common.saving') : $t('common.save') }}
             </button>
           </div>
         </form>
@@ -183,30 +185,30 @@ async function deleteConfig(type) {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.556 4.12 1.525 5.855L0 24l6.335-1.652A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
           </div>
           <div>
-            <h3>WhatsApp</h3>
-            <p>Клиент отправляет заказ вам в WhatsApp по ссылке</p>
+            <h3>{{ $t('messengers.waHeading') }}</h3>
+            <p>{{ $t('messengers.waDesc') }}</p>
           </div>
         </div>
 
         <form @submit.prevent="saveWhatsApp">
           <div class="field">
-            <label class="label">Номер телефона</label>
+            <label class="label">{{ $t('messengers.waPhoneLabel') }}</label>
             <input v-model="waForm.phone" class="input" placeholder="79991234567" />
-            <div class="hint">Без +, пробелов и скобок. Пример: 79991234567</div>
+            <div class="hint">{{ $t('messengers.waPhoneHint') }}</div>
           </div>
           <div class="toggle-row" @click.prevent="toggleWhatsApp">
             <label class="toggle">
               <input type="checkbox" :checked="waEnabled" />
               <span class="toggle-slider"></span>
             </label>
-            <span>{{ waEnabled ? 'Включено' : 'Выключено' }}</span>
+            <span>{{ waEnabled ? $t('messengers.on') : $t('messengers.off') }}</span>
           </div>
           <div class="error-msg" v-if="waError">{{ waError }}</div>
           <div class="section-actions">
-            <div class="success-msg" v-if="waSuccess">Сохранено!</div>
-            <button type="button" class="btn btn-sm" style="color: var(--danger)" @click="deleteConfig('whatsapp')" v-if="waForm.phone">Удалить</button>
+            <div class="success-msg" v-if="waSuccess">{{ $t('common.saved') }}</div>
+            <button type="button" class="btn btn-sm" style="color: var(--danger)" @click="deleteConfig('whatsapp')" v-if="waForm.phone">{{ $t('common.delete') }}</button>
             <button type="submit" class="btn btn-primary btn-sm" :disabled="waSaving">
-              {{ waSaving ? 'Сохранение...' : 'Сохранить' }}
+              {{ waSaving ? $t('common.saving') : $t('common.save') }}
             </button>
           </div>
         </form>
@@ -214,12 +216,12 @@ async function deleteConfig(type) {
 
       <!-- How it works -->
       <div class="card info-card">
-        <h3>Как это работает?</h3>
+        <h3>{{ $t('messengers.howItWorks') }}</h3>
         <div class="info-item">
-          <strong>Telegram:</strong> Создайте бота через @BotFather, добавьте его в группу. Заказы будут приходить автоматически от бота.
+          <strong>{{ $t('messengers.tgHeading') }}:</strong> {{ $t('messengers.tgHowto') }}
         </div>
         <div class="info-item">
-          <strong>WhatsApp:</strong> Укажите номер. Когда клиент оформляет заказ, он переходит в WhatsApp с готовым текстом заказа и отправляет его вам.
+          <strong>{{ $t('messengers.waHeading') }}:</strong> {{ $t('messengers.waHowto') }}
         </div>
       </div>
     </div>

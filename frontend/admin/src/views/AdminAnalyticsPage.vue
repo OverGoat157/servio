@@ -1,9 +1,11 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { admin } from '../api/client'
 
 const router = useRouter()
+const { locale } = useI18n()
 const data = ref(null)
 const loading = ref(true)
 const period = ref(30)
@@ -26,12 +28,13 @@ function setPeriod(days) {
 }
 
 function formatMoney(kopecks) {
-  return Math.floor(kopecks / 100).toLocaleString('ru-RU') + ' \u20BD'
+  return Math.floor(kopecks / 100).toLocaleString(locale.value === 'en' ? 'en-US' : 'ru-RU') + ' ₽'
 }
 
 function formatDate(dateStr) {
   const d = new Date(dateStr)
-  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+  const tag = locale.value === 'en' ? 'en-US' : 'ru-RU'
+  return d.toLocaleDateString(tag, { day: 'numeric', month: 'short' })
 }
 
 const maxViews = computed(() => {
@@ -51,18 +54,18 @@ const maxOrders = computed(() => {
       <div>
         <button class="back-link" @click="router.push({ name: 'dashboard' })">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Назад
+          {{ $t('common.back') }}
         </button>
-        <h1>Аналитика платформы</h1>
+        <h1>{{ $t('analytics.platformTitle') }}</h1>
       </div>
       <div class="period-tabs">
-        <button :class="{ active: period === 7 }" @click="setPeriod(7)">7 дней</button>
-        <button :class="{ active: period === 30 }" @click="setPeriod(30)">30 дней</button>
-        <button :class="{ active: period === 90 }" @click="setPeriod(90)">90 дней</button>
+        <button :class="{ active: period === 7 }" @click="setPeriod(7)">{{ $t('analytics.period7') }}</button>
+        <button :class="{ active: period === 30 }" @click="setPeriod(30)">{{ $t('analytics.period30') }}</button>
+        <button :class="{ active: period === 90 }" @click="setPeriod(90)">{{ $t('analytics.period90') }}</button>
       </div>
     </div>
 
-    <div v-if="loading" class="loading">Загрузка...</div>
+    <div v-if="loading" class="loading">{{ $t('common.loading') }}</div>
 
     <template v-else-if="data">
       <!-- Summary cards -->
@@ -72,48 +75,48 @@ const maxOrders = computed(() => {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
           </div>
           <div class="stat-value">{{ data.total_users }}</div>
-          <div class="stat-label">Пользователей</div>
+          <div class="stat-label">{{ $t('analytics.totalUsers') }}</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon rest-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3h18v18H3z"/><path d="M12 8v8M8 12h8"/></svg>
           </div>
           <div class="stat-value">{{ data.total_restaurants }}</div>
-          <div class="stat-label">Ресторанов</div>
+          <div class="stat-label">{{ $t('analytics.totalRestaurants') }}</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon views-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </div>
-          <div class="stat-value">{{ data.total_views.toLocaleString('ru-RU') }}</div>
-          <div class="stat-label">Просмотров меню</div>
+          <div class="stat-value">{{ data.total_views.toLocaleString(locale === 'en' ? 'en-US' : 'ru-RU') }}</div>
+          <div class="stat-label">{{ $t('analytics.menuViews') }}</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon orders-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 01-8 0"/></svg>
           </div>
           <div class="stat-value">{{ data.total_orders }}</div>
-          <div class="stat-label">Заказов</div>
+          <div class="stat-label">{{ $t('analytics.orders') }}</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon revenue-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
           </div>
           <div class="stat-value">{{ formatMoney(data.total_revenue) }}</div>
-          <div class="stat-label">Общая выручка</div>
+          <div class="stat-label">{{ $t('analytics.totalRevenue') }}</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon clients-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </div>
           <div class="stat-value">{{ data.unique_clients }}</div>
-          <div class="stat-label">Уникальных клиентов</div>
+          <div class="stat-label">{{ $t('analytics.uniqueClients') }}</div>
         </div>
       </div>
 
       <!-- Charts -->
       <div class="card chart-card">
-        <h3>Просмотры меню по дням</h3>
+        <h3>{{ $t('analytics.menuViewsByDay') }}</h3>
         <div class="chart">
           <div class="chart-bar-wrap" v-for="d in data.day_stats" :key="'v'+d.date">
             <div class="chart-bar-value" v-if="d.views">{{ d.views }}</div>
@@ -124,7 +127,7 @@ const maxOrders = computed(() => {
       </div>
 
       <div class="card chart-card">
-        <h3>Заказы по дням</h3>
+        <h3>{{ $t('analytics.ordersByDay') }}</h3>
         <div class="chart">
           <div class="chart-bar-wrap" v-for="d in data.day_stats" :key="'o'+d.date">
             <div class="chart-bar-value" v-if="d.orders">{{ d.orders }}</div>
@@ -136,17 +139,17 @@ const maxOrders = computed(() => {
 
       <!-- Restaurant breakdown -->
       <div class="card table-card">
-        <h3>По ресторанам</h3>
+        <h3>{{ $t('analytics.byRestaurant') }}</h3>
         <div class="table-wrap">
           <table class="data-table">
             <thead>
               <tr>
-                <th>Ресторан</th>
-                <th>Владелец</th>
-                <th>Просмотры</th>
-                <th>Заказы</th>
-                <th>Выручка</th>
-                <th>Клиенты</th>
+                <th>{{ $t('analytics.restaurantCol') }}</th>
+                <th>{{ $t('analytics.ownerCol') }}</th>
+                <th>{{ $t('analytics.views') }}</th>
+                <th>{{ $t('analytics.orders') }}</th>
+                <th>{{ $t('analytics.revenue') }}</th>
+                <th>{{ $t('analytics.clientsCol') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -159,7 +162,7 @@ const maxOrders = computed(() => {
                 <td>{{ r.clients }}</td>
               </tr>
               <tr v-if="!data.restaurant_stats?.length">
-                <td colspan="6" class="cell-empty">Нет данных</td>
+                <td colspan="6" class="cell-empty">{{ $t('common.empty') }}</td>
               </tr>
             </tbody>
           </table>

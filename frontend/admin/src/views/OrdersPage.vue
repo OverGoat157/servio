@@ -1,24 +1,24 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { restaurants as restApi, orders as ordersApi } from '../api/client'
 
 const route = useRoute()
 const router = useRouter()
+const { t, locale } = useI18n()
 const id = route.params.id
 
 const rest = ref(null)
 const orderList = ref([])
 const loading = ref(true)
 
-const statusLabels = {
-  new: 'Новый',
-  confirmed: 'Подтверждён',
-  preparing: 'Готовится',
-  ready: 'Готов',
-  delivered: 'Доставлен',
-  cancelled: 'Отменён',
-}
+const STATUS_KEYS = ['new', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled']
+const statusLabels = computed(() => {
+  const map = {}
+  for (const key of STATUS_KEYS) map[key] = t(`orderStatus.${key}`)
+  return map
+})
 
 const statusColors = {
   new: '#2167C7',
@@ -40,11 +40,13 @@ onMounted(async () => {
 })
 
 function formatPrice(kopecks) {
-  return (kopecks / 100).toLocaleString('ru-RU') + ' ₽'
+  const tag = locale.value === 'en' ? 'en-US' : 'ru-RU'
+  return (kopecks / 100).toLocaleString(tag) + ' ₽'
 }
 
 function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleString('ru-RU', {
+  const tag = locale.value === 'en' ? 'en-US' : 'ru-RU'
+  return new Date(dateStr).toLocaleString(tag, {
     day: 'numeric',
     month: 'short',
     hour: '2-digit',
@@ -73,16 +75,16 @@ async function changeStatus(orderId, status) {
       <div>
         <button class="back-link" @click="router.push({ name: 'dashboard' })">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Назад
+          {{ $t('common.back') }}
         </button>
-        <h1 v-if="rest">Заказы: {{ rest.name }}</h1>
+        <h1 v-if="rest">{{ $t('orders.title', { name: rest.name }) }}</h1>
       </div>
     </div>
 
-    <div v-if="loading" class="loading">Загрузка...</div>
+    <div v-if="loading" class="loading">{{ $t('common.loading') }}</div>
 
     <div class="empty card" v-else-if="orderList.length === 0">
-      <p>Заказов пока нет</p>
+      <p>{{ $t('orders.empty') }}</p>
     </div>
 
     <div class="orders" v-else>
@@ -105,7 +107,7 @@ async function changeStatus(orderId, status) {
         </div>
 
         <div class="order-total">
-          <span>Итого</span>
+          <span>{{ $t('orders.total') }}</span>
           <strong>{{ formatPrice(order.total) }}</strong>
         </div>
 

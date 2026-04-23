@@ -1,7 +1,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { restaurants as api, uploadFile, imageUrl } from '../api/client'
+
+const { t } = useI18n()
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
@@ -17,8 +20,10 @@ const error = ref('')
 
 const form = ref({
   name: '',
+  name_en: '',
   slug: '',
   description: '',
+  description_en: '',
   phone: '',
   address: '',
   theme: '',
@@ -28,17 +33,26 @@ const form = ref({
   promo_description: '',
 })
 
-const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+const DAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+const dayNames = computed(() => DAY_KEYS.map(k => t(`day.${k}`)))
 
 function defaultSchedule() {
-  return dayNames.map(day => ({
-    day,
+  return DAY_KEYS.map(key => ({
+    day: key,
     open: '10:00',
     close: '22:00',
     break_start: '',
     break_end: '',
     day_off: false,
   }))
+}
+
+function dayLabel(key) {
+  const idx = DAY_KEYS.indexOf(key)
+  if (idx >= 0) return t(`day.${DAY_KEYS[idx]}`)
+  // Legacy data may contain the localized label directly — try to map back.
+  const legacy = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].indexOf(key)
+  return legacy >= 0 ? t(`day.${DAY_KEYS[legacy]}`) : key
 }
 
 const schedule = ref(defaultSchedule())
@@ -59,15 +73,15 @@ function scheduleToJSON() {
 }
 
 const socialLinks = ref([])
-const socialTypes = [
+const socialTypes = computed(() => [
   { value: 'instagram', label: 'Instagram' },
   { value: 'vk', label: 'VK' },
   { value: 'telegram', label: 'Telegram' },
   { value: 'youtube', label: 'YouTube' },
   { value: 'tiktok', label: 'TikTok' },
   { value: 'facebook', label: 'Facebook' },
-  { value: 'website', label: 'Сайт' },
-]
+  { value: 'website', label: t('social.website') },
+])
 
 function addSocialLink() {
   socialLinks.value.push({ type: 'instagram', url: '' })
@@ -112,8 +126,10 @@ onMounted(async () => {
     rest.value = data
     form.value = {
       name: data.name,
+      name_en: data.name_en || '',
       slug: data.slug || '',
       description: data.description || '',
+      description_en: data.description_en || '',
       phone: data.phone || '',
       address: data.address || '',
       theme: data.theme,
@@ -145,7 +161,7 @@ async function handleUpload(field, event) {
     const { url } = await uploadFile(file)
     form.value[field] = url
   } catch (e) {
-    error.value = 'Ошибка загрузки: ' + e.message
+    error.value = t('common.uploadError') + ': ' + e.message
   }
   uploading.value = false
 }
@@ -164,7 +180,7 @@ async function save() {
     success.value = true
     setTimeout(() => success.value = false, 2000)
   } catch (e) {
-    error.value = 'Ошибка сохранения: ' + e.message
+    error.value = t('common.saveError') + ': ' + e.message
   }
   saving.value = false
 }
@@ -175,95 +191,103 @@ async function save() {
     <div class="page-header">
       <button class="back-link" @click="router.push({ name: 'dashboard' })">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-        Назад
+        {{ $t('common.back') }}
       </button>
-      <h1 v-if="rest">Настройки: {{ rest.name }}</h1>
+      <h1 v-if="rest">{{ $t('restaurant.title', { name: rest.name }) }}</h1>
     </div>
 
-    <div v-if="loading" class="loading">Загрузка...</div>
+    <div v-if="loading" class="loading">{{ $t('common.loading') }}</div>
 
     <div class="card form-card" v-else>
       <form @submit.prevent="save">
         <div class="field">
-          <label class="label">Название ресторана</label>
+          <label class="label">{{ $t('restaurant.nameLabel') }} <span class="lang-tag">RU</span></label>
           <input v-model="form.name" class="input" required />
         </div>
         <div class="field">
-          <label class="label">Slug (URL)</label>
-          <input v-model="form.slug" class="input" required placeholder="my-restaurant" />
-          <div class="hint">Адрес меню: menu.ab-team.ru/<strong>{{ form.slug || 'slug' }}</strong></div>
+          <label class="label">{{ $t('restaurant.nameLabel') }} <span class="lang-tag">EN</span></label>
+          <input v-model="form.name_en" class="input" placeholder="My restaurant" />
         </div>
         <div class="field">
-          <label class="label">Описание</label>
-          <textarea v-model="form.description" class="input textarea" rows="3" placeholder="Ресторан изысканной кухни"></textarea>
+          <label class="label">{{ $t('restaurant.slugLabel') }}</label>
+          <input v-model="form.slug" class="input" required placeholder="my-restaurant" />
+          <div class="hint">{{ $t('restaurant.slugHint') }}<strong>{{ form.slug || 'slug' }}</strong></div>
+        </div>
+        <div class="field">
+          <label class="label">{{ $t('restaurant.descLabel') }} <span class="lang-tag">RU</span></label>
+          <textarea v-model="form.description" class="input textarea" rows="3" :placeholder="$t('dashboard.descPlaceholder')"></textarea>
+        </div>
+        <div class="field">
+          <label class="label">{{ $t('restaurant.descLabel') }} <span class="lang-tag">EN</span></label>
+          <textarea v-model="form.description_en" class="input textarea" rows="3" placeholder="Fine dining restaurant"></textarea>
         </div>
         <div class="row">
           <div class="field">
-            <label class="label">Телефон</label>
-            <input v-model="form.phone" class="input" placeholder="+7 (999) 123-45-67" />
+            <label class="label">{{ $t('common.phone') }}</label>
+            <input v-model="form.phone" class="input" :placeholder="$t('dashboard.phonePlaceholder')" />
           </div>
           <div class="field">
-            <label class="label">Тема</label>
+            <label class="label">{{ $t('restaurant.themeLabel') }}</label>
             <select v-model="form.theme" class="input">
-              <option value="default">По умолчанию</option>
-              <option value="dark">Тёмная</option>
-              <option value="warm">Тёплая</option>
+              <option value="default">{{ $t('theme.default') }}</option>
+              <option value="dark">{{ $t('theme.dark') }}</option>
+              <option value="warm">{{ $t('theme.warm') }}</option>
             </select>
           </div>
         </div>
         <div class="field">
-          <label class="label">Адрес</label>
-          <input v-model="form.address" class="input" placeholder="г. Москва, ул. Тверская, 1" />
+          <label class="label">{{ $t('restaurant.addressLabel') }}</label>
+          <input v-model="form.address" class="input" :placeholder="$t('restaurant.addressPlaceholder')" />
         </div>
 
         <div class="divider"></div>
 
         <!-- Логотип -->
         <div class="field">
-          <label class="label">Логотип</label>
+          <label class="label">{{ $t('restaurant.logoLabel') }}</label>
           <div class="upload-area">
             <div class="preview" v-if="form.logo">
-              <img :src="imageUrl(form.logo)" alt="Логотип" />
+              <img :src="imageUrl(form.logo)" :alt="$t('restaurant.logoAlt')" />
               <button type="button" class="preview-remove" @click="clearImage('logo')">×</button>
             </div>
             <label class="upload-btn" v-else>
               <input type="file" accept="image/*" hidden @change="handleUpload('logo', $event)" />
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-              {{ uploadingLogo ? 'Загрузка...' : 'Загрузить логотип' }}
+              {{ uploadingLogo ? $t('restaurant.uploading') : $t('restaurant.logoUpload') }}
             </label>
           </div>
         </div>
 
         <!-- Обложка -->
         <div class="field">
-          <label class="label">Фото обложки</label>
+          <label class="label">{{ $t('restaurant.coverLabel') }}</label>
           <div class="upload-area">
             <div class="preview preview-wide" v-if="form.cover_image">
-              <img :src="imageUrl(form.cover_image)" alt="Обложка" />
+              <img :src="imageUrl(form.cover_image)" :alt="$t('restaurant.coverAlt')" />
               <button type="button" class="preview-remove" @click="clearImage('cover_image')">×</button>
             </div>
             <label class="upload-btn" v-else>
               <input type="file" accept="image/*" hidden @change="handleUpload('cover_image', $event)" />
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-              {{ uploadingCover ? 'Загрузка...' : 'Загрузить обложку' }}
+              {{ uploadingCover ? $t('restaurant.uploading') : $t('restaurant.coverUpload') }}
             </label>
           </div>
-          <div class="hint">Фон за названием на главной странице ресторана</div>
+          <div class="hint">{{ $t('restaurant.coverHint') }}</div>
         </div>
 
         <div class="divider"></div>
-        <h3 class="section-title">Акция / Спецпредложение</h3>
+        <h3 class="section-title">{{ $t('restaurant.promoSection') }}</h3>
         <div class="field">
-          <label class="label">Заголовок акции</label>
-          <input v-model="form.promo_title" class="input" placeholder="Бизнес-ланч за 350 ₽" />
+          <label class="label">{{ $t('restaurant.promoTitleLabel') }}</label>
+          <input v-model="form.promo_title" class="input" :placeholder="$t('restaurant.promoTitlePlaceholder')" />
         </div>
         <div class="field">
-          <label class="label">Описание акции</label>
-          <textarea v-model="form.promo_description" class="input textarea" rows="2" placeholder="Каждый будний день с 12:00 до 15:00"></textarea>
+          <label class="label">{{ $t('restaurant.promoDescLabel') }}</label>
+          <textarea v-model="form.promo_description" class="input textarea" rows="2" :placeholder="$t('restaurant.promoDescPlaceholder')"></textarea>
         </div>
 
         <div class="divider"></div>
-        <h3 class="section-title">Соцсети и ссылки</h3>
+        <h3 class="section-title">{{ $t('restaurant.socialSection') }}</h3>
         <div class="social-list">
           <div class="social-row" v-for="(link, idx) in socialLinks" :key="idx">
             <select v-model="link.type" class="input social-type">
@@ -277,14 +301,14 @@ async function save() {
         </div>
         <button type="button" class="btn-add-social" @click="addSocialLink">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-          Добавить ссылку
+          {{ $t('restaurant.addSocial') }}
         </button>
 
         <div class="divider"></div>
-        <h3 class="section-title">Режим работы</h3>
+        <h3 class="section-title">{{ $t('restaurant.scheduleSection') }}</h3>
         <div class="schedule-list">
           <div class="sched-row" v-for="s in schedule" :key="s.day" :class="{ 'sched-off': s.day_off }">
-            <div class="sched-day">{{ s.day }}</div>
+            <div class="sched-day">{{ dayLabel(s.day) }}</div>
             <div class="sched-fields" v-if="!s.day_off">
               <div class="sched-time-group">
                 <input type="time" v-model="s.open" class="sched-time" />
@@ -292,9 +316,9 @@ async function save() {
                 <input type="time" v-model="s.close" class="sched-time" />
               </div>
               <div class="sched-break">
-                <label class="sched-break-label" v-if="!s.break_start" @click="s.break_start = '13:00'; s.break_end = '14:00'">+ обед</label>
+                <label class="sched-break-label" v-if="!s.break_start" @click="s.break_start = '13:00'; s.break_end = '14:00'">{{ $t('restaurant.addLunch') }}</label>
                 <template v-else>
-                  <span class="sched-break-tag">Обед:</span>
+                  <span class="sched-break-tag">{{ $t('restaurant.lunch') }}</span>
                   <input type="time" v-model="s.break_start" class="sched-time sched-time-sm" />
                   <span class="sched-sep">—</span>
                   <input type="time" v-model="s.break_end" class="sched-time sched-time-sm" />
@@ -302,7 +326,7 @@ async function save() {
                 </template>
               </div>
             </div>
-            <div class="sched-dayoff-label" v-else>Выходной</div>
+            <div class="sched-dayoff-label" v-else>{{ $t('restaurant.dayOff') }}</div>
             <label class="sched-toggle">
               <input type="checkbox" :checked="!s.day_off" @change="s.day_off = !s.day_off" />
               <span class="sched-toggle-slider"></span>
@@ -311,22 +335,22 @@ async function save() {
         </div>
 
         <div class="divider"></div>
-        <h3 class="section-title">QR-код меню</h3>
+        <h3 class="section-title">{{ $t('restaurant.qrSection') }}</h3>
         <div class="qr-section">
-          <p class="qr-hint">Распечатайте и разместите на столах. Гости отсканируют и попадут в ваше меню.</p>
+          <p class="qr-hint">{{ $t('restaurant.qrHint') }}</p>
           <p class="qr-link">menu.ab-team.ru/{{ form.slug }}</p>
           <div class="qr-actions">
-            <button type="button" class="btn btn-primary btn-sm" @click="downloadQR">Скачать PNG</button>
-            <button type="button" class="btn btn-outline btn-sm" @click="regenerateQR">Перегенерировать</button>
+            <button type="button" class="btn btn-primary btn-sm" @click="downloadQR">{{ $t('restaurant.downloadPng') }}</button>
+            <button type="button" class="btn btn-outline btn-sm" @click="regenerateQR">{{ $t('restaurant.regenerate') }}</button>
           </div>
         </div>
 
         <div class="error-msg" v-if="error">{{ error }}</div>
 
         <div class="form-footer">
-          <div class="success-msg" v-if="success">Сохранено!</div>
+          <div class="success-msg" v-if="success">{{ $t('common.saved') }}</div>
           <button type="submit" class="btn btn-primary" :disabled="saving">
-            {{ saving ? 'Сохранение...' : 'Сохранить' }}
+            {{ saving ? $t('common.saving') : $t('common.save') }}
           </button>
         </div>
       </form>
@@ -387,6 +411,20 @@ async function save() {
   font-size: 12px;
   color: var(--text-secondary);
   margin-top: 4px;
+}
+
+.lang-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  vertical-align: middle;
+  letter-spacing: 0.3px;
 }
 
 .divider {

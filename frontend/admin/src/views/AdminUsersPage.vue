@@ -1,10 +1,18 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { admin as api } from '../api/client'
-import { TIER_LABELS, tierLabel } from '../stores/auth'
+import { TIER_KEYS, tierLabel } from '../stores/auth'
 
 const router = useRouter()
+const { t, locale } = useI18n()
+
+const TIER_LABELS = computed(() => {
+  const map = {}
+  for (const key of TIER_KEYS) map[key] = t(`tier.${key}`)
+  return map
+})
 
 const users = ref([])
 const loading = ref(true)
@@ -68,7 +76,7 @@ async function saveUser() {
 }
 
 async function deleteUser(u) {
-  if (!confirm(`Удалить пользователя ${u.name} (${u.email})? Все его рестораны и данные будут удалены!`)) return
+  if (!confirm(t('adminUsers.confirmDelete', { name: u.name, email: u.email }))) return
   try {
     await api.deleteUser(u.id)
     await loadUsers()
@@ -76,7 +84,8 @@ async function deleteUser(u) {
 }
 
 function formatDate(d) {
-  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })
+  const tag = locale.value === 'en' ? 'en-US' : 'ru-RU'
+  return new Date(d).toLocaleDateString(tag, { day: 'numeric', month: 'short', year: 'numeric' })
 }
 </script>
 
@@ -86,29 +95,29 @@ function formatDate(d) {
       <div>
         <button class="back-link" @click="router.push({ name: 'dashboard' })">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Назад
+          {{ $t('common.back') }}
         </button>
-        <h1>Пользователи</h1>
+        <h1>{{ $t('adminUsers.title') }}</h1>
       </div>
       <button class="btn btn-primary" @click="openCreate">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        Создать
+        {{ $t('adminUsers.create') }}
       </button>
     </div>
 
-    <div class="loading" v-if="loading">Загрузка...</div>
+    <div class="loading" v-if="loading">{{ $t('common.loading') }}</div>
 
     <div class="table-wrap" v-else>
       <table class="table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Имя</th>
-            <th>Email</th>
-            <th>Роль</th>
-            <th>Тариф</th>
-            <th>Лимит</th>
-            <th>Дата</th>
+            <th>{{ $t('adminUsers.idCol') }}</th>
+            <th>{{ $t('adminUsers.nameCol') }}</th>
+            <th>{{ $t('common.email') }}</th>
+            <th>{{ $t('common.role') }}</th>
+            <th>{{ $t('tier.label') }}</th>
+            <th>{{ $t('adminUsers.limitCol') }}</th>
+            <th>{{ $t('common.date') }}</th>
             <th></th>
           </tr>
         </thead>
@@ -125,61 +134,61 @@ function formatDate(d) {
             <td>{{ u.max_restaurants }}</td>
             <td class="td-date">{{ formatDate(u.created_at) }}</td>
             <td class="td-actions">
-              <button class="icon-btn" title="Редактировать" @click="openEdit(u)">
+              <button class="icon-btn" :title="$t('common.edit')" @click="openEdit(u)">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               </button>
-              <button class="icon-btn danger" title="Удалить" @click="deleteUser(u)" v-if="u.role !== 'admin'">
+              <button class="icon-btn danger" :title="$t('common.delete')" @click="deleteUser(u)" v-if="u.role !== 'admin'">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
               </button>
             </td>
           </tr>
         </tbody>
       </table>
-      <div class="empty" v-if="users.length === 0">Нет пользователей</div>
+      <div class="empty" v-if="users.length === 0">{{ $t('adminUsers.empty') }}</div>
     </div>
 
     <!-- Modal -->
     <div class="modal-overlay" v-if="showForm" @click.self="showForm = false">
       <div class="modal card">
-        <h2>{{ editingId ? 'Редактировать пользователя' : 'Новый пользователь' }}</h2>
+        <h2>{{ editingId ? $t('adminUsers.editUserTitle') : $t('adminUsers.newUserTitle') }}</h2>
         <form @submit.prevent="saveUser">
           <div class="field">
-            <label class="label">Имя</label>
-            <input v-model="form.name" class="input" required placeholder="Иван Петров" />
+            <label class="label">{{ $t('common.name') }}</label>
+            <input v-model="form.name" class="input" required :placeholder="$t('adminUsers.namePlaceholder')" />
           </div>
           <div class="field">
-            <label class="label">Email</label>
-            <input v-model="form.email" type="email" class="input" required placeholder="user@example.com" />
+            <label class="label">{{ $t('common.email') }}</label>
+            <input v-model="form.email" type="email" class="input" required :placeholder="$t('adminUsers.emailPlaceholder')" />
           </div>
           <div class="field">
-            <label class="label">{{ editingId ? 'Новый пароль (оставьте пустым)' : 'Пароль' }}</label>
-            <input v-model="form.password" type="password" class="input" :required="!editingId" minlength="6" placeholder="Минимум 6 символов" />
+            <label class="label">{{ editingId ? $t('adminUsers.newPassword') : $t('common.password') }}</label>
+            <input v-model="form.password" type="password" class="input" :required="!editingId" minlength="6" :placeholder="$t('auth.passwordPlaceholder')" />
           </div>
           <div class="row">
             <div class="field">
-              <label class="label">Роль</label>
+              <label class="label">{{ $t('common.role') }}</label>
               <select v-model="form.role" class="input">
                 <option value="user">user</option>
                 <option value="admin">admin</option>
               </select>
             </div>
             <div class="field">
-              <label class="label">Макс. ресторанов</label>
+              <label class="label">{{ $t('adminUsers.maxRestaurants') }}</label>
               <input v-model.number="form.max_restaurants" type="number" min="0" class="input" />
             </div>
           </div>
           <div class="field" v-if="form.role !== 'admin'">
-            <label class="label">Тариф</label>
+            <label class="label">{{ $t('tier.label') }}</label>
             <select v-model="form.tier" class="input">
               <option v-for="(label, key) in TIER_LABELS" :key="key" :value="key">{{ label }}</option>
             </select>
-            <div class="hint">Определяет, какие фичи доступны пользователю</div>
+            <div class="hint">{{ $t('tier.hint') }}</div>
           </div>
           <div class="error-msg" v-if="error">{{ error }}</div>
           <div class="modal-actions">
-            <button type="button" class="btn btn-outline" @click="showForm = false">Отмена</button>
+            <button type="button" class="btn btn-outline" @click="showForm = false">{{ $t('common.cancel') }}</button>
             <button type="submit" class="btn btn-primary" :disabled="saving">
-              {{ saving ? 'Сохранение...' : 'Сохранить' }}
+              {{ saving ? $t('common.saving') : $t('common.save') }}
             </button>
           </div>
         </form>

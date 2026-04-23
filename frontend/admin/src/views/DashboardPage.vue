@@ -1,10 +1,12 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { restaurants as api } from '../api/client'
 import { user } from '../stores/auth'
 
 const router = useRouter()
+const { t } = useI18n()
 const list = ref([])
 const loading = ref(true)
 
@@ -57,7 +59,7 @@ function generateSlug() {
 }
 
 async function deleteRestaurant(id) {
-  if (!confirm('Удалить ресторан? Это удалит всё меню и заказы.')) return
+  if (!confirm(t('dashboard.confirmDelete'))) return
   await api.delete(id)
   list.value = list.value.filter(r => r.id !== id)
 }
@@ -66,40 +68,40 @@ async function deleteRestaurant(id) {
 <template>
   <div class="page">
     <div class="page-header">
-      <h1>Мои рестораны</h1>
+      <h1>{{ $t('dashboard.title') }}</h1>
       <button class="btn btn-primary" :disabled="limitReached" @click="!limitReached && (showCreate = true)">
         <svg v-if="!limitReached" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        {{ limitReached ? 'Мест больше нет' : 'Добавить ресторан' }}
+        {{ limitReached ? $t('dashboard.limitReached') : $t('dashboard.addRestaurant') }}
       </button>
     </div>
 
     <!-- Create modal -->
     <div class="modal-overlay" v-if="showCreate" @click.self="showCreate = false">
       <div class="modal card">
-        <h2>Новый ресторан</h2>
+        <h2>{{ $t('dashboard.newRestaurant') }}</h2>
         <form @submit.prevent="createRestaurant">
           <div class="field">
-            <label class="label">Название</label>
-            <input v-model="form.name" class="input" placeholder="Мой ресторан" required @input="generateSlug" />
+            <label class="label">{{ $t('common.title') }}</label>
+            <input v-model="form.name" class="input" :placeholder="$t('dashboard.namePlaceholder')" required @input="generateSlug" />
           </div>
           <div class="field">
-            <label class="label">Slug (для ссылки)</label>
-            <input v-model="form.slug" class="input" placeholder="my-restaurant" required pattern="[a-z0-9\-]+" />
-            <div class="hint">Меню будет доступно по адресу: /{{ form.slug || '...' }}</div>
+            <label class="label">{{ $t('dashboard.slugLabel') }}</label>
+            <input v-model="form.slug" class="input" :placeholder="$t('dashboard.slugPlaceholder')" required pattern="[a-z0-9\-]+" />
+            <div class="hint">{{ $t('dashboard.slugHint', { slug: form.slug || '...' }) }}</div>
           </div>
           <div class="field">
-            <label class="label">Описание</label>
-            <input v-model="form.description" class="input" placeholder="Ресторан изысканной кухни" />
+            <label class="label">{{ $t('common.description') }}</label>
+            <input v-model="form.description" class="input" :placeholder="$t('dashboard.descPlaceholder')" />
           </div>
           <div class="field">
-            <label class="label">Телефон</label>
-            <input v-model="form.phone" class="input" placeholder="+7 (999) 123-45-67" />
+            <label class="label">{{ $t('common.phone') }}</label>
+            <input v-model="form.phone" class="input" :placeholder="$t('dashboard.phonePlaceholder')" />
           </div>
           <div class="error-msg" v-if="error">{{ error }}</div>
           <div class="modal-actions">
-            <button type="button" class="btn btn-outline" @click="showCreate = false">Отмена</button>
+            <button type="button" class="btn btn-outline" @click="showCreate = false">{{ $t('common.cancel') }}</button>
             <button type="submit" class="btn btn-primary" :disabled="creating">
-              {{ creating ? 'Создание...' : 'Создать' }}
+              {{ creating ? $t('common.creating') : $t('common.create') }}
             </button>
           </div>
         </form>
@@ -107,7 +109,7 @@ async function deleteRestaurant(id) {
     </div>
 
     <!-- Loading -->
-    <div class="loading" v-if="loading">Загрузка...</div>
+    <div class="loading" v-if="loading">{{ $t('common.loading') }}</div>
 
     <!-- Empty -->
     <div class="empty card" v-else-if="list.length === 0">
@@ -116,8 +118,8 @@ async function deleteRestaurant(id) {
           <path d="M3 3h18v18H3z"/><path d="M12 8v8M8 12h8"/>
         </svg>
       </div>
-      <p>У вас пока нет ресторанов</p>
-      <button class="btn btn-primary" @click="showCreate = true">Создать первый ресторан</button>
+      <p>{{ $t('dashboard.emptyList') }}</p>
+      <button class="btn btn-primary" @click="showCreate = true">{{ $t('dashboard.createFirst') }}</button>
     </div>
 
     <!-- List -->
@@ -134,14 +136,14 @@ async function deleteRestaurant(id) {
         <div class="rest-actions">
           <a :href="'https://menu.ab-team.ru/' + r.slug" target="_blank" class="btn btn-accent btn-sm">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
-            Сайт
+            {{ $t('dashboard.actions.site') }}
           </a>
-          <router-link :to="{ name: 'menu', params: { id: r.id } }" class="btn btn-primary btn-sm">Меню</router-link>
-          <router-link :to="{ name: 'orders', params: { id: r.id } }" class="btn btn-outline btn-sm">Заказы</router-link>
-          <router-link :to="{ name: 'combos', params: { id: r.id } }" class="btn btn-outline btn-sm">Комбо</router-link>
-          <router-link :to="{ name: 'messengers', params: { id: r.id } }" class="btn btn-outline btn-sm">Мессенджеры</router-link>
-          <router-link :to="{ name: 'analytics', params: { id: r.id } }" class="btn btn-outline btn-sm">Аналитика</router-link>
-          <router-link :to="{ name: 'restaurant', params: { id: r.id } }" class="btn btn-outline btn-sm">Настройки</router-link>
+          <router-link :to="{ name: 'menu', params: { id: r.id } }" class="btn btn-primary btn-sm">{{ $t('dashboard.actions.menu') }}</router-link>
+          <router-link :to="{ name: 'orders', params: { id: r.id } }" class="btn btn-outline btn-sm">{{ $t('dashboard.actions.orders') }}</router-link>
+          <router-link :to="{ name: 'combos', params: { id: r.id } }" class="btn btn-outline btn-sm">{{ $t('dashboard.actions.combos') }}</router-link>
+          <router-link :to="{ name: 'messengers', params: { id: r.id } }" class="btn btn-outline btn-sm">{{ $t('dashboard.actions.messengers') }}</router-link>
+          <router-link :to="{ name: 'analytics', params: { id: r.id } }" class="btn btn-outline btn-sm">{{ $t('dashboard.actions.analytics') }}</router-link>
+          <router-link :to="{ name: 'restaurant', params: { id: r.id } }" class="btn btn-outline btn-sm">{{ $t('dashboard.actions.settings') }}</router-link>
           <button class="btn btn-sm delete-btn" @click="deleteRestaurant(r.id)">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
           </button>

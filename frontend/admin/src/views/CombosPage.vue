@@ -1,10 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { restaurants as restApi, combos as comboApi, menuItems as itemApi, categories as catApi, uploadFile, imageUrl } from '../api/client'
 
 const route = useRoute()
 const router = useRouter()
+const { t, locale } = useI18n()
 const id = route.params.id
 
 const rest = ref(null)
@@ -15,7 +17,7 @@ const menuItemsList = ref([])
 // Form
 const showForm = ref(false)
 const editingId = ref(null)
-const form = ref({ name: '', description: '', price: '', image: '', sort_order: 0 })
+const form = ref({ name: '', name_en: '', description: '', description_en: '', price: '', image: '', sort_order: 0 })
 const formItems = ref([])
 const uploadingImage = ref(false)
 const saving = ref(false)
@@ -41,7 +43,7 @@ async function loadMenuItems() {
   for (const cat of cats) {
     const items = await itemApi.list(cat.id) || []
     for (const item of items) {
-      all.push({ id: item.id, name: item.name, category: cat.name })
+      all.push({ id: item.id, name: item.name, name_en: item.name_en || '', category: cat.name })
     }
   }
   menuItemsList.value = all
@@ -52,7 +54,9 @@ function openForm(combo = null) {
     editingId.value = combo.id
     form.value = {
       name: combo.name,
+      name_en: combo.name_en || '',
       description: combo.description || '',
+      description_en: combo.description_en || '',
       price: String(combo.price / 100),
       image: combo.image || '',
       sort_order: combo.sort_order,
@@ -60,18 +64,19 @@ function openForm(combo = null) {
     formItems.value = (combo.items || []).map(ci => ({
       menu_item_id: ci.menu_item_id,
       name: ci.name,
+      name_en: ci.name_en || '',
       quantity: ci.quantity,
     }))
   } else {
     editingId.value = null
-    form.value = { name: '', description: '', price: '', image: '', sort_order: 0 }
+    form.value = { name: '', name_en: '', description: '', description_en: '', price: '', image: '', sort_order: 0 }
     formItems.value = []
   }
   showForm.value = true
 }
 
 function addFormItem() {
-  formItems.value.push({ menu_item_id: null, name: '', quantity: 1 })
+  formItems.value.push({ menu_item_id: null, name: '', name_en: '', quantity: 1 })
 }
 
 function removeFormItem(idx) {
@@ -82,7 +87,10 @@ function onSelectMenuItem(idx) {
   const item = formItems.value[idx]
   if (item.menu_item_id) {
     const mi = menuItemsList.value.find(m => m.id === item.menu_item_id)
-    if (mi) item.name = mi.name
+    if (mi) {
+      item.name = mi.name
+      item.name_en = mi.name_en || ''
+    }
   }
 }
 
@@ -92,13 +100,16 @@ async function saveCombo() {
   try {
     const data = {
       name: form.value.name,
+      name_en: form.value.name_en,
       description: form.value.description,
+      description_en: form.value.description_en,
       price: Math.round(parseFloat(form.value.price) * 100),
       image: form.value.image,
       sort_order: form.value.sort_order,
       items: formItems.value.filter(i => i.name.trim()).map(i => ({
         menu_item_id: i.menu_item_id || null,
         name: i.name,
+        name_en: i.name_en,
         quantity: i.quantity || 1,
       })),
     }
@@ -120,7 +131,7 @@ async function toggleAvailable(combo) {
 }
 
 async function deleteCombo(comboId) {
-  if (!confirm('Удалить комбо-набор?')) return
+  if (!confirm(t('combos.confirmDelete'))) return
   await comboApi.delete(comboId)
   await loadCombos()
 }
@@ -137,7 +148,8 @@ async function handleImage(event) {
 }
 
 function formatPrice(kopecks) {
-  return (kopecks / 100).toLocaleString('ru-RU') + ' ₽'
+  const tag = locale.value === 'en' ? 'en-US' : 'ru-RU'
+  return (kopecks / 100).toLocaleString(tag) + ' ₽'
 }
 </script>
 
@@ -147,21 +159,21 @@ function formatPrice(kopecks) {
       <div>
         <button class="back-link" @click="router.push({ name: 'dashboard' })">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Назад
+          {{ $t('common.back') }}
         </button>
-        <h1 v-if="rest">Комбо: {{ rest.name }}</h1>
+        <h1 v-if="rest">{{ $t('combos.title', { name: rest.name }) }}</h1>
       </div>
       <button class="btn btn-primary" @click="openForm()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        Добавить комбо
+        {{ $t('combos.addCombo') }}
       </button>
     </div>
 
-    <div v-if="loading" class="loading">Загрузка...</div>
+    <div v-if="loading" class="loading">{{ $t('common.loading') }}</div>
 
     <div class="empty card" v-else-if="comboList.length === 0">
-      <p>Создайте первый комбо-набор</p>
-      <button class="btn btn-primary" @click="openForm()">Добавить комбо</button>
+      <p>{{ $t('combos.emptyHint') }}</p>
+      <button class="btn btn-primary" @click="openForm()">{{ $t('combos.addCombo') }}</button>
     </div>
 
     <div class="combo-grid" v-else>
@@ -173,7 +185,7 @@ function formatPrice(kopecks) {
           <div class="combo-info">
             <h3>{{ combo.name }}</h3>
             <span class="combo-price">{{ formatPrice(combo.price) }}</span>
-            <span class="badge-off" v-if="!combo.available">Нет в наличии</span>
+            <span class="badge-off" v-if="!combo.available">{{ $t('combos.notAvailable') }}</span>
           </div>
         </div>
         <p class="combo-desc" v-if="combo.description">{{ combo.description }}</p>
@@ -183,7 +195,7 @@ function formatPrice(kopecks) {
           </span>
         </div>
         <div class="combo-actions">
-          <button class="icon-btn-sm" :class="combo.available ? 'available' : 'off'" :title="combo.available ? 'Убрать' : 'Вернуть'" @click="toggleAvailable(combo)">
+          <button class="icon-btn-sm" :class="combo.available ? 'available' : 'off'" :title="combo.available ? $t('combos.hide') : $t('combos.show')" @click="toggleAvailable(combo)">
             <svg v-if="combo.available" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
             <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -200,10 +212,10 @@ function formatPrice(kopecks) {
     <!-- Form modal -->
     <div class="modal-overlay" v-if="showForm" @click.self="showForm = false">
       <div class="modal card">
-        <h2>{{ editingId ? 'Редактировать комбо' : 'Новый комбо-набор' }}</h2>
+        <h2>{{ editingId ? $t('combos.editCombo') : $t('combos.newCombo') }}</h2>
         <form @submit.prevent="saveCombo">
           <div class="field">
-            <label class="label">Фото</label>
+            <label class="label">{{ $t('combos.imageLabel') }}</label>
             <div class="upload-area">
               <div class="img-preview" v-if="form.image">
                 <img :src="imageUrl(form.image)" alt="" />
@@ -211,48 +223,57 @@ function formatPrice(kopecks) {
               </div>
               <label class="upload-btn" v-else>
                 <input type="file" accept="image/*" hidden @change="handleImage" />
-                {{ uploadingImage ? 'Загрузка...' : 'Загрузить фото' }}
+                {{ uploadingImage ? $t('restaurant.uploading') : $t('combos.imageUpload') }}
               </label>
             </div>
           </div>
           <div class="field">
-            <label class="label">Название</label>
-            <input v-model="form.name" class="input" placeholder="Бизнес-ланч" required />
+            <label class="label">{{ $t('common.title') }} <span class="lang-tag">RU</span></label>
+            <input v-model="form.name" class="input" :placeholder="$t('combos.namePlaceholder')" required />
           </div>
           <div class="field">
-            <label class="label">Описание</label>
-            <input v-model="form.description" class="input" placeholder="Суп + горячее + напиток" />
+            <label class="label">{{ $t('common.title') }} <span class="lang-tag">EN</span></label>
+            <input v-model="form.name_en" class="input" placeholder="Business lunch" />
+          </div>
+          <div class="field">
+            <label class="label">{{ $t('common.description') }} <span class="lang-tag">RU</span></label>
+            <input v-model="form.description" class="input" :placeholder="$t('combos.descPlaceholder')" />
+          </div>
+          <div class="field">
+            <label class="label">{{ $t('common.description') }} <span class="lang-tag">EN</span></label>
+            <input v-model="form.description_en" class="input" placeholder="Soup + main + drink" />
           </div>
           <div class="row">
             <div class="field">
-              <label class="label">Цена (₽)</label>
+              <label class="label">{{ $t('menu.priceLabel') }}</label>
               <input v-model="form.price" type="number" step="0.01" min="0" class="input" required />
             </div>
             <div class="field">
-              <label class="label">Порядок</label>
+              <label class="label">{{ $t('common.order') }}</label>
               <input v-model.number="form.sort_order" type="number" class="input" />
             </div>
           </div>
 
           <div class="divider"></div>
-          <div class="section-label">Состав комбо</div>
+          <div class="section-label">{{ $t('combos.compositionSection') }}</div>
 
           <div class="combo-form-items">
             <div class="combo-form-row" v-for="(ci, idx) in formItems" :key="idx">
               <select v-model="ci.menu_item_id" class="input combo-select" @change="onSelectMenuItem(idx)">
-                <option :value="null">Своё блюдо</option>
+                <option :value="null">{{ $t('combos.ownDish') }}</option>
                 <option v-for="mi in menuItemsList" :key="mi.id" :value="mi.id">{{ mi.category }}: {{ mi.name }}</option>
               </select>
-              <input v-model="ci.name" class="input combo-name" placeholder="Название" />
+              <input v-model="ci.name" class="input combo-name" :placeholder="$t('combos.dishNamePlaceholder') + ' (RU)'" />
+              <input v-model="ci.name_en" class="input combo-name" :placeholder="$t('combos.dishNamePlaceholder') + ' (EN)'" />
               <input v-model.number="ci.quantity" type="number" min="1" class="input combo-qty" />
               <button type="button" class="combo-remove" @click="removeFormItem(idx)">×</button>
             </div>
           </div>
-          <button type="button" class="btn-add-item" @click="addFormItem">+ Добавить позицию</button>
+          <button type="button" class="btn-add-item" @click="addFormItem">{{ $t('combos.addPosition') }}</button>
 
           <div class="modal-actions">
-            <button type="button" class="btn btn-outline" @click="showForm = false">Отмена</button>
-            <button type="submit" class="btn btn-primary" :disabled="saving">{{ saving ? 'Сохранение...' : 'Сохранить' }}</button>
+            <button type="button" class="btn btn-outline" @click="showForm = false">{{ $t('common.cancel') }}</button>
+            <button type="submit" class="btn btn-primary" :disabled="saving">{{ saving ? $t('common.saving') : $t('common.save') }}</button>
           </div>
         </form>
       </div>
@@ -451,6 +472,20 @@ function formatPrice(kopecks) {
   letter-spacing: 0.5px;
   color: var(--text-secondary);
   margin-bottom: 10px;
+}
+
+.lang-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  vertical-align: middle;
+  letter-spacing: 0.3px;
 }
 
 .combo-form-items {

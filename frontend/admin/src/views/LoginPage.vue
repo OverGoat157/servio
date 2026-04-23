@@ -1,9 +1,11 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { login } from '../stores/auth'
 
 const router = useRouter()
+const { t } = useI18n()
 const email = ref('')
 const password = ref('')
 const error = ref('')
@@ -16,7 +18,7 @@ async function handleSubmit() {
     await login(email.value, password.value)
     router.push({ name: 'dashboard' })
   } catch (e) {
-    error.value = e.message === 'invalid credentials' ? 'Неверный email или пароль' : e.message
+    error.value = e.message === 'invalid credentials' ? t('auth.invalidCreds') : e.message
   } finally {
     loading.value = false
   }
@@ -32,27 +34,27 @@ async function handleSubmit() {
           <path d="M13 10l5 6-5 6"/>
           <path d="M19 10l5 6-5 6"/>
         </svg>
-        <h1>Вход в AB Team</h1>
-        <p>Управляйте ресторанами и меню</p>
+        <h1>{{ $t('auth.loginTitle') }}</h1>
+        <p>{{ $t('auth.loginSubtitle') }}</p>
       </div>
 
       <form @submit.prevent="handleSubmit">
         <div class="field">
-          <label class="label">Email</label>
+          <label class="label">{{ $t('common.email') }}</label>
           <input v-model="email" type="email" class="input" placeholder="email@example.com" required />
         </div>
         <div class="field">
-          <label class="label">Пароль</label>
-          <input v-model="password" type="password" class="input" placeholder="Минимум 6 символов" required />
+          <label class="label">{{ $t('common.password') }}</label>
+          <input v-model="password" type="password" class="input" :placeholder="$t('auth.passwordPlaceholder')" required />
         </div>
         <div class="error-msg" v-if="error">{{ error }}</div>
         <button type="submit" class="btn btn-primary submit-btn" :disabled="loading">
-          {{ loading ? 'Вход...' : 'Войти' }}
+          {{ loading ? $t('auth.submitLoading') : $t('auth.submit') }}
         </button>
       </form>
 
       <div class="auth-footer">
-        Аккаунт создаётся администратором
+        {{ $t('auth.footer') }}
       </div>
     </div>
   </div>

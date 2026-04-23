@@ -1,19 +1,17 @@
 import { ref } from 'vue'
 import { auth as authApi } from '../api/client'
+import { i18n } from '../i18n'
 
 export const user = ref(null)
 export const isAuthenticated = ref(!!localStorage.getItem('token'))
 
 const TIER_RANK = { basic: 0, business: 1, business_max: 2 }
 
-export const TIER_LABELS = {
-  basic: 'Базовый',
-  business: 'Бизнес',
-  business_max: 'Бизнес Макс',
-}
+export const TIER_KEYS = ['basic', 'business', 'business_max']
 
 export function tierLabel(tier) {
-  return TIER_LABELS[tier] || 'Базовый'
+  const key = TIER_KEYS.includes(tier) ? tier : 'basic'
+  return i18n.global.t(`tier.${key}`)
 }
 
 // Returns true if the current user's tier is >= minTier.

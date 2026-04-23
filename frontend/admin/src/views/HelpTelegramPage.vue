@@ -17,29 +17,29 @@ function goBack() {
     <div class="page-header">
       <button class="back-link" @click="goBack">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-        Назад
+        {{ $t('common.back') }}
       </button>
-      <h1>Подключение Telegram</h1>
+      <h1>{{ $t('helpTelegram.title') }}</h1>
       <p class="lead">
-        Пошаговая инструкция: создайте бота, добавьте его в чат и пропишите данные в настройках мессенджеров.
+        {{ $t('helpTelegram.lead') }}
       </p>
     </div>
 
     <div class="card step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <h2>Создать бота в @BotFather</h2>
+        <h2>{{ $t('helpTelegram.step1Title') }}</h2>
         <ol>
-          <li>Откройте в Telegram <a href="https://t.me/BotFather" target="_blank" rel="noopener">@BotFather</a>.</li>
-          <li>Отправьте команду <code>/newbot</code>.</li>
-          <li>Введите <b>имя бота</b> — оно будет отображаться в чате (например: <i>Суши Море Заказы</i>).</li>
-          <li>Введите <b>username бота</b> — должен быть уникальным и заканчиваться на <code>bot</code> (например: <code>sushi_more_orders_bot</code>).</li>
-          <li>BotFather пришлёт сообщение с токеном — выглядит так:
+          <li><a href="https://t.me/BotFather" target="_blank" rel="noopener">{{ $t('helpTelegram.step1Item1') }}</a></li>
+          <li>{{ $t('helpTelegram.step1Item2') }}</li>
+          <li>{{ $t('helpTelegram.step1Item3Pre') }} <b>{{ $t('helpTelegram.step1Item3Bold') }}</b> {{ $t('helpTelegram.step1Item3Post') }}</li>
+          <li>{{ $t('helpTelegram.step1Item4Pre') }} <b>{{ $t('helpTelegram.step1Item4Bold') }}</b> {{ $t('helpTelegram.step1Item4Post') }}</li>
+          <li>{{ $t('helpTelegram.step1Item5') }}
             <div class="code-block">123456789:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw</div>
           </li>
         </ol>
         <div class="callout warn">
-          Скопируйте токен и сохраните его в надёжном месте. Никому его не показывайте — это пароль к вашему боту.
+          {{ $t('helpTelegram.step1Warn') }}
         </div>
       </div>
     </div>
@@ -47,27 +47,27 @@ function goBack() {
     <div class="card step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <h2>Получить Chat ID — куда бот будет слать заказы</h2>
-        <p>Нужно решить, куда будут приходить заказы: лично вам или в групповой чат, где их видят все сотрудники.</p>
+        <h2>{{ $t('helpTelegram.step2Title') }}</h2>
+        <p>{{ $t('helpTelegram.step2Lead') }}</p>
 
-        <h3>Вариант А — в личный чат</h3>
+        <h3>{{ $t('helpTelegram.step2SubA') }}</h3>
         <ol>
-          <li>Откройте <a href="https://t.me/userinfobot" target="_blank" rel="noopener">@userinfobot</a> и нажмите <b>Start</b>.</li>
-          <li>Бот пришлёт ваш числовой ID — например <code>123456789</code>. Это и есть <b>Chat ID</b>.</li>
-          <li>Обязательно откройте диалог со <b>своим</b> ботом (которого создавали на шаге 1) и нажмите <b>Start</b> — иначе бот не сможет вам писать.</li>
+          <li><a href="https://t.me/userinfobot" target="_blank" rel="noopener">{{ $t('helpTelegram.step2A1') }}</a></li>
+          <li>{{ $t('helpTelegram.step2A2') }}</li>
+          <li>{{ $t('helpTelegram.step2A3') }}</li>
         </ol>
 
-        <h3>Вариант Б — в групповой чат (рекомендуется для команды)</h3>
+        <h3>{{ $t('helpTelegram.step2SubB') }}</h3>
         <ol>
-          <li>Создайте группу в Telegram (например «Заказы Суши Море») и добавьте туда коллег.</li>
-          <li>Добавьте в ту же группу <b>своего бота</b> по username (который придумали на шаге 1).</li>
-          <li>Добавьте туда же <a href="https://t.me/getmyid_bot" target="_blank" rel="noopener">@getmyid_bot</a> — он пришлёт <b>Group ID</b>, начинающийся с минуса, например <code>-1001234567890</code>.</li>
-          <li>После этого @getmyid_bot можно удалить из группы.</li>
-          <li><b>Своего бота</b> из группы удалять нельзя — иначе заказы не будут доставляться.</li>
+          <li>{{ $t('helpTelegram.step2B1') }}</li>
+          <li>{{ $t('helpTelegram.step2B2') }}</li>
+          <li><a href="https://t.me/getmyid_bot" target="_blank" rel="noopener">{{ $t('helpTelegram.step2B3') }}</a></li>
+          <li>{{ $t('helpTelegram.step2B4') }}</li>
+          <li>{{ $t('helpTelegram.step2B5') }}</li>
         </ol>
 
         <div class="callout">
-          У групп Chat ID всегда отрицательный и начинается с минуса. Копируйте его целиком, вместе с минусом.
+          {{ $t('helpTelegram.step2Note') }}
         </div>
       </div>
     </div>
@@ -75,17 +75,17 @@ function goBack() {
     <div class="card step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <h2>Прописать данные в админке</h2>
+        <h2>{{ $t('helpTelegram.step3Title') }}</h2>
         <ol>
-          <li>Откройте карточку ресторана → <b>Мессенджеры</b>.</li>
-          <li>В блоке <b>Telegram</b> заполните:
+          <li>{{ $t('helpTelegram.step3Item1') }}</li>
+          <li>{{ $t('helpTelegram.step3Item2Pre') }}
             <ul>
-              <li><b>Bot Token</b> — токен от @BotFather из шага 1</li>
-              <li><b>Chat ID</b> — число из шага 2</li>
+              <li>{{ $t('helpTelegram.step3Item2Bullet1') }}</li>
+              <li>{{ $t('helpTelegram.step3Item2Bullet2') }}</li>
             </ul>
           </li>
-          <li>Нажмите <b>Сохранить</b>.</li>
-          <li>Включите тумблер <b>Включено</b>.</li>
+          <li>{{ $t('helpTelegram.step3Item3') }}</li>
+          <li>{{ $t('helpTelegram.step3Item4') }}</li>
         </ol>
       </div>
     </div>
@@ -93,36 +93,36 @@ function goBack() {
     <div class="card step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <h2>Проверить работу</h2>
+        <h2>{{ $t('helpTelegram.step4Title') }}</h2>
         <ol>
-          <li>Откройте меню ресторана с телефона.</li>
-          <li>Добавьте блюдо в корзину, заполните имя и телефон.</li>
-          <li>Выберите способ получения и мессенджер <b>Telegram</b>.</li>
-          <li>Нажмите <b>Отправить заказ</b>.</li>
-          <li>В вашем чате должно появиться сообщение от бота с составом заказа.</li>
+          <li>{{ $t('helpTelegram.step4Item1') }}</li>
+          <li>{{ $t('helpTelegram.step4Item2') }}</li>
+          <li>{{ $t('helpTelegram.step4Item3') }}</li>
+          <li>{{ $t('helpTelegram.step4Item4') }}</li>
+          <li>{{ $t('helpTelegram.step4Item5') }}</li>
         </ol>
       </div>
     </div>
 
     <div class="card faq">
-      <h2>Частые проблемы</h2>
+      <h2>{{ $t('helpTelegram.faqTitle') }}</h2>
       <dl>
-        <dt>Нажимаю «Отправить заказ», но в Telegram ничего не приходит</dt>
-        <dd>Проверьте, что бот добавлен в группу и не удалён. Если это личный чат — откройте диалог с ботом и нажмите <b>Start</b>.</dd>
+        <dt>{{ $t('helpTelegram.faqQ1') }}</dt>
+        <dd>{{ $t('helpTelegram.faqA1') }}</dd>
 
-        <dt>Ошибка «Telegram не настроен»</dt>
-        <dd>Bot Token или Chat ID пустые, либо тумблер <b>Включено</b> выключен.</dd>
+        <dt>{{ $t('helpTelegram.faqQ2') }}</dt>
+        <dd>{{ $t('helpTelegram.faqA2') }}</dd>
 
-        <dt>Ошибка «Не удалось отправить в Telegram»</dt>
-        <dd>Неверный токен или Chat ID. Проверьте, что скопировали их без лишних пробелов. Для группы Chat ID должен начинаться с минуса.</dd>
+        <dt>{{ $t('helpTelegram.faqQ3') }}</dt>
+        <dd>{{ $t('helpTelegram.faqA3') }}</dd>
 
-        <dt>Заказы перестали приходить после того, как добавил нового сотрудника в группу</dt>
-        <dd>Скорее всего кто-то случайно удалил бота из группы. Добавьте его обратно по username.</dd>
+        <dt>{{ $t('helpTelegram.faqQ4') }}</dt>
+        <dd>{{ $t('helpTelegram.faqA4') }}</dd>
       </dl>
     </div>
 
     <router-link :to="{ name: 'dashboard' }" class="btn btn-primary bottom-link">
-      Перейти в панель управления
+      {{ $t('helpTelegram.goToDashboard') }}
     </router-link>
   </div>
 </template>

@@ -1,10 +1,12 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { restaurants as restApi, categories as catApi, menuItems as itemApi, uploadFile, imageUrl } from '../api/client'
 
 const route = useRoute()
 const router = useRouter()
+const { t, locale } = useI18n()
 const id = route.params.id
 
 const rest = ref(null)
@@ -23,12 +25,12 @@ const filteredCats = computed(() => {
 
 // Category form
 const showCatForm = ref(false)
-const catForm = ref({ name: '', sort_order: 0 })
+const catForm = ref({ name: '', name_en: '', sort_order: 0 })
 const editingCatId = ref(null)
 
 // Item form
 const showItemForm = ref(false)
-const itemForm = ref({ name: '', description: '', price: '', sort_order: 0, image: '', ingredients: '', weight: '', calories: '', proteins: '', fats: '', carbs: '', cook_time: '' })
+const itemForm = ref({ name: '', name_en: '', description: '', description_en: '', price: '', sort_order: 0, image: '', ingredients: '', ingredients_en: '', weight: '', calories: '', proteins: '', fats: '', carbs: '', cook_time: '' })
 const editingItemId = ref(null)
 const targetCatId = ref(null)
 const uploadingItemImage = ref(false)
@@ -58,10 +60,10 @@ async function loadCategories() {
 function openCatForm(cat = null) {
   if (cat) {
     editingCatId.value = cat.id
-    catForm.value = { name: cat.name, sort_order: cat.sort_order }
+    catForm.value = { name: cat.name, name_en: cat.name_en || '', sort_order: cat.sort_order }
   } else {
     editingCatId.value = null
-    catForm.value = { name: '', sort_order: cats.value.length }
+    catForm.value = { name: '', name_en: '', sort_order: cats.value.length }
   }
   showCatForm.value = true
 }
@@ -83,7 +85,7 @@ async function saveCat() {
 }
 
 async function deleteCat(catId) {
-  if (!confirm('Удалить категорию и все её позиции?')) return
+  if (!confirm(t('menu.confirmDeleteCategory'))) return
   await catApi.delete(catId)
   await loadCategories()
 }
@@ -95,11 +97,14 @@ function openItemForm(catId, item = null) {
     editingItemId.value = item.id
     itemForm.value = {
       name: item.name,
+      name_en: item.name_en || '',
       description: item.description || '',
+      description_en: item.description_en || '',
       price: String(item.price / 100),
       sort_order: item.sort_order,
       image: item.image || '',
       ingredients: item.ingredients || '',
+      ingredients_en: item.ingredients_en || '',
       weight: item.weight || '',
       calories: item.calories ?? '',
       proteins: item.proteins ?? '',
@@ -109,7 +114,7 @@ function openItemForm(catId, item = null) {
     }
   } else {
     editingItemId.value = null
-    itemForm.value = { name: '', description: '', price: '', sort_order: 0, image: '', ingredients: '', weight: '', calories: '', proteins: '', fats: '', carbs: '', cook_time: '' }
+    itemForm.value = { name: '', name_en: '', description: '', description_en: '', price: '', sort_order: 0, image: '', ingredients: '', ingredients_en: '', weight: '', calories: '', proteins: '', fats: '', carbs: '', cook_time: '' }
   }
   showItemForm.value = true
 }
@@ -144,7 +149,7 @@ async function toggleAvailable(item) {
 }
 
 async function deleteItem(itemId) {
-  if (!confirm('Удалить позицию?')) return
+  if (!confirm(t('menu.confirmDeleteItem'))) return
   await itemApi.delete(itemId)
   await loadCategories()
 }
@@ -161,7 +166,8 @@ async function handleItemImage(event) {
 }
 
 function formatPrice(kopecks) {
-  return (kopecks / 100).toLocaleString('ru-RU') + ' ₽'
+  const tag = locale.value === 'en' ? 'en-US' : 'ru-RU'
+  return (kopecks / 100).toLocaleString(tag) + ' ₽'
 }
 </script>
 
@@ -171,13 +177,13 @@ function formatPrice(kopecks) {
       <div>
         <button class="back-link" @click="router.push({ name: 'dashboard' })">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Назад
+          {{ $t('common.back') }}
         </button>
-        <h1 v-if="rest">Меню: {{ rest.name }}</h1>
+        <h1 v-if="rest">{{ $t('menu.title', { name: rest.name }) }}</h1>
       </div>
       <button class="btn btn-primary" @click="openCatForm()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        Добавить категорию
+        {{ $t('menu.addCategory') }}
       </button>
     </div>
 
@@ -186,16 +192,16 @@ function formatPrice(kopecks) {
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round">
         <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
       </svg>
-      <input v-model="searchQuery" class="search-input" placeholder="Поиск блюд..." />
+      <input v-model="searchQuery" class="search-input" :placeholder="$t('menu.searchPlaceholder')" />
       <button v-if="searchQuery" class="search-clear" @click="searchQuery = ''">×</button>
     </div>
 
-    <div v-if="loading" class="loading">Загрузка...</div>
+    <div v-if="loading" class="loading">{{ $t('common.loading') }}</div>
 
     <!-- Empty -->
     <div class="empty card" v-else-if="cats.length === 0">
-      <p>Добавьте первую категорию, например «Супы» или «Горячее»</p>
-      <button class="btn btn-primary" @click="openCatForm()">Добавить категорию</button>
+      <p>{{ $t('menu.emptyHint') }}</p>
+      <button class="btn btn-primary" @click="openCatForm()">{{ $t('menu.addCategory') }}</button>
     </div>
 
     <!-- Categories -->
@@ -204,13 +210,13 @@ function formatPrice(kopecks) {
         <div class="cat-header">
           <h3>{{ cat.name }}</h3>
           <div class="cat-actions">
-            <button class="icon-btn" title="Добавить позицию" @click="openItemForm(cat.id)">
+            <button class="icon-btn" :title="$t('menu.addItemTitle')" @click="openItemForm(cat.id)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
             </button>
-            <button class="icon-btn" title="Редактировать" @click="openCatForm(cat)">
+            <button class="icon-btn" :title="$t('common.edit')" @click="openCatForm(cat)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             </button>
-            <button class="icon-btn danger" title="Удалить" @click="deleteCat(cat.id)">
+            <button class="icon-btn danger" :title="$t('common.delete')" @click="deleteCat(cat.id)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
             </button>
           </div>
@@ -224,11 +230,11 @@ function formatPrice(kopecks) {
             <div class="item-info">
               <span class="item-name">{{ item.name }}</span>
               <span class="item-desc" v-if="item.description">{{ item.description }}</span>
-              <span class="item-badge-off" v-if="!item.available">Нет в наличии</span>
+              <span class="item-badge-off" v-if="!item.available">{{ $t('menu.notAvailable') }}</span>
             </div>
             <div class="item-price">{{ formatPrice(item.price) }}</div>
             <div class="item-actions">
-              <button class="icon-btn-sm" :class="item.available ? 'available' : 'unavailable'" :title="item.available ? 'Убрать из меню' : 'Вернуть в меню'" @click="toggleAvailable(item)">
+              <button class="icon-btn-sm" :class="item.available ? 'available' : 'unavailable'" :title="item.available ? $t('menu.hideFromMenu') : $t('menu.showInMenu')" @click="toggleAvailable(item)">
                 <svg v-if="item.available" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
                 <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
               </button>
@@ -244,7 +250,7 @@ function formatPrice(kopecks) {
 
         <div class="empty-items" v-else>
           <button class="btn btn-outline btn-sm" @click="openItemForm(cat.id)">
-            Добавить первую позицию
+            {{ $t('menu.addFirstItem') }}
           </button>
         </div>
       </div>
@@ -253,19 +259,23 @@ function formatPrice(kopecks) {
     <!-- Category modal -->
     <div class="modal-overlay" v-if="showCatForm" @click.self="showCatForm = false">
       <div class="modal card">
-        <h2>{{ editingCatId ? 'Редактировать категорию' : 'Новая категория' }}</h2>
+        <h2>{{ editingCatId ? $t('menu.editCategory') : $t('menu.newCategory') }}</h2>
         <form @submit.prevent="saveCat">
           <div class="field">
-            <label class="label">Название</label>
-            <input v-model="catForm.name" class="input" placeholder="Супы" required />
+            <label class="label">{{ $t('common.title') }} <span class="lang-tag">RU</span></label>
+            <input v-model="catForm.name" class="input" :placeholder="$t('menu.catNamePlaceholder')" required />
           </div>
           <div class="field">
-            <label class="label">Порядок сортировки</label>
+            <label class="label">{{ $t('common.title') }} <span class="lang-tag">EN</span></label>
+            <input v-model="catForm.name_en" class="input" placeholder="Soups" />
+          </div>
+          <div class="field">
+            <label class="label">{{ $t('common.sortOrder') }}</label>
             <input v-model.number="catForm.sort_order" type="number" class="input" />
           </div>
           <div class="modal-actions">
-            <button type="button" class="btn btn-outline" @click="showCatForm = false">Отмена</button>
-            <button type="submit" class="btn btn-primary" :disabled="savingCat">{{ savingCat ? 'Сохранение...' : 'Сохранить' }}</button>
+            <button type="button" class="btn btn-outline" @click="showCatForm = false">{{ $t('common.cancel') }}</button>
+            <button type="submit" class="btn btn-primary" :disabled="savingCat">{{ savingCat ? $t('common.saving') : $t('common.save') }}</button>
           </div>
         </form>
       </div>
@@ -274,10 +284,10 @@ function formatPrice(kopecks) {
     <!-- Item modal -->
     <div class="modal-overlay" v-if="showItemForm" @click.self="showItemForm = false">
       <div class="modal card">
-        <h2>{{ editingItemId ? 'Редактировать позицию' : 'Новая позиция' }}</h2>
+        <h2>{{ editingItemId ? $t('menu.editItem') : $t('menu.newItem') }}</h2>
         <form @submit.prevent="saveItem">
           <div class="field">
-            <label class="label">Фото блюда</label>
+            <label class="label">{{ $t('menu.itemImage') }}</label>
             <div class="upload-area">
               <div class="img-preview" v-if="itemForm.image">
                 <img :src="imageUrl(itemForm.image)" alt="" />
@@ -286,67 +296,79 @@ function formatPrice(kopecks) {
               <label class="upload-btn" v-else>
                 <input type="file" accept="image/*" hidden @change="handleItemImage" />
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-                {{ uploadingItemImage ? 'Загрузка...' : 'Загрузить фото' }}
+                {{ uploadingItemImage ? $t('restaurant.uploading') : $t('menu.itemImageUpload') }}
               </label>
             </div>
           </div>
           <div class="field">
-            <label class="label">Название</label>
-            <input v-model="itemForm.name" class="input" placeholder="Том Ям" required />
+            <label class="label">{{ $t('menu.itemNameLabel') }} <span class="lang-tag">RU</span></label>
+            <input v-model="itemForm.name" class="input" :placeholder="$t('menu.itemNamePlaceholder')" required />
           </div>
           <div class="field">
-            <label class="label">Описание</label>
-            <input v-model="itemForm.description" class="input" placeholder="с креветками, 350 мл" />
+            <label class="label">{{ $t('menu.itemNameLabel') }} <span class="lang-tag">EN</span></label>
+            <input v-model="itemForm.name_en" class="input" placeholder="Tom Yum" />
+          </div>
+          <div class="field">
+            <label class="label">{{ $t('menu.itemDescLabel') }} <span class="lang-tag">RU</span></label>
+            <input v-model="itemForm.description" class="input" :placeholder="$t('menu.itemDescPlaceholder')" />
+          </div>
+          <div class="field">
+            <label class="label">{{ $t('menu.itemDescLabel') }} <span class="lang-tag">EN</span></label>
+            <input v-model="itemForm.description_en" class="input" placeholder="with shrimp, 350 ml" />
           </div>
           <div class="row">
             <div class="field">
-              <label class="label">Цена (₽)</label>
+              <label class="label">{{ $t('menu.priceLabel') }}</label>
               <input v-model="itemForm.price" type="number" step="0.01" min="0" class="input" placeholder="890" required />
             </div>
             <div class="field">
-              <label class="label">Порядок</label>
+              <label class="label">{{ $t('common.order') }}</label>
               <input v-model.number="itemForm.sort_order" type="number" class="input" />
             </div>
           </div>
 
           <div class="divider"></div>
-          <div class="section-label">Подробности (необязательно)</div>
+          <div class="section-label">{{ $t('menu.detailsSection') }}</div>
 
           <div class="field">
-            <label class="label">Ингредиенты</label>
-            <textarea v-model="itemForm.ingredients" class="input textarea" rows="2" placeholder="Креветки, кокосовое молоко, лемонграсс..."></textarea>
+            <label class="label">{{ $t('menu.ingredientsLabel') }} <span class="lang-tag">RU</span></label>
+            <textarea v-model="itemForm.ingredients" class="input textarea" rows="2" :placeholder="$t('menu.ingredientsPlaceholder')"></textarea>
+          </div>
+          <div class="field">
+            <label class="label">{{ $t('menu.ingredientsLabel') }} <span class="lang-tag">EN</span></label>
+            <textarea v-model="itemForm.ingredients_en" class="input textarea" rows="2" placeholder="Shrimp, coconut milk, lemongrass..."></textarea>
           </div>
           <div class="row">
             <div class="field">
-              <label class="label">Граммовка</label>
-              <input v-model="itemForm.weight" class="input" placeholder="350 г" />
+              <label class="label">{{ $t('menu.weightLabel') }}</label>
+              <input v-model="itemForm.weight" class="input" :placeholder="$t('menu.weightPlaceholder')" />
             </div>
             <div class="field">
-              <label class="label">Время готовки</label>
-              <input v-model="itemForm.cook_time" class="input" placeholder="15 мин" />
+              <label class="label">{{ $t('menu.cookTimeLabel') }}</label>
+              <input v-model="itemForm.cook_time" class="input" :placeholder="$t('menu.cookTimePlaceholder')" />
             </div>
           </div>
           <div class="row row-4">
             <div class="field">
-              <label class="label">Ккал</label>
+              <label class="label">{{ $t('menu.caloriesLabel') }}</label>
               <input v-model="itemForm.calories" type="number" min="0" class="input" placeholder="320" />
             </div>
             <div class="field">
-              <label class="label">Белки</label>
+              <label class="label">{{ $t('menu.proteinsLabel') }}</label>
               <input v-model="itemForm.proteins" type="number" step="0.1" min="0" class="input" placeholder="12" />
             </div>
             <div class="field">
-              <label class="label">Жиры</label>
+              <label class="label">{{ $t('menu.fatsLabel') }}</label>
               <input v-model="itemForm.fats" type="number" step="0.1" min="0" class="input" placeholder="8" />
             </div>
             <div class="field">
-              <label class="label">Углев.</label>
+              <label class="label">{{ $t('menu.carbsLabel') }}</label>
               <input v-model="itemForm.carbs" type="number" step="0.1" min="0" class="input" placeholder="45" />
             </div>
           </div>
           <div class="modal-actions">
-            <button type="button" class="btn btn-outline" @click="showItemForm = false">Отмена</button>
-            <button type="submit" class="btn btn-primary" :disabled="savingItem">{{ savingItem ? 'Сохранение...' : 'Сохранить' }}</button>
+            <button type="button" class="btn btn-outline" @click="showItemForm = false">{{ $t('common.cancel') }}</button>
+            <button type="submit" class="btn btn-primary" :disabled="savingItem">{{ savingItem ? $t('common.saving') : $t('common.save') }}</button>
           </div>
         </form>
       </div>
@@ -614,6 +636,20 @@ function formatPrice(kopecks) {
 
 .row-4 {
   grid-template-columns: repeat(4, 1fr);
+}
+
+.lang-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  vertical-align: middle;
+  letter-spacing: 0.3px;
 }
 
 .divider {
