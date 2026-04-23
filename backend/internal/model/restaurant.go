@@ -6,8 +6,10 @@ type Restaurant struct {
 	ID               int64     `json:"id" db:"id"`
 	UserID           int64     `json:"user_id" db:"user_id"`
 	Name             string    `json:"name" db:"name"`
+	NameEN           *string   `json:"name_en" db:"name_en"`
 	Slug             string    `json:"slug" db:"slug"`
 	Description      *string   `json:"description" db:"description"`
+	DescriptionEN    *string   `json:"description_en" db:"description_en"`
 	Logo             *string   `json:"logo" db:"logo"`
 	CoverImage       *string   `json:"cover_image" db:"cover_image"`
 	Phone            *string   `json:"phone" db:"phone"`
@@ -22,8 +24,10 @@ type Restaurant struct {
 
 type CreateRestaurantRequest struct {
 	Name             string `json:"name" binding:"required"`
+	NameEN           string `json:"name_en"`
 	Slug             string `json:"slug" binding:"required"`
 	Description      string `json:"description"`
+	DescriptionEN    string `json:"description_en"`
 	Phone            string `json:"phone"`
 	Address          string `json:"address"`
 	WorkingHours     string `json:"working_hours"`
@@ -36,8 +40,10 @@ type CreateRestaurantRequest struct {
 
 type UpdateRestaurantRequest struct {
 	Name             *string `json:"name"`
+	NameEN           *string `json:"name_en"`
 	Slug             *string `json:"slug"`
 	Description      *string `json:"description"`
+	DescriptionEN    *string `json:"description_en"`
 	Logo             *string `json:"logo"`
 	Phone            *string `json:"phone"`
 	Address          *string `json:"address"`

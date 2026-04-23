@@ -16,8 +16,8 @@ func NewCategoryRepo(db *sqlx.DB) *CategoryRepo {
 func (r *CategoryRepo) Create(restaurantID int64, req *model.CreateCategoryRequest) (*model.Category, error) {
 	cat := &model.Category{}
 	err := r.db.QueryRowx(
-		`INSERT INTO categories (restaurant_id, name, sort_order) VALUES ($1, $2, $3) RETURNING *`,
-		restaurantID, req.Name, req.SortOrder,
+		`INSERT INTO categories (restaurant_id, name, name_en, sort_order) VALUES ($1, $2, $3, $4) RETURNING *`,
+		restaurantID, req.Name, nullStr(req.NameEN), req.SortOrder,
 	).StructScan(cat)
 	return cat, err
 }
@@ -40,9 +40,10 @@ func (r *CategoryRepo) Update(id int64, req *model.UpdateCategoryRequest) (*mode
 	err := r.db.QueryRowx(
 		`UPDATE categories SET
 			name = COALESCE($2, name),
-			sort_order = COALESCE($3, sort_order)
+			name_en = COALESCE($3, name_en),
+			sort_order = COALESCE($4, sort_order)
 		 WHERE id = $1 RETURNING *`,
-		id, req.Name, req.SortOrder,
+		id, req.Name, req.NameEN, req.SortOrder,
 	).StructScan(cat)
 	return cat, err
 }

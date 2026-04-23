@@ -16,11 +16,12 @@ func NewRestaurantRepo(db *sqlx.DB) *RestaurantRepo {
 func (r *RestaurantRepo) Create(userID int64, req *model.CreateRestaurantRequest) (*model.Restaurant, error) {
 	rest := &model.Restaurant{}
 	err := r.db.QueryRowx(
-		`INSERT INTO restaurants (user_id, name, slug, description, phone, address, working_hours, theme, cover_image, promo_title, promo_description, social_links)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, COALESCE(NULLIF($8,''), 'default'), $9, $10, $11, COALESCE(NULLIF($12,'')::jsonb, '[]'))
+		`INSERT INTO restaurants (user_id, name, name_en, slug, description, description_en, phone, address, working_hours, theme, cover_image, promo_title, promo_description, social_links)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, COALESCE(NULLIF($10,''), 'default'), $11, $12, $13, COALESCE(NULLIF($14,'')::jsonb, '[]'))
 		 RETURNING *`,
-		userID, req.Name, req.Slug, nullStr(req.Description), nullStr(req.Phone),
-		nullStr(req.Address), nullStr(req.WorkingHours), req.Theme,
+		userID, req.Name, nullStr(req.NameEN), req.Slug,
+		nullStr(req.Description), nullStr(req.DescriptionEN),
+		nullStr(req.Phone), nullStr(req.Address), nullStr(req.WorkingHours), req.Theme,
 		nullStr(req.CoverImage), nullStr(req.PromoTitle), nullStr(req.PromoDescription),
 		nullStr(req.SocialLinks),
 	).StructScan(rest)
@@ -56,20 +57,25 @@ func (r *RestaurantRepo) Update(id int64, req *model.UpdateRestaurantRequest) (*
 	err := r.db.QueryRowx(
 		`UPDATE restaurants SET
 			name = COALESCE($2, name),
-			slug = COALESCE($3, slug),
-			description = COALESCE($4, description),
-			logo = COALESCE($5, logo),
-			phone = COALESCE($6, phone),
-			address = COALESCE($7, address),
-			working_hours = COALESCE($8, working_hours),
-			theme = COALESCE($9, theme),
-			cover_image = COALESCE($10, cover_image),
-			promo_title = COALESCE($11, promo_title),
-			promo_description = COALESCE($12, promo_description),
-			social_links = COALESCE($13::jsonb, social_links)
+			name_en = COALESCE($3, name_en),
+			slug = COALESCE($4, slug),
+			description = COALESCE($5, description),
+			description_en = COALESCE($6, description_en),
+			logo = COALESCE($7, logo),
+			phone = COALESCE($8, phone),
+			address = COALESCE($9, address),
+			working_hours = COALESCE($10, working_hours),
+			theme = COALESCE($11, theme),
+			cover_image = COALESCE($12, cover_image),
+			promo_title = COALESCE($13, promo_title),
+			promo_description = COALESCE($14, promo_description),
+			social_links = COALESCE($15::jsonb, social_links)
 		 WHERE id = $1 RETURNING *`,
-		id, emptyPtrToNil(req.Name), emptyPtrToNil(req.Slug),
-		emptyPtrToNil(req.Description), emptyPtrToNil(req.Logo),
+		id,
+		emptyPtrToNil(req.Name), req.NameEN,
+		emptyPtrToNil(req.Slug),
+		emptyPtrToNil(req.Description), req.DescriptionEN,
+		emptyPtrToNil(req.Logo),
 		emptyPtrToNil(req.Phone), emptyPtrToNil(req.Address),
 		emptyPtrToNil(req.WorkingHours), emptyPtrToNil(req.Theme),
 		emptyPtrToNil(req.CoverImage), emptyPtrToNil(req.PromoTitle),

@@ -20,11 +20,15 @@ func (r *MenuItemRepo) Create(categoryID int64, req *model.CreateMenuItemRequest
 	}
 	item := &model.MenuItem{}
 	err := r.db.QueryRowx(
-		`INSERT INTO menu_items (category_id, name, description, price, image, available, sort_order, ingredients, weight, calories, proteins, fats, carbs, cook_time)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`,
-		categoryID, req.Name, nullStr(req.Description), req.Price,
+		`INSERT INTO menu_items (category_id, name, name_en, description, description_en, price, image, available, sort_order, ingredients, ingredients_en, weight, calories, proteins, fats, carbs, cook_time)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *`,
+		categoryID,
+		req.Name, nullStr(req.NameEN),
+		nullStr(req.Description), nullStr(req.DescriptionEN),
+		req.Price,
 		nullStr(req.Image), available, req.SortOrder,
-		nullStr(req.Ingredients), nullStr(req.Weight), req.Calories, req.Proteins, req.Fats, req.Carbs, nullStr(req.CookTime),
+		nullStr(req.Ingredients), nullStr(req.IngredientsEN),
+		nullStr(req.Weight), req.Calories, req.Proteins, req.Fats, req.Carbs, nullStr(req.CookTime),
 	).StructScan(item)
 	return item, err
 }
@@ -57,21 +61,28 @@ func (r *MenuItemRepo) Update(id int64, req *model.UpdateMenuItemRequest) (*mode
 	err := r.db.QueryRowx(
 		`UPDATE menu_items SET
 			name = COALESCE($2, name),
-			description = COALESCE($3, description),
-			price = COALESCE($4, price),
-			image = COALESCE($5, image),
-			available = COALESCE($6, available),
-			sort_order = COALESCE($7, sort_order),
-			ingredients = COALESCE($8, ingredients),
-			weight = COALESCE($9, weight),
-			calories = COALESCE($10, calories),
-			proteins = COALESCE($11, proteins),
-			fats = COALESCE($12, fats),
-			carbs = COALESCE($13, carbs),
-			cook_time = COALESCE($14, cook_time)
+			name_en = COALESCE($3, name_en),
+			description = COALESCE($4, description),
+			description_en = COALESCE($5, description_en),
+			price = COALESCE($6, price),
+			image = COALESCE($7, image),
+			available = COALESCE($8, available),
+			sort_order = COALESCE($9, sort_order),
+			ingredients = COALESCE($10, ingredients),
+			ingredients_en = COALESCE($11, ingredients_en),
+			weight = COALESCE($12, weight),
+			calories = COALESCE($13, calories),
+			proteins = COALESCE($14, proteins),
+			fats = COALESCE($15, fats),
+			carbs = COALESCE($16, carbs),
+			cook_time = COALESCE($17, cook_time)
 		 WHERE id = $1 RETURNING *`,
-		id, req.Name, req.Description, req.Price, req.Image, req.Available, req.SortOrder,
-		req.Ingredients, req.Weight, req.Calories, req.Proteins, req.Fats, req.Carbs, req.CookTime,
+		id,
+		req.Name, req.NameEN,
+		req.Description, req.DescriptionEN,
+		req.Price, req.Image, req.Available, req.SortOrder,
+		req.Ingredients, req.IngredientsEN,
+		req.Weight, req.Calories, req.Proteins, req.Fats, req.Carbs, req.CookTime,
 	).StructScan(item)
 	return item, err
 }

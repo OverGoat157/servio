@@ -21,9 +21,12 @@ func (r *ComboRepo) Create(restaurantID int64, req *model.CreateComboRequest) (*
 	}
 	combo := &model.Combo{}
 	err := r.db.QueryRowx(
-		`INSERT INTO combos (restaurant_id, name, description, image, price, available, sort_order)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-		restaurantID, req.Name, nullStr(req.Description), nullStr(req.Image),
+		`INSERT INTO combos (restaurant_id, name, name_en, description, description_en, image, price, available, sort_order)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+		restaurantID,
+		req.Name, nullStr(req.NameEN),
+		nullStr(req.Description), nullStr(req.DescriptionEN),
+		nullStr(req.Image),
 		req.Price, available, req.SortOrder,
 	).StructScan(combo)
 	if err != nil {
@@ -36,8 +39,8 @@ func (r *ComboRepo) Create(restaurantID int64, req *model.CreateComboRequest) (*
 			qty = 1
 		}
 		_, err := r.db.Exec(
-			`INSERT INTO combo_items (combo_id, menu_item_id, name, quantity) VALUES ($1, $2, $3, $4)`,
-			combo.ID, ci.MenuItemID, ci.Name, qty,
+			`INSERT INTO combo_items (combo_id, menu_item_id, name, name_en, quantity) VALUES ($1, $2, $3, $4, $5)`,
+			combo.ID, ci.MenuItemID, ci.Name, nullStr(ci.NameEN), qty,
 		)
 		if err != nil {
 			return nil, err
@@ -71,13 +74,18 @@ func (r *ComboRepo) Update(id int64, req *model.UpdateComboRequest) (*model.Comb
 	err := r.db.QueryRowx(
 		`UPDATE combos SET
 			name = COALESCE($2, name),
-			description = COALESCE($3, description),
-			image = COALESCE($4, image),
-			price = COALESCE($5, price),
-			available = COALESCE($6, available),
-			sort_order = COALESCE($7, sort_order)
+			name_en = COALESCE($3, name_en),
+			description = COALESCE($4, description),
+			description_en = COALESCE($5, description_en),
+			image = COALESCE($6, image),
+			price = COALESCE($7, price),
+			available = COALESCE($8, available),
+			sort_order = COALESCE($9, sort_order)
 		 WHERE id = $1 RETURNING *`,
-		id, req.Name, req.Description, req.Image, req.Price, req.Available, req.SortOrder,
+		id,
+		req.Name, req.NameEN,
+		req.Description, req.DescriptionEN,
+		req.Image, req.Price, req.Available, req.SortOrder,
 	).StructScan(combo)
 	if err != nil {
 		return nil, err
@@ -92,8 +100,8 @@ func (r *ComboRepo) Update(id int64, req *model.UpdateComboRequest) (*model.Comb
 				qty = 1
 			}
 			r.db.Exec(
-				`INSERT INTO combo_items (combo_id, menu_item_id, name, quantity) VALUES ($1, $2, $3, $4)`,
-				id, ci.MenuItemID, ci.Name, qty,
+				`INSERT INTO combo_items (combo_id, menu_item_id, name, name_en, quantity) VALUES ($1, $2, $3, $4, $5)`,
+				id, ci.MenuItemID, ci.Name, nullStr(ci.NameEN), qty,
 			)
 		}
 	}
