@@ -134,32 +134,38 @@ func NewPublicHandler(
 
 // MenuCategory — категория с позициями для публичного API
 type MenuCategory struct {
-	ID    int64            `json:"id"`
-	Name  string           `json:"name"`
-	Items []PublicMenuItem `json:"items"`
+	ID     int64            `json:"id"`
+	Name   string           `json:"name"`
+	NameEN *string          `json:"name_en"`
+	Items  []PublicMenuItem `json:"items"`
 }
 
 type PublicMenuItem struct {
-	ID          int64    `json:"id"`
-	Name        string   `json:"name"`
-	Description *string  `json:"description"`
-	Price       int      `json:"price"`
-	Image       *string  `json:"image"`
-	Available   bool     `json:"available"`
-	Ingredients *string  `json:"ingredients"`
-	Weight      *string  `json:"weight"`
-	Calories    *int     `json:"calories"`
-	Proteins    *float64 `json:"proteins"`
-	Fats        *float64 `json:"fats"`
-	Carbs       *float64 `json:"carbs"`
-	CookTime    *string  `json:"cook_time"`
+	ID            int64    `json:"id"`
+	Name          string   `json:"name"`
+	NameEN        *string  `json:"name_en"`
+	Description   *string  `json:"description"`
+	DescriptionEN *string  `json:"description_en"`
+	Price         int      `json:"price"`
+	Image         *string  `json:"image"`
+	Available     bool     `json:"available"`
+	Ingredients   *string  `json:"ingredients"`
+	IngredientsEN *string  `json:"ingredients_en"`
+	Weight        *string  `json:"weight"`
+	Calories      *int     `json:"calories"`
+	Proteins      *float64 `json:"proteins"`
+	Fats          *float64 `json:"fats"`
+	Carbs         *float64 `json:"carbs"`
+	CookTime      *string  `json:"cook_time"`
 }
 
 type PublicRestaurant struct {
 	ID               int64           `json:"id"`
 	Name             string          `json:"name"`
+	NameEN           *string         `json:"name_en"`
 	Slug             string          `json:"slug"`
 	Description      *string         `json:"description"`
+	DescriptionEN    *string         `json:"description_en"`
 	Logo             *string         `json:"logo"`
 	CoverImage       *string         `json:"cover_image"`
 	Phone            *string         `json:"phone"`
@@ -178,18 +184,21 @@ type PublicRestaurant struct {
 }
 
 type PublicCombo struct {
-	ID          int64            `json:"id"`
-	Name        string           `json:"name"`
-	Description *string          `json:"description"`
-	Image       *string          `json:"image"`
-	Price       int              `json:"price"`
-	Available   bool             `json:"available"`
-	Items       []PublicComboItem `json:"items"`
+	ID            int64             `json:"id"`
+	Name          string            `json:"name"`
+	NameEN        *string           `json:"name_en"`
+	Description   *string           `json:"description"`
+	DescriptionEN *string           `json:"description_en"`
+	Image         *string           `json:"image"`
+	Price         int               `json:"price"`
+	Available     bool              `json:"available"`
+	Items         []PublicComboItem `json:"items"`
 }
 
 type PublicComboItem struct {
-	Name     string `json:"name"`
-	Quantity int    `json:"quantity"`
+	Name     string  `json:"name"`
+	NameEN   *string `json:"name_en"`
+	Quantity int     `json:"quantity"`
 }
 
 // GetMenu возвращает полное меню ресторана по slug
@@ -220,25 +229,29 @@ func (h *PublicHandler) GetMenu(c *gin.Context) {
 		var pubItems []PublicMenuItem
 		for _, item := range items {
 			pubItems = append(pubItems, PublicMenuItem{
-				ID:          item.ID,
-				Name:        item.Name,
-				Description: item.Description,
-				Price:       item.Price,
-				Image:       item.Image,
-				Available:   item.Available,
-				Ingredients: item.Ingredients,
-				Weight:      item.Weight,
-				Calories:    item.Calories,
-				Proteins:    item.Proteins,
-				Fats:        item.Fats,
-				Carbs:       item.Carbs,
-				CookTime:    item.CookTime,
+				ID:            item.ID,
+				Name:          item.Name,
+				NameEN:        item.NameEN,
+				Description:   item.Description,
+				DescriptionEN: item.DescriptionEN,
+				Price:         item.Price,
+				Image:         item.Image,
+				Available:     item.Available,
+				Ingredients:   item.Ingredients,
+				IngredientsEN: item.IngredientsEN,
+				Weight:        item.Weight,
+				Calories:      item.Calories,
+				Proteins:      item.Proteins,
+				Fats:          item.Fats,
+				Carbs:         item.Carbs,
+				CookTime:      item.CookTime,
 			})
 		}
 		menuCats = append(menuCats, MenuCategory{
-			ID:    cat.ID,
-			Name:  cat.Name,
-			Items: pubItems,
+			ID:     cat.ID,
+			Name:   cat.Name,
+			NameEN: cat.NameEN,
+			Items:  pubItems,
 		})
 	}
 
@@ -251,6 +264,7 @@ func (h *PublicHandler) GetMenu(c *gin.Context) {
 		for _, ci := range items {
 			pubItems = append(pubItems, PublicComboItem{
 				Name:     ci.Name,
+				NameEN:   ci.NameEN,
 				Quantity: ci.Quantity,
 			})
 		}
@@ -258,13 +272,15 @@ func (h *PublicHandler) GetMenu(c *gin.Context) {
 			pubItems = []PublicComboItem{}
 		}
 		pubCombos = append(pubCombos, PublicCombo{
-			ID:          combo.ID,
-			Name:        combo.Name,
-			Description: combo.Description,
-			Image:       combo.Image,
-			Price:       combo.Price,
-			Available:   combo.Available,
-			Items:       pubItems,
+			ID:            combo.ID,
+			Name:          combo.Name,
+			NameEN:        combo.NameEN,
+			Description:   combo.Description,
+			DescriptionEN: combo.DescriptionEN,
+			Image:         combo.Image,
+			Price:         combo.Price,
+			Available:     combo.Available,
+			Items:         pubItems,
 		})
 	}
 
@@ -282,8 +298,10 @@ func (h *PublicHandler) GetMenu(c *gin.Context) {
 	pub := PublicRestaurant{
 		ID:               rest.ID,
 		Name:             rest.Name,
+		NameEN:           rest.NameEN,
 		Slug:             rest.Slug,
 		Description:      rest.Description,
+		DescriptionEN:    rest.DescriptionEN,
 		Logo:             rest.Logo,
 		CoverImage:       rest.CoverImage,
 		Phone:            rest.Phone,
