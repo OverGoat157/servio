@@ -611,11 +611,14 @@ function formatPrice(kopecks) {
   justify-content: center;
   z-index: 200;
   padding: 24px;
+  overflow-y: auto;
 }
 
 .modal {
   width: 100%;
   max-width: 440px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
 }
 
 .modal h2 {
@@ -752,5 +755,33 @@ function formatPrice(kopecks) {
 
 .img-remove:hover {
   background: rgba(220,38,38,0.8);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .page {
+    padding: 20px 14px;
+  }
+  .page-header {
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .row {
+    grid-template-columns: 1fr;
+  }
+  .row-4 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .modal-overlay {
+    padding: 12px;
+    align-items: flex-start;
+  }
+  .modal {
+    max-height: calc(100vh - 24px);
+  }
+  .item-row {
+    flex-wrap: wrap;
+  }
 }
 </style>

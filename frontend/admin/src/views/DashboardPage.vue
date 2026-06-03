@@ -182,11 +182,14 @@ async function deleteRestaurant(id) {
   justify-content: center;
   z-index: 200;
   padding: 24px;
+  overflow-y: auto;
 }
 
 .modal {
   width: 100%;
   max-width: 440px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
 }
 
 .modal h2 {
@@ -319,5 +322,28 @@ async function deleteRestaurant(id) {
 .delete-btn:hover {
   background: #FEE2E2;
   border-radius: var(--radius);
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 20px 14px;
+  }
+  .page-header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .page-header h1 {
+    font-size: 20px;
+  }
+  .rest-grid {
+    grid-template-columns: 1fr;
+  }
+  .modal-overlay {
+    padding: 12px;
+    align-items: flex-start;
+  }
+  .modal {
+    max-height: calc(100vh - 24px);
+  }
 }
 </style>

@@ -248,4 +248,21 @@ async function changeStatus(orderId, status) {
   max-width: 200px;
   padding: 8px 12px;
 }
+
+@media (max-width: 600px) {
+  .page {
+    padding: 20px 14px;
+  }
+  .order-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .order-meta {
+    flex-wrap: wrap;
+  }
+  .status-select {
+    max-width: 100%;
+    width: 100%;
+  }
+}
 </style>

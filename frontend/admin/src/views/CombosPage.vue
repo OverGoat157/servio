@@ -588,4 +588,28 @@ function formatPrice(kopecks) {
   cursor: pointer;
   border: none;
 }
+
+@media (max-width: 600px) {
+  .page {
+    padding: 20px 14px;
+  }
+  .page-header {
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .row {
+    grid-template-columns: 1fr;
+  }
+  .modal-overlay {
+    padding: 12px;
+    align-items: flex-start;
+  }
+  .modal {
+    max-height: calc(100vh - 24px);
+  }
+  .combo-qty {
+    width: 44px;
+  }
+}
 </style>

@@ -364,11 +364,14 @@ function formatDate(d) {
   justify-content: center;
   z-index: 200;
   padding: 24px;
+  overflow-y: auto;
 }
 
 .modal {
   width: 100%;
   max-width: 480px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
 }
 
 .modal h2 {
@@ -402,5 +405,36 @@ function formatDate(d) {
   gap: 10px;
   justify-content: flex-end;
   margin-top: 20px;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 20px 14px;
+  }
+  .page-header {
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .page-header h1 {
+    font-size: 20px;
+  }
+  .table {
+    font-size: 13px;
+  }
+  .table th,
+  .table td {
+    padding: 8px 6px;
+  }
+  .row {
+    grid-template-columns: 1fr;
+  }
+  .modal-overlay {
+    padding: 12px;
+    align-items: flex-start;
+  }
+  .modal {
+    max-height: calc(100vh - 24px);
+  }
 }
 </style>

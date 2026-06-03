@@ -779,8 +779,14 @@ async function save() {
 }
 
 @media (max-width: 640px) {
+  .page {
+    padding: 20px 14px;
+  }
   .row {
     grid-template-columns: 1fr;
+  }
+  .form-card {
+    padding: 20px 16px;
   }
 }
 </style>

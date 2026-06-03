@@ -438,4 +438,16 @@ async function deleteConfig(type) {
 .info-item strong {
   color: var(--text);
 }
+
+@media (max-width: 600px) {
+  .page {
+    padding: 20px 14px;
+  }
+  .section {
+    padding: 18px 14px;
+  }
+  .section-header {
+    flex-wrap: wrap;
+  }
+}
 </style>

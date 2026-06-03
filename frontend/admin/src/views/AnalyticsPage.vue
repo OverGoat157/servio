@@ -317,6 +317,9 @@ const conversionRate = computed(() => {
 }
 
 @media (max-width: 640px) {
+  .page {
+    padding: 20px 14px;
+  }
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }

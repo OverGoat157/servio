@@ -195,4 +195,30 @@ function tierLabel(tier) {
 .with-nav {
   padding-top: 56px;
 }
+
+@media (max-width: 700px) {
+  .nav-inner {
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .nav-brand span {
+    display: none;
+  }
+  .nav-right {
+    gap: 8px;
+  }
+  .nav-link {
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+  .nav-user {
+    display: none;
+  }
+  .nav-logout {
+    font-size: 13px;
+  }
+  .lang-switch button {
+    padding: 3px 7px;
+  }
+}
 </style>
