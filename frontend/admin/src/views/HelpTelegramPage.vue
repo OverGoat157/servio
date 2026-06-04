@@ -300,5 +300,24 @@ a {
 .bottom-link {
   display: inline-flex;
   margin-top: 8px;
+  color: #fff;
+  text-decoration: none;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 20px 14px 80px;
+  }
+  .step {
+    padding: 18px 16px;
+    gap: 14px;
+  }
+  .faq {
+    padding: 18px 16px;
+  }
+  .bottom-link {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>

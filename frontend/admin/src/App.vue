@@ -42,8 +42,14 @@ function tierLabel(tier) {
         <span>{{ $t('nav.brand') }}</span>
       </router-link>
       <div class="nav-right">
-        <router-link v-if="user?.role === 'admin'" to="/admin/analytics" class="nav-link">{{ $t('nav.analytics') }}</router-link>
-        <router-link v-if="user?.role === 'admin'" to="/admin/users" class="nav-link">{{ $t('nav.users') }}</router-link>
+        <router-link v-if="user?.role === 'admin'" to="/admin/analytics" class="nav-link" :title="$t('nav.analytics')">
+          <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
+          <span class="nav-link-text">{{ $t('nav.analytics') }}</span>
+        </router-link>
+        <router-link v-if="user?.role === 'admin'" to="/admin/users" class="nav-link" :title="$t('nav.users')">
+          <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          <span class="nav-link-text">{{ $t('nav.users') }}</span>
+        </router-link>
         <div class="lang-switch" :title="$t('common.language')">
           <button :class="{ active: locale === 'ru' }" @click="switchLocale('ru')">RU</button>
           <button :class="{ active: locale === 'en' }" @click="switchLocale('en')">EN</button>
@@ -52,7 +58,10 @@ function tierLabel(tier) {
           {{ user.name }}
           <span v-if="user.role !== 'admin'" class="tier-chip" :class="user.tier || 'basic'">{{ tierLabel(user.tier) }}</span>
         </span>
-        <button class="nav-logout" @click="handleLogout">{{ $t('nav.logout') }}</button>
+        <button class="nav-logout" @click="handleLogout" :title="$t('nav.logout')">
+          <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+          <span class="nav-link-text">{{ $t('nav.logout') }}</span>
+        </button>
       </div>
     </div>
   </nav>
@@ -111,6 +120,9 @@ function tierLabel(tier) {
 }
 
 .nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 14px;
   font-weight: 500;
   color: var(--primary);
@@ -121,6 +133,10 @@ function tierLabel(tier) {
 
 .nav-link:hover {
   background: var(--primary-light);
+}
+
+.nav-icon {
+  flex-shrink: 0;
 }
 
 .lang-switch {
@@ -187,9 +203,19 @@ function tierLabel(tier) {
 }
 
 .nav-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 14px;
   color: var(--danger);
   font-weight: 500;
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  transition: background 0.2s;
+}
+
+.nav-logout:hover {
+  background: #FEE2E2;
 }
 
 .with-nav {
@@ -199,23 +225,23 @@ function tierLabel(tier) {
 @media (max-width: 700px) {
   .nav-inner {
     padding: 0 12px;
-    gap: 8px;
+    gap: 6px;
   }
   .nav-brand span {
     display: none;
   }
   .nav-right {
-    gap: 8px;
+    gap: 4px;
   }
-  .nav-link {
+  .nav-link,
+  .nav-logout {
     padding: 6px 8px;
-    font-size: 13px;
+  }
+  .nav-link-text {
+    display: none;
   }
   .nav-user {
     display: none;
-  }
-  .nav-logout {
-    font-size: 13px;
   }
   .lang-switch button {
     padding: 3px 7px;

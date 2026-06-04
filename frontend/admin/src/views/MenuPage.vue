@@ -774,11 +774,16 @@ function formatPrice(kopecks) {
     grid-template-columns: 1fr 1fr;
   }
   .modal-overlay {
-    padding: 12px;
-    align-items: flex-start;
+    padding: 0;
+    align-items: stretch;
   }
   .modal {
-    max-height: calc(100vh - 24px);
+    max-width: 100%;
+    max-height: none;
+    min-height: 100dvh;
+    border-radius: 0;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
   .item-row {
     flex-wrap: wrap;

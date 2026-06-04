@@ -215,6 +215,13 @@ const todaySchedule = computed(() => {
         {{ $t('home.closingSoon', { time: restaurant.close_time }) }}
       </div>
 
+      <!-- Акция / Спецпредложение -->
+      <div class="promo-banner" v-if="restaurant.promo_title || restaurant.promo_description">
+        <div class="promo-tag">{{ $t('home.promoLabel') }}</div>
+        <div class="promo-title" v-if="restaurant.promo_title">{{ restaurant.promo_title }}</div>
+        <div class="promo-desc" v-if="restaurant.promo_description">{{ restaurant.promo_description }}</div>
+      </div>
+
       <!-- Соцсети -->
       <div class="section" v-if="restaurant.social_links?.length">
         <div class="section-header">
@@ -630,6 +637,42 @@ const todaySchedule = computed(() => {
 .status-banner.closing {
   background: #FEF3C7;
   color: #92400E;
+}
+
+/* ===== Promo banner ===== */
+.promo-banner {
+  margin: 12px 16px 0;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #fbbf24;
+  border-radius: var(--radius);
+  color: #78350f;
+}
+
+.promo-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 2px 8px;
+  background: #f59e0b;
+  color: #fff;
+  border-radius: 100px;
+  margin-bottom: 8px;
+}
+
+.promo-title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.promo-desc {
+  font-size: 13px;
+  line-height: 1.4;
+  margin-top: 4px;
+  color: #92400e;
 }
 
 /* ===== Sections ===== */
